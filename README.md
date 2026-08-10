@@ -92,28 +92,6 @@ npm run watch:css
 
 Settings live under `config/settings/` (`base`, `local`, `test`, `production`).
 
-### M-Pesa sandbox
-
-Create a sandbox app in the Safaricom Daraja portal, then set:
-
-```text
-PAYMENT_PROVIDER=mpesa
-MPESA_DARAJA_ENABLED=True
-MPESA_LIVE=False
-MPESA_CONSUMER_KEY=...
-MPESA_CONSUMER_SECRET=...
-MPESA_SHORTCODE=174379
-MPESA_PASSKEY=...
-MPESA_CALLBACK_URL=https://your-public-host/payments/callback/mpesa/
-MPESA_CALLBACK_SECRET=a-long-random-token
-```
-
-The application appends the callback token to the registered callback URL,
-normalizes Kenyan phone numbers, obtains an OAuth token, and submits the STK
-Push. The callback still verifies the checkout reference and exact order amount.
-Localhost is not reachable by Daraja; use an HTTPS deployment or tunnel for
-sandbox callback testing.
-
 ## Architecture
 
 ```
@@ -152,10 +130,6 @@ Rules of thumb (see PRD):
 Component conventions: [docs/component-conventions.md](docs/component-conventions.md)  
 Production checklist: [docs/production-hardening.md](docs/production-hardening.md)  
 Deploy runbook: [docs/deploy-runbook.md](docs/deploy-runbook.md)
-
-### Security hardening 2026-08-10
-
-Completed the [security / DevOps-C score-lift plan](docs/superpowers/plans/2026-08-10-security-devops-score-lift.md) per the [design spec](docs/superpowers/specs/2026-08-10-security-devops-score-lift-design.md): payment callback trust, redirect safety, upload validation, checkout/cart integrity, CI + runbook, request ID observability, and baseline a11y/UI fixes. Estimated re-audit: weighted overall ≈8.5/10 (see spec scorecard addendum).
 
 ## Tests
 
