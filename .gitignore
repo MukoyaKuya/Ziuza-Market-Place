@@ -62,3 +62,8 @@ private_media/
 .superpowers/
 .worktrees/
 
+
+# Additional env variants (keep .env.example tracked)
+.env.*
+!.env.example
+secrets/
