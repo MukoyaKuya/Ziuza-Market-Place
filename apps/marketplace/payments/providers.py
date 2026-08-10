@@ -72,7 +72,7 @@ class FakePaymentProvider(PaymentProvider):
         return Payment.objects.create(
             order=order,
             provider=self.code,
-            provider_reference=f'FAKE-{order.public_number}',
+            provider_reference=f'FAKE-{order.public_number}-{secrets.token_hex(4)}',
             amount=order.grand_total,
             currency=order.currency,
             status=PaymentStatusChoice.PENDING,
@@ -83,6 +83,8 @@ class FakePaymentProvider(PaymentProvider):
     def process_callback(self, *, payload: dict) -> Payment:
         reference = payload.get('provider_reference')
         payment = Payment.objects.select_for_update().select_related('order').get(provider_reference=reference)
+        if payment.provider != self.code:
+            raise ValidationError('Payment provider mismatch.')
         if payment.status == PaymentStatusChoice.CONFIRMED:
             return payment
         amount = Decimal(str(payload.get('amount', payment.amount)))

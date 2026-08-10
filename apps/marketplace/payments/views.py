@@ -1,4 +1,5 @@
 import json
+import logging
 import secrets
 
 from django.conf import settings
@@ -70,6 +71,8 @@ def initiate_payment(request, public_number):
 @require_POST
 def fake_callback(request):
     """Sandbox callback — verify reference/amount server-side (idempotent)."""
+    if not settings.DEBUG:
+        raise Http404()
     data = _callback_data(request)
     payload = {
         'provider_reference': data.get('provider_reference'),
@@ -79,8 +82,9 @@ def fake_callback(request):
     provider = get_provider('fake')
     try:
         payment = provider.process_callback(payload=payload)
-    except Exception as exc:
-        return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    except Exception:
+        logging.getLogger(__name__).exception('fake_callback failed')
+        return JsonResponse({'ok': False, 'error': 'callback_rejected'}, status=400)
     return JsonResponse({'ok': True, 'status': payment.status, 'order': payment.order.public_number})
 
 
@@ -111,8 +115,9 @@ def mpesa_callback(request):
     provider = get_provider('mpesa')
     try:
         payment = provider.process_callback(payload=payload)
-    except Exception as exc:
-        return JsonResponse({'ok': False, 'error': str(exc)}, status=400)
+    except Exception:
+        logging.getLogger(__name__).exception('mpesa_callback failed')
+        return JsonResponse({'ok': False, 'error': 'callback_rejected'}, status=400)
     return JsonResponse({'ok': True, 'status': payment.status, 'order': payment.order.public_number})
 
 
