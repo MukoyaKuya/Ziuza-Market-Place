@@ -1,3 +1,5 @@
+import logging
+
 from .base import *
 
 from django.core.exceptions import ImproperlyConfigured
@@ -74,6 +76,8 @@ if SENTRY_DSN:
             environment=env('SENTRY_ENVIRONMENT', default='production'),
         )
     except ImportError:
-        import logging
-
         logging.getLogger(__name__).exception('SENTRY_DSN is set but sentry-sdk is not installed')
+else:
+    logging.getLogger(__name__).warning(
+        'SENTRY_DSN is not set; production error tracking is disabled.'
+    )

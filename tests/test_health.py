@@ -10,6 +10,16 @@ def test_liveness_health_endpoint(client):
     data = response.json()
     assert data['status'] == 'live'
     assert data['service'] == 'ziuza-marketplace'
+    assert response.headers.get('X-Request-ID')
+
+
+@pytest.mark.django_db
+def test_request_id_header_echoed(client):
+    url = reverse('health:live')
+    custom_id = 'abc123deadbeef'
+    response = client.get(url, HTTP_X_REQUEST_ID=custom_id)
+    assert response.status_code == 200
+    assert response.headers.get('X-Request-ID') == custom_id
 
 
 @pytest.mark.django_db

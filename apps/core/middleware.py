@@ -1,14 +1,41 @@
-"""Lightweight sliding-window rate limits for auth, search, and payment callbacks."""
+"""Request correlation IDs and lightweight sliding-window rate limits."""
 
 from __future__ import annotations
 
-import time
 import logging
+import time
+import uuid
+from contextvars import ContextVar
 
 from django.conf import settings
-
 from django.core.cache import cache
 from django.http import HttpResponse
+
+request_id_var: ContextVar[str] = ContextVar('request_id', default='-')
+
+
+class RequestIdFilter(logging.Filter):
+    """Inject the current request ID into log records."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.request_id = request_id_var.get()
+        return True
+
+
+class RequestIdMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        rid = request.headers.get('X-Request-ID') or uuid.uuid4().hex
+        request.request_id = rid
+        token = request_id_var.set(rid)
+        try:
+            response = self.get_response(request)
+        finally:
+            request_id_var.reset(token)
+        response['X-Request-ID'] = rid
+        return response
 
 
 class SimpleRateLimitMiddleware:
