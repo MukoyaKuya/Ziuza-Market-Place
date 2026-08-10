@@ -167,7 +167,11 @@ class MpesaPaymentProvider(PaymentProvider):
         }
 
     def _verify_callback_signature(self, *, payload: dict) -> bool:
-        return bool(payload.get('callback_authenticated')) or not getattr(settings, 'MPESA_LIVE', False)
+        secret = getattr(settings, 'MPESA_CALLBACK_SECRET', '') or ''
+        live = getattr(settings, 'MPESA_LIVE', False)
+        if live or secret:
+            return bool(payload.get('callback_authenticated'))
+        return True  # local scaffold without secret only
 
     @transaction.atomic
     def process_callback(self, *, payload: dict) -> Payment:

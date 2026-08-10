@@ -1,10 +1,12 @@
 """Payment callback security — fake path must not confirm non-fake payments."""
 
+import json
 from decimal import Decimal
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client, RequestFactory, override_settings
+from django.urls import reverse
 
 from apps.accounts.models import Address
 from apps.marketplace.cart.services import add_to_cart, get_or_create_cart
@@ -97,6 +99,33 @@ def commerce_order_with_fake_pending(client, buyer, listing, address):
     order = _checkout_order(client, buyer, listing, address)
     payment = get_provider('fake').initiate_payment(order=order)
     return order, payment
+
+
+@pytest.mark.django_db
+@override_settings(MPESA_LIVE=False, MPESA_CALLBACK_SECRET='test-secret')
+def test_mpesa_callback_rejects_unauthenticated_when_secret_configured(commerce_order_with_mpesa_pending):
+    """POST without token/header → 400; payment stays pending even when not LIVE."""
+    order, payment = commerce_order_with_mpesa_pending
+    callback = {
+        'Body': {
+            'stkCallback': {
+                'CheckoutRequestID': payment.provider_reference,
+                'ResultCode': 0,
+                'CallbackMetadata': {
+                    'Item': [
+                        {'Name': 'Amount', 'Value': float(payment.amount)},
+                    ]
+                },
+            }
+        }
+    }
+    url = reverse('payments:mpesa_callback')
+    resp = Client().post(url, data=json.dumps(callback), content_type='application/json')
+    assert resp.status_code == 400
+    payment.refresh_from_db()
+    order.refresh_from_db()
+    assert payment.status != PaymentStatusChoice.CONFIRMED
+    assert order.payment_status != PaymentStatus.PAID
 
 
 @pytest.mark.django_db

@@ -10,6 +10,8 @@ if PAYMENT_PROVIDER == 'fake':
     raise ImproperlyConfigured('The fake payment provider cannot be used in production.')
 if PAYMENT_PROVIDER == 'mpesa' and not MPESA_CALLBACK_SECRET:
     raise ImproperlyConfigured('MPESA_CALLBACK_SECRET is required for M-Pesa in production.')
+if PAYMENT_PROVIDER == 'mpesa' and not MPESA_LIVE:
+    raise ImproperlyConfigured('MPESA_LIVE must be True in production.')
 if PAYMENT_PROVIDER == 'mpesa' and not MPESA_DARAJA_ENABLED:
     raise ImproperlyConfigured('MPESA_DARAJA_ENABLED must be true for M-Pesa in production.')
 if PAYMENT_PROVIDER == 'mpesa':
@@ -52,6 +54,11 @@ CSRF_COOKIE_SECURE = env.bool('DJANGO_CSRF_COOKIE_SECURE', default=True)
 SECURE_HSTS_SECONDS = env.int('DJANGO_SECURE_HSTS_SECONDS', default=31536000)
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
+
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+_proxy = env.bool('DJANGO_BEHIND_PROXY', default=False)
+if _proxy:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Error tracking — no-op unless SENTRY_DSN is set and sentry-sdk is installed.
 if SENTRY_DSN:
