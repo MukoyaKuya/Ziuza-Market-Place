@@ -1,9 +1,43 @@
 import pytest
 from django.template.loader import render_to_string
+from django.test import override_settings
 from django.urls import reverse
+
+from apps.accounts.models import User
+
+PASSWORD = 'password123'
 
 
 @pytest.mark.django_db
+@override_settings(DEBUG=False)
+def test_design_system_forbidden_when_debug_false_anonymous(client):
+    response = client.get(reverse('core:design-system'))
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=True)
+def test_design_system_accessible_when_debug_true_anonymous(client):
+    response = client.get(reverse('core:design-system'))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=False)
+def test_design_system_accessible_for_staff_when_debug_false(client):
+    staff = User.objects.create_user(
+        email='staff@ziuza.co.ke',
+        password=PASSWORD,
+        display_name='Staff',
+        is_staff=True,
+    )
+    client.force_login(staff)
+    response = client.get(reverse('core:design-system'))
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=True)
 def test_design_system_page_renders(client):
     url = reverse('core:design-system')
     response = client.get(url)
@@ -13,6 +47,7 @@ def test_design_system_page_renders(client):
 
 
 @pytest.mark.django_db
+@override_settings(DEBUG=True)
 def test_design_system_includes_phase1_sections(client):
     response = client.get(reverse('core:design-system'))
     assert response.status_code == 200
