@@ -134,7 +134,7 @@
                         <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
-                        <input :type="showP1 ? 'text' : 'password'" name="password1" id="id_password1" required
+                        <input type="password" :type="showP1 ? 'text' : 'password'" name="password1" id="id_password1" required
                                class="w-full h-10.5 pl-10 pr-10 text-sm bg-white border border-gray-200 rounded-xl focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none"
                                placeholder="At least 8 characters">
                         <button type="button" @click="showP1 = !showP1" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
@@ -154,7 +154,7 @@
                         <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
-                        <input :type="showP2 ? 'text' : 'password'" name="password2" id="id_password2" required
+                        <input type="password" :type="showP2 ? 'text' : 'password'" name="password2" id="id_password2" required
                                class="w-full h-10.5 pl-10 pr-10 text-sm bg-white border border-gray-200 rounded-xl focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none"
                                placeholder="Re-enter password">
                         <button type="button" @click="showP2 = !showP2" class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">

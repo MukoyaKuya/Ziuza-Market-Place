@@ -25,6 +25,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 <body class="flex flex-col min-h-full font-sans text-kenya-black bg-brand-surface-ground" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-ziuza focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-kenya-black focus:shadow-lg focus:ring-2 focus:ring-kenya-red/40">Skip to content</a>
     <!-- Header / Navigation -->
     {% include 'layouts/navbar.html' %}
 

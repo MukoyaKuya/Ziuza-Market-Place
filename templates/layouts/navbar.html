@@ -38,11 +38,14 @@
                 <div class="relative hidden lg:block" @click.away="categoryDropdownOpen = false">
                     <button @click="categoryDropdownOpen = !categoryDropdownOpen"
                             type="button"
+                            :aria-expanded="categoryDropdownOpen"
+                            aria-controls="nav-category-dropdown"
                             class="inline-flex items-center gap-2 px-4 py-2.5 h-11 rounded-xl border border-gray-200 text-sm font-semibold text-gray-800 bg-white hover:bg-brand-surface-ground transition-colors">
                         {% include 'components/icons/flat_icon.html' with name='menu' class='h-4 w-4 text-gray-600' %}
                         <span>Categories</span>
                     </button>
-                    <div x-show="categoryDropdownOpen" x-cloak x-transition
+                    <div id="nav-category-dropdown"
+                         x-show="categoryDropdownOpen" x-cloak x-transition
                          class="absolute left-0 mt-1.5 w-64 max-h-[22rem] overflow-y-auto rounded-xl bg-white shadow-2xl border border-gray-200 py-2 z-50 divide-y divide-gray-100">
                         <div class="pb-1">
                             <a href="{% url 'listings:category_index' %}" class="block px-4 py-2 text-sm font-bold text-gray-900 hover:bg-brand-surface-ground hover:text-kenya-red transition-colors">All categories</a>
@@ -107,7 +110,12 @@
                     <span class="hidden sm:inline">Cart</span>
                 </a>
 
-                <button @click="mobileMenuOpen = !mobileMenuOpen" type="button" class="md:hidden p-1.5 rounded-lg text-gray-600 hover:bg-brand-surface-ground" aria-label="Open menu">
+                <button @click="mobileMenuOpen = !mobileMenuOpen"
+                        type="button"
+                        class="md:hidden p-1.5 rounded-lg text-gray-600 hover:bg-brand-surface-ground"
+                        :aria-expanded="mobileMenuOpen"
+                        aria-controls="nav-mobile-menu"
+                        :aria-label="mobileMenuOpen ? 'Close menu' : 'Open menu'">
                     <span x-show="!mobileMenuOpen">{% include 'components/icons/flat_icon.html' with name='menu' class='h-5 w-5' %}</span>
                     <span x-show="mobileMenuOpen" x-cloak>{% include 'components/icons/flat_icon.html' with name='close' class='h-5 w-5' %}</span>
                 </button>
@@ -137,7 +145,7 @@
         </div>
     </div>
 
-    <div x-show="mobileMenuOpen" x-cloak class="md:hidden border-t border-brand-surface-border bg-white px-4 pt-3 pb-4 space-y-2">
+    <div id="nav-mobile-menu" x-show="mobileMenuOpen" x-cloak class="md:hidden border-t border-brand-surface-border bg-white px-4 pt-3 pb-4 space-y-2">
         <form action="{% url 'search:results' %}" method="GET" data-marketplace-search class="flex rounded-2xl border-2 border-[#ded8cf] bg-[#fffdfa] shadow-sm overflow-hidden mb-2 h-12 focus-within:border-kenya-red">
             <input type="search" name="q" placeholder="Search products and shops…" class="flex-1 px-4 text-sm bg-transparent border-0 focus:ring-0" aria-label="Search">
             <button type="submit" class="bg-kenya-red text-white w-12 flex items-center justify-center" aria-label="Search">

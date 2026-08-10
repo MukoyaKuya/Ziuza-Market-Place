@@ -43,7 +43,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {% for listing in recent_listings %}
             {% url 'listings:detail' listing.slug as listing_url %}
-            {% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}{% endwith %}
+            {% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url listing=listing %}{% endwith %}
             {% endfor %}
         </div>
     </section>
@@ -56,7 +56,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {% for listing in recommendations %}
             {% url 'listings:detail' listing.slug as listing_url %}
-            {% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}{% endwith %}
+            {% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url listing=listing %}{% endwith %}
             {% endfor %}
         </div>
     </section>

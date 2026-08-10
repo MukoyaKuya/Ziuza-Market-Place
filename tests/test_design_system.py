@@ -99,3 +99,29 @@ def test_listing_card_uses_category_artwork_when_product_has_no_image():
 
     assert '/static/images/categories/art.png' in card
     assert '/static/images/hero_kiondo_basket.png' not in card
+
+
+def test_listing_card_omits_favorite_without_listing():
+    card = render_to_string('components/listing_card/listing_card.html', {
+        'title': 'Mock card',
+        'shop_name': 'Demo shop',
+        'price': '500',
+    })
+    assert 'favorites:toggle' not in card
+    assert 'Add favorite' not in card
+
+
+def test_base_layout_includes_skip_link():
+    html = render_to_string('layouts/base.html', {'csrf_token': 'test'})
+    assert 'href="#main-content"' in html
+    assert 'Skip to content' in html
+
+
+def test_login_password_field_defaults_to_password_type():
+    html = render_to_string('accounts/login.html', {'form': type('Form', (), {
+        'non_field_errors': [],
+        'email': type('Field', (), {'value': '', 'errors': []})(),
+        'password': type('Field', (), {'errors': []})(),
+    })()})
+    assert 'type="password"' in html
+    assert 'id="id_password"' in html
