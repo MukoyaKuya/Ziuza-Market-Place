@@ -47,6 +47,7 @@ def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_metho
     if shipping_address is not None and shipping_address.user_id != actor.id:
         raise ValidationError(_('Invalid shipping address.'))
 
+    cart = Cart.objects.select_for_update().get(pk=cart.pk)
     totals = annotate_cart_totals(cart)
     if not totals['lines']:
         raise ValidationError(_('Your cart is empty.'))

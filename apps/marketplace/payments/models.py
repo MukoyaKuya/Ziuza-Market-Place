@@ -15,7 +15,7 @@ class PaymentStatusChoice(models.TextChoices):
 
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
+    order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payments')
     provider = models.CharField(max_length=40)
     provider_reference = models.CharField(max_length=120, unique=True)
     amount = models.DecimalField(max_digits=12, decimal_places=2)
@@ -24,3 +24,12 @@ class Payment(models.Model):
     initiated_at = models.DateTimeField(auto_now_add=True)
     confirmed_at = models.DateTimeField(null=True, blank=True)
     raw_metadata = models.JSONField(default=dict, blank=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['order'],
+                condition=models.Q(status='confirmed'),
+                name='uniq_one_confirmed_payment_per_order',
+            ),
+        ]
