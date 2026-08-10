@@ -22,7 +22,7 @@ Copy `.env.example` to `.env` on the server (never commit `.env`). Set at minimu
 | `CSRF_TRUSTED_ORIGINS` | Yes | HTTPS origins (e.g. `https://ziuza.co.ke,https://www.ziuza.co.ke`) |
 | `DATABASE_URL` | Yes | PostgreSQL URL (`postgres://user:pass@host:5432/dbname`) |
 | `PAYMENT_PROVIDER` | Yes | `fake` (sandbox) or `mpesa` |
-| `MPESA_*` | If M-Pesa | See `.env.example` and README M-Pesa section; production requires `MPESA_LIVE=True` |
+| `MPESA_*` | If M-Pesa | See `.env.example` for details; production requires `MPESA_LIVE=True` |
 | `REDIS_URL` | Optional | Enables Redis cache when set; LocMem otherwise |
 | `SENTRY_DSN` | Optional | Error tracking when `sentry-sdk` is installed via `[prod]` |
 | `PUBLIC_SITE_URL` | Recommended | Canonical site URL for emails and links |
