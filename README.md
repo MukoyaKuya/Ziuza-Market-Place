@@ -2,6 +2,8 @@
 
 Multi-vendor marketplace celebrating Kenyan creators, artisans, and producers.
 
+**Repository:** [github.com/MukoyaKuya/Ziuza-Market-Place](https://github.com/MukoyaKuya/Ziuza-Market-Place)
+
 **Stack:** Django 5 · server-rendered templates · HTMX · Alpine.js · Tailwind CSS · PostgreSQL (production)
 
 ## Requirements
@@ -64,6 +66,7 @@ Useful URLs:
 | http://127.0.0.1:8000/sell/ | Start selling |
 | http://127.0.0.1:8000/seller/ | Seller dashboard |
 | http://127.0.0.1:8000/health/live/ | Liveness probe |
+| http://127.0.0.1:8000/health/ready/ | Readiness probe (DB) |
 | http://127.0.0.1:8000/sitemap.xml | Sitemap |
 | http://127.0.0.1:8000/admin/ | Django admin |
 
@@ -147,7 +150,8 @@ Rules of thumb (see PRD):
 - No business logic in templates or JavaScript
 
 Component conventions: [docs/component-conventions.md](docs/component-conventions.md)  
-Production checklist: [docs/production-hardening.md](docs/production-hardening.md)
+Production checklist: [docs/production-hardening.md](docs/production-hardening.md)  
+Deploy runbook: [docs/deploy-runbook.md](docs/deploy-runbook.md)
 
 ## Tests
 
@@ -157,13 +161,16 @@ pytest
 
 ## Production notes
 
+See [docs/deploy-runbook.md](docs/deploy-runbook.md) for the full host-agnostic checklist (env vars, CSS build, cron, health probes). Summary:
+
 ```powershell
 $env:DJANGO_SETTINGS_MODULE = "config.settings.production"
-# Set DATABASE_URL, SECRET_KEY, ALLOWED_HOSTS, and optionally REDIS_URL / SENTRY_DSN
+# Set DATABASE_URL, SECRET_KEY, ALLOWED_HOSTS, CSRF_TRUSTED_ORIGINS, PAYMENT_PROVIDER, etc.
 pip install -e ".[prod]"
+npm ci; npm run build:css   # styles.css is gitignored — required every deploy
 python manage.py migrate
 python manage.py collectstatic --noinput
-# Serve via gunicorn/uvicorn → config.wsgi:application or config.asgi:application
+gunicorn config.wsgi:application
 ```
 
 ## Current status

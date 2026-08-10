@@ -23,6 +23,7 @@ jobs:
         run: |
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --run-syncdb
+          python manage.py check
       - name: Pytest
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test

@@ -6,7 +6,7 @@ Use before production release. High-debt seller dashboard pages and analytics ch
 - [ ] `DEBUG=False`, strong `SECRET_KEY`, locked `ALLOWED_HOSTS`
 - [x] HTTPS + secure cookies (see `config/settings/production.py`)
 - [x] Permissions audit on seller/buyer mutations (actor ownership) — ongoing with each service
-- [x] Payment callbacks verify authenticity + idempotency (Fake + M-Pesa scaffold)
+- [x] Payment callbacks verify authenticity + idempotency (Tasks 1–2: fake DEBUG gate, provider mismatch guard, M-Pesa signature when live/secret set)
 - [x] Expired/failed/cancelled order reservations release inventory idempotently
 - [x] Rate limit auth, search, payment callbacks (`SimpleRateLimitMiddleware`)
 - [ ] No secrets in git; rotate any leaked keys
@@ -32,6 +32,8 @@ Use before production release. High-debt seller dashboard pages and analytics ch
 - [ ] Backups for Postgres + media
 - [ ] `collectstatic` + CDN/object storage for media
 - [x] CI: pytest + migrate check (`.github/workflows/ci.yml`)
+- [x] Host-agnostic deploy runbook (`docs/deploy-runbook.md`) — includes CSS build step (`styles.css` is gitignored)
+- [ ] Docker/container image (not required; runbook is host-agnostic)
 - [ ] Celery/worker for email & image jobs when introduced
 - [ ] Schedule `expire_order_reservations` at least once per minute
 - [ ] Schedule `notify_low_stock` daily
