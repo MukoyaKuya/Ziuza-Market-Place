@@ -1,5 +1,11 @@
 # Ziuza Marketplace
 
+[![CI](https://github.com/MukoyaKuya/Ziuza-Market-Place/actions/workflows/ci.yml/badge.svg)](https://github.com/MukoyaKuya/Ziuza-Market-Place/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.12-3776AB.svg?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/django-5.0-092E20.svg?style=flat&logo=django&logoColor=white)](https://www.djangoproject.com/)
+[![Frontend](https://img.shields.io/badge/frontend-HTMX%20%2B%20Alpine.js-336699.svg?style=flat)](https://htmx.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Multi-vendor marketplace celebrating Kenyan creators, artisans, and producers.
 
 **Repository:** [github.com/MukoyaKuya/Ziuza-Market-Place](https://github.com/MukoyaKuya/Ziuza-Market-Place)
