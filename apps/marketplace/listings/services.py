@@ -21,6 +21,27 @@ from apps.marketplace.listings.models import (
 from apps.marketplace.shops.models import Shop
 from apps.marketplace.shops.permissions import MANAGE_LISTINGS, ensure_shop_permission
 
+MAX_DIGITAL_ASSET_SIZE = 50 * 1024 * 1024
+ALLOWED_DIGITAL_ASSET_TYPES = {
+    'application/pdf',
+    'application/zip',
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+}
+
+
+def _digital_asset_signature_matches(uploaded_file, content_type):
+    header = uploaded_file.read(12)
+    uploaded_file.seek(0)
+    return {
+        'image/jpeg': header.startswith(b'\xff\xd8\xff'),
+        'image/png': header.startswith(b'\x89PNG\r\n\x1a\n'),
+        'image/webp': header.startswith(b'RIFF') and header[8:12] == b'WEBP',
+        'application/pdf': header.startswith(b'%PDF-'),
+        'application/zip': header.startswith(b'PK\x03\x04') or header.startswith(b'PK\x05\x06') or header.startswith(b'PK\x07\x08'),
+    }.get(content_type, False)
+
 
 def _audit_listing(*, actor, listing, action, description):
     from apps.marketplace.shops.team_services import audit_shop_action
@@ -251,9 +272,23 @@ def add_listing_image(
 
 @transaction.atomic
 def add_digital_asset(*, actor, listing, title, file, version=''):
+    """Attach a private digital file to a digital listing.
+
+    Allowed types: PDF, ZIP, JPEG, PNG, WebP (max 50 MB). Content is checked
+    against declared MIME type via magic-byte signatures.
+    """
     ensure_actor_can_manage_listing(actor=actor, listing=listing)
     if listing.product_type != ProductType.DIGITAL:
         raise ValidationError(_('Digital files can only be attached to digital listings.'))
+    if file is None:
+        raise ValidationError(_('Choose a digital asset file.'))
+    if file.size > MAX_DIGITAL_ASSET_SIZE:
+        raise ValidationError(_('Digital asset files must be 50 MB or smaller.'))
+    content_type = (getattr(file, 'content_type', '') or '').lower()
+    if content_type not in ALLOWED_DIGITAL_ASSET_TYPES:
+        raise ValidationError(_('Upload a JPG, PNG, WebP, PDF, or ZIP file.'))
+    if not _digital_asset_signature_matches(file, content_type):
+        raise ValidationError(_('The file contents do not match its file type.'))
     return DigitalAsset.objects.create(listing=listing, title=title.strip(), file=file, version=version.strip())
 
 
