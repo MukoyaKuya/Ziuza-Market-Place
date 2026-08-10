@@ -153,6 +153,10 @@ Component conventions: [docs/component-conventions.md](docs/component-convention
 Production checklist: [docs/production-hardening.md](docs/production-hardening.md)  
 Deploy runbook: [docs/deploy-runbook.md](docs/deploy-runbook.md)
 
+### Security hardening 2026-08-10
+
+Completed the [security / DevOps-C score-lift plan](docs/superpowers/plans/2026-08-10-security-devops-score-lift.md) per the [design spec](docs/superpowers/specs/2026-08-10-security-devops-score-lift-design.md): payment callback trust, redirect safety, upload validation, checkout/cart integrity, CI + runbook, request ID observability, and baseline a11y/UI fixes. Estimated re-audit: weighted overall ≈8.5/10 (see spec scorecard addendum).
+
 ## Tests
 
 ```powershell
