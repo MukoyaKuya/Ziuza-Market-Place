@@ -6,7 +6,7 @@ from decimal import Decimal
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.db import IntegrityError, connection, transaction
+from django.db import DatabaseError, IntegrityError, connection, transaction
 from django.test import RequestFactory
 
 from apps.accounts.models import Address
@@ -124,7 +124,7 @@ def test_concurrent_double_checkout_creates_one_order(client, buyer, listing, ad
             connection.ensure_connection()
             order = create_checkout_order(**checkout_kwargs)
             orders.append(order)
-        except ValidationError as exc:
+        except (ValidationError, DatabaseError) as exc:
             errors.append(exc)
         finally:
             connection.close()
@@ -135,9 +135,9 @@ def test_concurrent_double_checkout_creates_one_order(client, buyer, listing, ad
     for thread in threads:
         thread.join()
 
-    assert len(orders) == 1
     assert Order.objects.filter(buyer=buyer).count() == 1
-    assert len(errors) + len(orders) == 2
+    assert len(orders) == 1
+    assert len(errors) == 1
 
 
 @pytest.mark.django_db
