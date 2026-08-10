@@ -10,8 +10,10 @@ from django.db import DatabaseError, IntegrityError, connection, transaction
 from django.test import RequestFactory
 
 from apps.accounts.models import Address
+from apps.marketplace.cart.models import Cart, CartItem
 from apps.marketplace.cart.services import add_to_cart, get_or_create_cart
 from apps.marketplace.categories.models import Category
+from apps.marketplace.listings.models import Inventory
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.orders.models import Order
 from apps.marketplace.orders.services import create_checkout_order
@@ -168,3 +170,53 @@ def test_only_one_confirmed_payment_per_order(client, buyer, listing, address):
                 currency=order.currency,
                 status=PaymentStatusChoice.CONFIRMED,
             )
+
+
+@pytest.mark.django_db
+def test_uniq_cart_per_user(buyer):
+    Cart.objects.create(user=buyer)
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            Cart.objects.create(user=buyer)
+
+
+@pytest.mark.django_db
+def test_uniq_anon_cart_per_session():
+    Cart.objects.create(session_key='anon-session-1', user=None)
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            Cart.objects.create(session_key='anon-session-1', user=None)
+
+
+@pytest.mark.django_db
+def test_get_or_create_cart_reuses_user_cart(client, buyer):
+    rf = RequestFactory()
+    request = rf.get('/')
+    request.user = buyer
+    request.session = client.session
+    request.session.save()
+    first = get_or_create_cart(request=request)
+    second = get_or_create_cart(request=request)
+    assert first.id == second.id
+    assert Cart.objects.filter(user=buyer).count() == 1
+
+
+@pytest.mark.django_db
+def test_cartitem_base_variant_uniqueness(buyer, listing):
+    cart = Cart.objects.create(user=buyer)
+    CartItem.objects.create(cart=cart, listing=listing, variant=None, personalization_signature='')
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            CartItem.objects.create(cart=cart, listing=listing, variant=None, personalization_signature='')
+
+
+@pytest.mark.django_db
+def test_inventory_reserved_lte_available(listing):
+    inv = Inventory.objects.get(listing=listing, variant__isnull=True)
+    inv.quantity_available = 2
+    inv.quantity_reserved = 2
+    inv.save()
+    inv.quantity_reserved = 3
+    with pytest.raises(IntegrityError):
+        with transaction.atomic():
+            inv.save(update_fields=['quantity_reserved'])

@@ -217,6 +217,10 @@ class Inventory(models.Model):
                 condition=models.Q(variant__isnull=True),
                 name='uniq_listing_base_inventory',
             ),
+            models.CheckConstraint(
+                condition=models.Q(quantity_reserved__lte=models.F('quantity_available')),
+                name='inventory_reserved_lte_available',
+            ),
         ]
 
     def __str__(self) -> str:

@@ -17,6 +17,20 @@ class Cart(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user'],
+                condition=models.Q(user__isnull=False),
+                name='uniq_cart_per_user',
+            ),
+            models.UniqueConstraint(
+                fields=['session_key'],
+                condition=models.Q(user__isnull=True) & ~models.Q(session_key=''),
+                name='uniq_anon_cart_per_session',
+            ),
+        ]
+
 
 class CartItem(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -36,4 +50,15 @@ class CartItem(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = [('cart', 'listing', 'variant', 'personalization_signature')]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['cart', 'listing', 'personalization_signature'],
+                condition=models.Q(variant__isnull=True),
+                name='uniq_cartitem_base_variant',
+            ),
+            models.UniqueConstraint(
+                fields=['cart', 'listing', 'variant', 'personalization_signature'],
+                condition=models.Q(variant__isnull=False),
+                name='uniq_cartitem_with_variant',
+            ),
+        ]
