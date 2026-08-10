@@ -1,0 +1,17 @@
+{# Usage: {% include 'components/avatar/avatar.html' with name="Amina Wanjiku" initials="AW" size="md" %} #}
+{% with size_class=size|default:"md" %}
+<span
+    class="inline-flex items-center justify-center overflow-hidden rounded-full bg-kenya-green-subtle text-kenya-green-dark font-semibold
+           {% if size_class == 'sm' %}h-8 w-8 text-xs
+           {% elif size_class == 'lg' %}h-14 w-14 text-lg
+           {% else %}h-10 w-10 text-sm{% endif %} {{ extra_classes }}"
+    role="img"
+    aria-label="{{ name|default:'User avatar' }}"
+>
+    {% if image_url %}
+    <img src="{{ image_url }}" alt="" class="h-full w-full object-cover">
+    {% else %}
+    <span aria-hidden="true">{{ initials|default:"Z" }}</span>
+    {% endif %}
+</span>
+{% endwith %}

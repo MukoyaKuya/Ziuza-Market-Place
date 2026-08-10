@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-[#FAF8F5]">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title|default:"Ziuza Marketplace" }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Authentic Kenyan marketplace for handmade crafts, fashion, beadwork, and vintage treasures.{% endblock %}">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- HTMX & Alpine.js -->
+    <script src="{% static 'vendor/js/htmx.min.js' %}"></script>
+    <script defer src="{% static 'vendor/js/alpine.min.js' %}"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-screen flex flex-col justify-between font-sans text-gray-900 bg-[#FAF8F5] antialiased py-4 px-4 sm:px-6 lg:px-8" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    
+    <!-- Top Header Bar (Logo Left, Back to Marketplace Right) -->
+    <header class="w-full max-w-6xl mx-auto py-3 flex items-center justify-between z-30">
+        <a href="{% url 'core:home' %}" class="inline-block group focus:outline-none" aria-label="Ziuza Home">
+            <img src="{% static 'brand/ziuza-logo.svg' %}" alt="ZIUZA" class="h-10 sm:h-12 w-auto transition-transform duration-300 group-hover:scale-105">
+        </a>
+        <a href="{% url 'core:home' %}" class="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-700 hover:text-[#008751] transition-colors py-1.5 px-3 rounded-lg hover:bg-white/60">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+            <span>Back to Marketplace</span>
+        </a>
+    </header>
+
+    <!-- Main Auth Split Card Container -->
+    <main id="main-content" class="w-full my-auto py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Simple Minimal Centered Footer -->
+    <footer class="w-full max-w-6xl mx-auto text-center py-4 text-xs text-gray-400">
+        <p>&copy; {% now "Y" %} Ziuza Marketplace. Proudly Kenyan. All rights reserved.</p>
+    </footer>
+
+    {% include 'components/toast/toast.html' %}
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

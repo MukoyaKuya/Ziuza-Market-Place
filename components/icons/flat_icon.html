@@ -1,0 +1,74 @@
+{# Flat outline and filled illustrated icons. Usage: {% include 'components/icons/flat_icon.html' with name='cart' class='h-5 w-5' %} #}
+{% with cls=class|default:'h-5 w-5' %}
+{% if name == 'menu' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+{% elif name == 'search' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16.5 16.5L21 21"/></svg>
+{% elif name == 'user' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path stroke-linecap="round" d="M5.5 19.25c1.6-3 4-4.5 6.5-4.5s4.9 1.5 6.5 4.5"/></svg>
+{% elif name == 'heart' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M12 20.5S4.5 15.2 4.5 9.8A3.9 3.9 0 0112 7.2a3.9 3.9 0 017.5 2.6c0 5.4-7.5 10.7-7.5 10.7z"/></svg>
+{% elif name == 'cart' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 6.5h1.8l1.2 10h9.8l1.4-7.5H8"/><circle cx="10" cy="19.2" r="1.2" fill="currentColor" stroke="none"/><circle cx="16.5" cy="19.2" r="1.2" fill="currentColor" stroke="none"/></svg>
+{% elif name == 'truck' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><path d="M3 7.5h11v8H3z"/><path d="M14 10.5h4.2L21 13.8v1.7h-7"/><circle cx="7" cy="17.5" r="1.5"/><circle cx="17" cy="17.5" r="1.5"/></svg>
+{% elif name == 'grid' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/></svg>
+{% elif name == 'pin' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+{% elif name == 'close' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+{% elif name == 'gift' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="1"/><path d="M4 13h16M12 10v10M8.5 7.5c0-1.4 1-2.5 2.2-2.5 1.5 0 1.8 1.5 1.3 2.5H8.5zM15.5 7.5c0-1.4-1-2.5-2.2-2.5-1.5 0-1.8 1.5-1.3 2.5h3.5z"/></svg>
+{% elif name == 'chair' %}
+<!-- Illustrated Armchair Icon for Home & Living -->
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M6 8.5C6 7.12 7.12 6 8.5 6h7C16.88 6 18 7.12 18 8.5V12H6V8.5z"/>
+    <path d="M4 11.5C4 10.67 4.67 10 5.5 10h13c.83 0 1.5.67 1.5 1.5V14c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2v-2.5z"/>
+    <rect x="5.5" y="16" width="2.5" height="4" rx="1"/>
+    <rect x="16" y="16" width="2.5" height="4" rx="1"/>
+</svg>
+{% elif name == 'dress' %}
+<!-- Illustrated Dress Icon for Fashion -->
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M9 3.5c0 .83.67 1.5 1.5 1.5h3c.83 0 1.5-.67 1.5-1.5 0-.28.22-.5.5-.5h2.5c.28 0 .5.22.5.5v3.2l-2.8 1.4c-.4.2-.7.6-.7 1v1.9l4.5 9.5c.15.32-.08.7-.43.7H4.43c-.35 0-.58-.38-.43-.7L8.5 11v-1.9c0-.4-.3-.8-.7-1L5 6.7V3.5c0-.28.22-.5.5-.5H8c.28 0 .5.22.5.5z"/>
+</svg>
+{% elif name == 'palette' %}
+<!-- Illustrated Palette Icon for Art & Collectibles -->
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61.43.53 1.07.89 1.76.89h1.77c1.1 0 2-.9 2-2 0-.46-.16-.88-.42-1.22-.3-.38-.48-.86-.48-1.38 0-1.22.99-2.2 2.2-2.2H17c2.76 0 5-2.24 5-5 0-4.97-4.03-9-10-9z"/>
+    <circle cx="7.5" cy="10" r="1.2" fill="#FFFFFF"/>
+    <circle cx="10.5" cy="7" r="1.2" fill="#FFFFFF"/>
+    <circle cx="14.5" cy="7.5" r="1.2" fill="#FFFFFF"/>
+    <circle cx="17" cy="11" r="1.2" fill="#FFFFFF"/>
+</svg>
+{% elif name == 'necklace' %}
+<!-- Illustrated Necklace Icon for Jewelry -->
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M6 4.5C8 10 9.8 13.5 12 13.5s4-3.5 6-9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+    <circle cx="12" cy="17" r="3"/>
+    <circle cx="7.5" cy="10.5" r="1.2"/>
+    <circle cx="16.5" cy="10.5" r="1.2"/>
+</svg>
+{% elif name == 'scissors' %}
+<!-- Illustrated Scissors Icon for Craft Supplies -->
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <circle cx="6" cy="6" r="2.5"/>
+    <circle cx="6" cy="18" r="2.5"/>
+    <path d="M8.2 7 19.5 17c.4.4.4 1 0 1.4-.4.4-1 .4-1.4 0L7 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    <path d="M8.2 17 19.5 7c.4-.4.4-1 0-1.4-.4-.4-1-.4-1.4 0L7 16.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+</svg>
+{% elif name == 'clock' %}
+<!-- Illustrated Clock Icon for Vintage -->
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 4a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 14a6 6 0 1 1 0-12 6 6 0 0 1 0 12z"/>
+    <path d="M11.5 7.5v5h4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <path d="M10 2h4v1.5h-4z"/>
+</svg>
+{% elif name == 'arrow' %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+{% else %}
+<svg class="{{ cls }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>
+{% endif %}
+{% endwith %}
+

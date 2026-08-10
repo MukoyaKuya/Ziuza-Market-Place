@@ -1,0 +1,65 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Saved searches | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-8">
+    <div>
+        <h2 class="text-xl font-display font-bold text-kenya-black">Saved searches</h2>
+        <p class="mt-1 text-sm text-gray-600">Return to your favorite searches and control alerts for newly published matches.</p>
+    </div>
+
+    {% if saved_searches %}
+    <div class="space-y-3">
+        {% for saved in saved_searches %}
+        <article class="rounded-2xl border border-brand-surface-border bg-white p-5 shadow-ziuza-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <a href="{{ saved.result_url }}" class="font-display text-lg font-bold text-kenya-black hover:text-kenya-red">{{ saved.name }}</a>
+                    <p class="mt-1 text-xs text-gray-500">{% if saved.alerts_enabled %}Alerts on{% else %}Alerts paused{% endif %} · Saved {{ saved.created_at|date:"j M Y" }}</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <a href="{{ saved.result_url }}" class="btn-secondary btn-sm">View results</a>
+                    <form method="post" action="{% url 'search:toggle_alerts' saved.id %}">{% csrf_token %}<button class="btn-secondary btn-sm" type="submit">{% if saved.alerts_enabled %}Pause alerts{% else %}Enable alerts{% endif %}</button></form>
+                    <form method="post" action="{% url 'search:delete_saved' saved.id %}">{% csrf_token %}<button class="text-sm font-semibold text-kenya-red px-2 py-1" type="submit">Remove</button></form>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="rounded-2xl border border-brand-surface-border bg-white p-6">
+        <p class="text-sm text-gray-600">You have no saved searches yet.</p>
+        <a href="{% url 'search:results' %}" class="btn-red btn-sm mt-3 inline-flex">Explore the marketplace</a>
+    </div>
+    {% endif %}
+
+    {% if recent_listings %}
+    <section>
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <h3 class="text-lg font-display font-bold text-kenya-black">Recently viewed</h3>
+            <form method="post" action="{% url 'search:clear_recent' %}">{% csrf_token %}<button type="submit" class="text-sm font-semibold text-kenya-red hover:underline">Clear history</button></form>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for listing in recent_listings %}
+            {% url 'listings:detail' listing.slug as listing_url %}
+            {% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}{% endwith %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    {% if recommendations %}
+    <section>
+        <h3 class="mb-1 text-lg font-display font-bold text-kenya-black">Inspired by your activity</h3>
+        <p class="mb-3 text-sm text-gray-600">Suggestions based privately on your favorites and recently viewed categories.</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {% for listing in recommendations %}
+            {% url 'listings:detail' listing.slug as listing_url %}
+            {% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}{% endwith %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Page Not Found | Ziuza Marketplace{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-20 text-center space-y-6">
+    <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-kenya-red-subtle text-kenya-red text-3xl font-extrabold font-display">
+        404
+    </div>
+    <h1 class="text-3xl font-display font-bold text-kenya-black">Page Not Found</h1>
+    <p class="text-gray-600 max-w-md mx-auto">
+        The item, shop, or page you are looking for might have been moved or is currently unavailable.
+    </p>
+    <div>
+        <a href="{% url 'core:home' %}" class="btn-primary">Return to Marketplace Home</a>
+    </div>
+</div>
+{% endblock %}

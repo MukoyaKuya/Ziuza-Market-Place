@@ -1,0 +1,19 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Notification settings | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-6">
+    <div><h2 class="text-xl font-display font-bold">Notification settings</h2><p class="mt-1 text-sm text-gray-600">In-app updates remain available here. Choose which updates also reach your email and how often.</p></div>
+    <form method="post" class="rounded-2xl border border-brand-surface-border bg-white p-6 shadow-ziuza-sm space-y-5">
+        {% csrf_token %}
+        {% for field in form %}
+        <div>
+            {% if field.field.widget.input_type == 'checkbox' %}<label class="flex items-center gap-3 text-sm font-semibold">{{ field }} {{ field.label }}</label>{% else %}<label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+            {% if field.errors %}<p class="field-error">{{ field.errors|striptags }}</p>{% endif %}
+        </div>
+        {% endfor %}
+        <button class="btn-red" type="submit">Save preferences</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Addresses | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <h2 class="text-xl font-display font-bold text-kenya-black">Addresses</h2>
+    <a href="{% url 'accounts:address_create' %}" class="btn-red btn-sm">Add address</a>
+</div>
+
+{% if addresses %}
+<ul class="space-y-4">
+    {% for address in addresses %}
+    <li class="bg-white rounded-2xl border border-brand-surface-border shadow-ziuza-sm p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+            <div>
+                <p class="font-semibold text-kenya-black">{{ address.recipient_name }}</p>
+                <p class="mt-1 text-sm text-gray-600">
+                    {{ address.address_line_1 }}{% if address.address_line_2 %}, {{ address.address_line_2 }}{% endif %}<br>
+                    {{ address.city_or_town }}, {{ address.county }}{% if address.postal_code %} {{ address.postal_code }}{% endif %}<br>
+                    {{ address.country }} · {{ address.phone }}
+                </p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    {% if address.is_default_shipping %}
+                    {% include 'components/badge/badge.html' with label="Default shipping" variant="green" %}
+                    {% endif %}
+                    {% if address.is_default_billing %}
+                    {% include 'components/badge/badge.html' with label="Default billing" variant="black" %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'accounts:address_edit' address.id %}" class="btn-secondary btn-sm">Edit</a>
+                <form method="post" action="{% url 'accounts:address_delete' address.id %}" onsubmit="return confirm('Delete this address?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-ghost btn-sm text-kenya-red">Delete</button>
+                </form>
+            </div>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+{% url 'accounts:address_create' as address_create_url %}
+<div class="bg-white rounded-2xl border border-brand-surface-border">
+    {% include 'components/empty_state/empty_state.html' with title="No addresses yet" message="Add a shipping address so checkout is faster." action_label="Add address" action_url=address_create_url %}
+</div>
+{% endif %}
+{% endblock %}

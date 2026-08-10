@@ -1,0 +1,163 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}{{ seller_order.order.public_number }} · Orders | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-display font-bold text-kenya-black">{{ seller_order.order.public_number }}</h2>
+            <p class="mt-1 text-sm text-gray-600">
+                Payment: {{ seller_order.order.get_payment_status_display }}
+                · Fulfillment: {{ seller_order.get_fulfillment_status_display }}
+            </p>
+        </div>
+        <a href="{% url 'orders:seller_list' %}" class="text-sm font-semibold text-kenya-red hover:underline">All orders</a>
+    </div>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+        <h3 class="font-display font-bold text-kenya-black">Items</h3>
+        <ul class="divide-y divide-brand-surface-border">
+            {% for item in seller_order.items.all %}
+            <li class="py-3 flex flex-wrap items-start justify-between gap-3 text-sm">
+                <div class="min-w-0 space-y-1">
+                    <p class="font-semibold text-kenya-black">{{ item.title_snapshot }} × {{ item.quantity }}</p>
+                    {% if item.variant_snapshot.name %}
+                    <p class="text-xs text-gray-600">Option: {{ item.variant_snapshot.name }}</p>
+                    {% endif %}
+                    {% for label, value in item.personalization_data.items %}
+                    <p class="text-xs text-gray-600">{{ label }}: {{ value }}</p>
+                    {% endfor %}
+                </div>
+                <p class="font-semibold shrink-0">KES {{ item.line_total }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        <p class="font-display font-bold text-kenya-black">Shop subtotal: KES {{ seller_order.subtotal }}</p>
+        {% for delivery in shipping_breakdown %}
+        <div class="rounded-xl bg-brand-surface-muted p-3 text-sm">
+            <p class="font-semibold">{{ delivery.profile }}</p>
+            <p class="text-gray-600 mt-0.5">
+                {% if delivery.pickup %}Local pickup{% else %}Delivery fee KES {{ delivery.fee }}{% endif %}
+            </p>
+            {% if delivery.instructions %}
+            <p class="mt-1 text-gray-600">{{ delivery.instructions }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </section>
+
+    {% if can_manage_orders %}
+    <form method="post" action="{% url 'shipping:update_fulfillment' seller_order.id %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+        {% csrf_token %}
+        <h3 class="font-display font-bold text-kenya-black">Update fulfillment</h3>
+        <div>
+            <label class="field-label" for="fulfillment-status">Status</label>
+            <select id="fulfillment-status" name="status" class="field-input" required>
+                <option value="processing">Processing</option>
+                <option value="ready">Ready</option>
+                <option value="shipped">Shipped</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+        <div>
+            <label class="field-label" for="carrier">Carrier (optional)</label>
+            <input id="carrier" class="field-input" type="text" name="carrier" placeholder="Carrier">
+        </div>
+        <div>
+            <label class="field-label" for="tracking">Tracking number (optional)</label>
+            <input id="tracking" class="field-input" type="text" name="tracking_number" placeholder="Tracking number">
+        </div>
+        <div>
+            <label class="field-label" for="note">Update for the buyer (optional)</label>
+            <input id="note" class="field-input" type="text" name="note" maxlength="300" placeholder="Short note">
+        </div>
+        <button type="submit" class="btn-red btn-sm">Save</button>
+    </form>
+    {% endif %}
+
+    {% for shipment in seller_order.shipments.all %}
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+        <h3 class="font-display font-bold text-kenya-black">Shipment tracking</h3>
+        <p class="text-sm text-gray-600">
+            {{ shipment.carrier|default:"Carrier pending" }}
+            · {{ shipment.tracking_number|default:"Tracking pending" }}
+        </p>
+        <ol class="space-y-2 text-sm">
+            {% for event in shipment.events.all %}
+            <li>
+                <strong>{{ event.get_status_display }}</strong>
+                · {{ event.created_at|date:"M j, Y H:i" }}
+                {% if event.note %}<br><span class="text-gray-600">{{ event.note }}</span>{% endif %}
+            </li>
+            {% endfor %}
+        </ol>
+    </section>
+    {% endfor %}
+
+    {% for case in seller_order.help_requests.all %}
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+        <div class="flex flex-wrap items-start justify-between gap-2">
+            <h3 class="font-display font-bold text-kenya-black">{{ case.get_case_type_display }}</h3>
+            <span class="text-xs font-semibold text-gray-600">{{ case.get_status_display }}</span>
+        </div>
+        <p class="text-sm">
+            <strong>{{ case.get_reason_display }}</strong><br>
+            {{ case.description }}
+        </p>
+        {% if case.desired_resolution %}
+        <p class="text-sm text-gray-600">Requested outcome: {{ case.desired_resolution }}</p>
+        {% endif %}
+        {% if case.response_due_at and not case.first_seller_response_at %}
+        <p class="text-xs font-semibold text-kenya-red">Respond by {{ case.response_due_at|date:"j M Y, H:i" }}</p>
+        {% endif %}
+
+        <div class="space-y-2">
+            {% for entry in case.messages.all %}
+            {% if not entry.is_internal %}
+            <div class="rounded-xl bg-brand-surface-muted p-3 text-sm">
+                <strong>{% if entry.author_id == case.buyer_id %}Buyer{% else %}Your shop{% endif %}</strong>
+                <p class="mt-1">{{ entry.body }}</p>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="text-sm">
+            <strong>Evidence:</strong>
+            {% for item in case.evidence.all %}
+            <a class="ml-2 text-kenya-green font-semibold" href="{% url 'orders:case_evidence_download' item.id %}">{{ item.original_name }}</a>
+            {% empty %}
+            <span class="text-gray-500">None</span>
+            {% endfor %}
+        </div>
+
+        {% if can_manage_support and case.status == 'open' or can_manage_support and case.status == 'seller_responded' or can_manage_support and case.status == 'escalated' %}
+        <form method="post" action="{% url 'orders:seller_help_respond' case.id %}" class="space-y-2">
+            {% csrf_token %}
+            <label class="field-label" for="case-response-{{ case.id }}">Response</label>
+            <textarea id="case-response-{{ case.id }}" name="response" required minlength="10" class="field-input" rows="3" placeholder="Explain how you will resolve this issue"></textarea>
+            <button class="btn-red btn-sm" type="submit">Respond to buyer</button>
+        </form>
+        <form method="post" enctype="multipart/form-data" action="{% url 'orders:case_evidence' case.id %}" class="space-y-2">
+            {% csrf_token %}
+            <label class="field-label" for="evidence-{{ case.id }}">Add evidence</label>
+            <input id="evidence-{{ case.id }}" class="field-input" type="file" name="evidence" accept="image/jpeg,image/png,image/webp,application/pdf" required>
+            <input class="field-input" name="description" maxlength="300" placeholder="Evidence description">
+            <button class="btn-outline btn-sm" type="submit">Upload evidence</button>
+        </form>
+        {% endif %}
+
+        {% if case.resolution_notes %}
+        <div class="rounded-xl bg-green-50 p-3 text-sm">
+            <strong>Ziuza resolution:</strong> {{ case.resolution_notes }}
+            {% if case.refund_recommendation %}
+            <p class="mt-1">Refund recommendation: KES {{ case.refund_recommendation }} (manual action required)</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}

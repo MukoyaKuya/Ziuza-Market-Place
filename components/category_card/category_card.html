@@ -1,0 +1,27 @@
+{# Usage: {% include 'components/category_card/category_card.html' with title="Home & Living" subtitle="..." url="..." icon="chair" tone="green" %} #}
+<a href="{{ url|default:'#' }}" class="market-card market-card-interactive group flex min-h-[5.5rem] items-center gap-3 p-3.5 sm:gap-3.5 sm:p-4">
+    <div class="w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shrink-0 overflow-hidden transition-transform group-hover:scale-105 shadow-2xs p-2 sm:p-2.5
+        {% if tone == 'red' or tone == 'peach' %}
+        bg-[#FAF0EC] text-[#C8102E]
+        {% else %}
+        bg-[#EEF4F0] text-[#008751]
+        {% endif %}">
+        {% if icon_url %}
+        <img src="{{ icon_url }}" alt="{{ title }}" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110" style="width: 100%; height: 100%; object-fit: contain;">
+        {% else %}
+        {% include 'components/icons/flat_icon.html' with name=icon|default:'grid' class='h-7 w-7' %}
+        {% endif %}
+    </div>
+    <div class="min-w-0 flex-1">
+        <h4 class="font-bold text-sm text-gray-900 group-hover:text-[#C8102E] transition-colors leading-tight">
+            {{ title }}
+        </h4>
+        {% if subtitle %}
+        <p class="text-xs text-gray-500 mt-0.5 leading-tight">
+            {{ subtitle }}
+        </p>
+        {% endif %}
+    </div>
+</a>
+
+

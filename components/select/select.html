@@ -1,0 +1,39 @@
+{# Usage: {% include 'components/select/select.html' with name="county" label="County" options=county_options %} #}
+{# options: iterable of {value, label} dicts, or pass option_html for custom options #}
+<div class="w-full {{ wrapper_classes }}">
+    {% if label %}
+    <label for="{{ id|default:name }}" class="field-label">
+        {{ label }}{% if required %}<span class="text-kenya-red" aria-hidden="true"> *</span>{% endif %}
+    </label>
+    {% endif %}
+    <select
+        id="{{ id|default:name }}"
+        name="{{ name }}"
+        class="field-select {% if error %}field-input-error{% endif %} {{ extra_classes }}"
+        {% if required %}required{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {% if error %}aria-describedby="{{ id|default:name }}-error" aria-invalid="true"{% elif hint %}aria-describedby="{{ id|default:name }}-hint"{% endif %}
+    >
+        {% if placeholder %}
+        <option value="" {% if not value %}selected{% endif %} disabled>{{ placeholder }}</option>
+        {% endif %}
+        {% for option in options %}
+        <option value="{{ option.value }}" {% if value == option.value %}selected{% endif %}>{{ option.label }}</option>
+        {% empty %}
+        {% if option_label_1 %}
+        <option value="{{ option_value_1|default:option_label_1 }}">{{ option_label_1 }}</option>
+        {% endif %}
+        {% if option_label_2 %}
+        <option value="{{ option_value_2|default:option_label_2 }}">{{ option_label_2 }}</option>
+        {% endif %}
+        {% if option_label_3 %}
+        <option value="{{ option_value_3|default:option_label_3 }}">{{ option_label_3 }}</option>
+        {% endif %}
+        {% endfor %}
+    </select>
+    {% if error %}
+    <p id="{{ id|default:name }}-error" class="field-error" role="alert">{{ error }}</p>
+    {% elif hint %}
+    <p id="{{ id|default:name }}-hint" class="field-hint">{{ hint }}</p>
+    {% endif %}
+</div>

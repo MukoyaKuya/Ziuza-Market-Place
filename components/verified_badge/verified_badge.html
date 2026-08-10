@@ -1,0 +1,7 @@
+<span data-verification-badge class="inline-flex shrink-0 items-center gap-1.5 {% if label %}rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-bold text-emerald-800{% endif %}" title="Verified shop" aria-label="Verified shop">
+    <svg class="{% if label %}h-3.5 w-3.5{% else %}h-4 w-4{% endif %}" viewBox="0 0 20 20" aria-hidden="true">
+        <circle cx="10" cy="10" r="9" fill="#008751"/>
+        <path d="m6.2 10.2 2.35 2.35 5.25-5.25" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    {% if label %}<span>{{ label }}</span>{% endif %}
+</span>

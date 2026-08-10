@@ -1,0 +1,8 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+{% if original and original.status == 'pending' %}
+<li><a href="{% url 'admin:shops_verificationapplication_review' original.pk %}" style="background:#008751;color:#fff;font-weight:700">Review application</a></li>
+{% endif %}
+{{ block.super }}
+{% endblock %}

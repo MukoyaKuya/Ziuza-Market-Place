@@ -1,0 +1,45 @@
+{% load static %}
+<footer class="bg-kenya-black text-gray-300 mt-16 border-t-4 border-kenya-green">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <h3 class="font-display font-extrabold text-2xl text-white tracking-tight">ZIUZA<span class="text-kenya-red">.</span></h3>
+                <p class="mt-3 text-sm text-gray-400">
+                    Connecting Kenyan creators, artisans, and makers with buyers across Kenya and the world.
+                </p>
+                <div class="mt-4 flex space-x-2">
+                    <span class="inline-block px-2 py-1 bg-kenya-green/20 text-kenya-green text-xs font-semibold rounded">Made in Kenya</span>
+                </div>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Marketplace</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'listings:category_detail' 'home-living' %}" class="hover:text-white transition-colors">Home & Living</a></li>
+                    <li><a href="{% url 'listings:category_detail' 'fashion' %}" class="hover:text-white transition-colors">Fashion & Kikoys</a></li>
+                    <li><a href="{% url 'listings:category_detail' 'art-collectibles' %}" class="hover:text-white transition-colors">Art & Collectibles</a></li>
+                    <li><a href="{% url 'listings:category_detail' 'jewelry' %}" class="hover:text-white transition-colors">Jewelry & Beadwork</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Sellers</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'shops:sell_entry' %}" class="hover:text-white transition-colors">Open a Shop</a></li>
+                    <li><a href="{% url 'shops:dashboard' %}" class="hover:text-white transition-colors">Seller Dashboard</a></li>
+                    <li><a href="{% url 'shops:dashboard_shop' %}" class="hover:text-white transition-colors">Shop settings</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="text-white font-semibold text-sm tracking-wider uppercase mb-4">Support & Trust</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="{% url 'cart:page' %}" class="hover:text-white transition-colors">Cart & checkout</a></li>
+                    <li><a href="{% url 'orders:buyer_list' %}" class="hover:text-white transition-colors">Track orders</a></li>
+                    <li><a href="{% url 'health:live' %}" class="hover:text-white transition-colors">System Health Status</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="mt-12 pt-8 border-t border-gray-800 text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center">
+            <p>&copy; {% now "Y" %} Ziuza Marketplace. All rights reserved.</p>
+            <p class="mt-2 sm:mt-0">Built with Django, HTMX, Alpine.js & Tailwind CSS</p>
+        </div>
+    </div>
+</footer>

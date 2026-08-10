@@ -1,0 +1,12 @@
+{# Usage: {% include 'components/error_state/error_state.html' with title="Something went wrong" message="Please try again." %} #}
+<div class="alert-{{ tone|default:'error' }} {{ extra_classes }}" role="alert">
+    <p class="font-semibold">{{ title|default:'Something went wrong' }}</p>
+    {% if message %}
+    <p class="mt-1 opacity-90">{{ message }}</p>
+    {% endif %}
+    {% if action_label %}
+    <div class="mt-3">
+        <a href="{{ action_url|default:'#' }}" class="font-semibold underline underline-offset-2">{{ action_label }}</a>
+    </div>
+    {% endif %}
+</div>

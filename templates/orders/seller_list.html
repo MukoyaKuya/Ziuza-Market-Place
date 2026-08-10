@@ -1,0 +1,41 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Orders · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-2xl font-display font-bold">Orders</h2>
+        <p class="mt-1 text-sm text-gray-600">Fulfill paid orders and update tracking.</p>
+    </div>
+
+    {% if seller_orders %}
+    <ul class="space-y-3">
+        {% for so in seller_orders %}
+        <li class="bg-white rounded-2xl border border-brand-surface-border p-4 flex flex-wrap justify-between gap-3 items-center shadow-ziuza-sm">
+            <div class="min-w-0">
+                <a href="{% url 'orders:seller_detail' so.id %}" class="font-semibold hover:text-kenya-red">{{ so.order.public_number }}</a>
+                <p class="text-sm text-gray-500 mt-1">
+                    {{ so.created_at|date:"M j, Y" }}
+                    ·
+                    <span class="{% if so.order.payment_status == 'paid' %}text-kenya-green{% else %}text-gray-500{% endif %} font-medium">
+                        {{ so.order.get_payment_status_display }}
+                    </span>
+                    · {{ so.get_fulfillment_status_display }}
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <p class="font-display font-bold">KES {{ so.subtotal }}</p>
+                <a href="{% url 'orders:seller_detail' so.id %}" class="btn-secondary btn-sm">Manage</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    {% url 'shops:public_shop' shop.slug as public_shop_url %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="No orders yet" message="When buyers purchase from your shop, fulfillment workflows will appear here." action_label="View public shop" action_url=public_shop_url %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,30 @@
+{% extends "admin/change_list.html" %}
+
+{% block content %}
+<div style="margin:0 16px 20px">
+    <div style="margin-bottom:20px">
+        <h1 style="font-size:24px;font-weight:700">Shop verification</h1>
+        <p style="margin-top:6px;color:#64748b">Review seller identity requests. A public verified tick appears only after an administrator approves an application.</p>
+    </div>
+    <section style="border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:18px">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+            <a href="?status__exact=pending" style="border-radius:12px;background:#fff8db;padding:16px;color:#713f12;text-decoration:none">
+                <span style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Pending review</span>
+                <strong style="display:block;margin-top:4px;font-size:28px">{{ pending_verification_count }}</strong>
+            </a>
+            <a href="?status__exact=approved" style="border-radius:12px;background:#ecfdf3;padding:16px;color:#166534;text-decoration:none">
+                <span style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Approved</span>
+                <strong style="display:block;margin-top:4px;font-size:28px">{{ approved_verification_count }}</strong>
+            </a>
+            <a href="?status__exact=rejected" style="border-radius:12px;background:#fff1f0;padding:16px;color:#991b1b;text-decoration:none">
+                <span style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em">Rejected</span>
+                <strong style="display:block;margin-top:4px;font-size:28px">{{ rejected_verification_count }}</strong>
+            </a>
+            {% if next_pending_application %}
+            <a href="{% url 'admin:shops_verificationapplication_review' next_pending_application.pk %}" style="display:flex;align-items:center;justify-content:center;border-radius:12px;background:#008751;padding:16px;font-weight:700;color:#fff;text-decoration:none">Review next request →</a>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{{ block.super }}
+{% endblock %}

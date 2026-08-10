@@ -1,0 +1,19 @@
+{# Usage: {% include 'components/collection_card/collection_card.html' with title="Made in Kenya" subtitle="Curated crafts" count="24" %} #}
+<a href="{{ url|default:'#' }}" class="market-card market-card-interactive group block {{ extra_classes }}">
+    <div class="aspect-[16/10] bg-brand-surface-muted overflow-hidden">
+        {% if image_url %}
+        <img src="{{ image_url }}" alt="" class="h-full w-full object-cover group-hover:scale-[1.02] transition-transform duration-300" loading="lazy">
+        {% else %}
+        <div class="h-full w-full maasai-pattern-border opacity-80"></div>
+        {% endif %}
+    </div>
+    <div class="p-4">
+        <h3 class="font-display font-bold text-kenya-black group-hover:text-kenya-red transition-colors">{{ title }}</h3>
+        {% if subtitle %}
+        <p class="mt-1 text-sm text-gray-600">{{ subtitle }}</p>
+        {% endif %}
+        {% if count %}
+        <p class="mt-2 text-xs font-semibold uppercase tracking-wide text-kenya-green">{{ count }} listings</p>
+        {% endif %}
+    </div>
+</a>

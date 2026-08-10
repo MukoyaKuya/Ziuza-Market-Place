@@ -1,0 +1,229 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-0 space-y-6">
+
+    {% if 'hero' in show_section_types %}
+    {% with slide=hero_slides.0 %}
+    <div class="grid grid-cols-1 lg:grid-cols-[minmax(0,3fr)_minmax(260px,1fr)] gap-5 lg:gap-6 items-stretch">
+        <!-- Main Hero Banner (Left Card) -->
+        <div class="relative overflow-hidden bg-[#111111] text-white rounded-2xl border border-black/10 shadow-sm flex flex-col md:flex-row min-h-[280px] lg:h-[22rem]">
+            <!-- Maasai Pattern Border Motif (Left Edge) -->
+            <div class="w-5 flex-shrink-0 maasai-pattern-border z-20 h-auto hidden sm:block"></div>
+
+            <!-- Left Content Area -->
+            <div class="p-6 sm:p-7 lg:p-8 flex-1 flex flex-col justify-between z-20 relative max-w-[33rem]">
+                <div class="space-y-2">
+                    <h1 class="font-display text-3xl sm:text-4xl font-normal tracking-tight leading-[1.08]">
+                        {% if slide and slide.title != 'Made in Kenya. Loved Everywhere.' %}
+                        {{ slide.title }}
+                        {% else %}
+                        Made in <span class="text-[#E31B23] font-extrabold">Kenya</span>.<br>
+                        <span class="font-serif italic font-normal text-white">Loved</span> <span class="text-[#008751] font-extrabold">Everywhere.</span>
+                        {% endif %}
+                    </h1>
+                    <div class="h-1 w-10 bg-[#E31B23] rounded-full mt-2"></div>
+                </div>
+
+                <p class="text-gray-200 text-sm sm:text-base leading-relaxed my-3 font-normal max-w-[21rem]">
+                    {% if slide and slide.subtitle %}{{ slide.subtitle }}{% else %}Discover unique, handmade, and vintage treasures from talented Kenyan creators.{% endif %}
+                </p>
+
+                <div class="pt-1 flex flex-wrap items-center gap-3">
+                    <a href="{% if slide and slide.primary_cta_url %}{{ slide.primary_cta_url }}{% else %}{% url 'listings:category_index' %}{% endif %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#C8102E] hover:bg-red-700 text-white text-sm font-bold transition-all shadow-md">
+                        <span>{% if slide and slide.primary_cta_label %}{{ slide.primary_cta_label }}{% else %}Shop Now{% endif %}</span>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    <a href="{% if slide and slide.secondary_cta_url %}{{ slide.secondary_cta_url }}{% else %}{% url 'listings:category_index' %}{% endif %}" class="inline-flex items-center gap-2 px-1 py-2 text-white/90 hover:text-white text-sm font-semibold transition-colors group/link">
+                        <span>{% if slide and slide.secondary_cta_label %}{{ slide.secondary_cta_label }}{% else %}Shop Kenyan Makers{% endif %}</span>
+                        <span aria-hidden="true" class="transition-transform group-hover/link:translate-x-0.5">→</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Right Hero Image -->
+            <div class="relative md:w-[54%] flex items-center justify-end overflow-hidden min-h-[200px] md:min-h-full">
+                {% if slide and slide.desktop_image %}
+                <img src="{{ slide.desktop_image.url }}" alt="{{ slide.title }}" class="w-full h-full object-cover object-center" loading="eager">
+                {% else %}
+                <img src="{% static 'images/hero_kenyan_basket.png' %}" alt="Made in Kenya" class="w-full h-full object-cover object-center" loading="eager">
+                {% endif %}
+                <div class="absolute inset-0 bg-gradient-to-r from-[#111111] via-[#111111]/50 to-transparent"></div>
+
+            </div>
+        </div>
+
+        <!-- Ziuza Picks Card (Right Card) -->
+        <div class="relative overflow-hidden bg-[#00482B] text-white rounded-2xl border border-[#003c24] shadow-sm flex flex-col justify-between min-h-[190px] sm:min-h-[220px] lg:h-[22rem] p-6 group">
+            <div class="space-y-2 z-20 max-w-[190px]">
+                <h2 class="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-white">Ziuza Picks</h2>
+                <div class="h-0.5 w-8 bg-[#C8102E] rounded-full"></div>
+                <p class="text-white/90 text-base leading-relaxed pt-2">Handpicked collections just for you.</p>
+                <div class="pt-3">
+                    {% if collections.0 %}
+                    <a href="{% url 'content:collection_detail' collections.0.slug %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#111111] text-sm font-bold hover:bg-gray-100 transition-all shadow-sm">
+                        <span>Explore Picks</span>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    {% else %}
+                    <a href="{% url 'listings:category_index' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#111111] text-sm font-bold hover:bg-gray-100 transition-all shadow-sm">
+                        <span>Explore Picks</span>
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Craft Product Image Asset (Seamlessly Blended) -->
+            <div class="absolute right-0 top-0 bottom-0 w-1/2 sm:w-7/12 pointer-events-none z-10 overflow-hidden">
+                <img src="{% static 'images/ziuza_picks_card_art.png' %}" alt="Ziuza Picks" class="w-full h-full object-cover object-center filter drop-shadow-md transform group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute inset-0 bg-gradient-to-r from-[#00482B] via-[#00482B]/40 to-transparent"></div>
+            </div>
+        </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    <!-- Trust Badges Row -->
+    <div class="bg-[#F5F0E6] border border-[#E3D9C9] rounded-2xl p-3 sm:p-4 shadow-2xs my-5">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[#E3D9C9]">
+            {% static 'images/category_icons/Secure_Payments.png' as tb1_icon %}
+            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
+                {% include 'components/trust_badge/trust_badge.html' with title="Secure Payments" subtitle="Pay safely with M-Pesa, card, or other methods" icon_url=tb1_icon %}
+            </div>
+
+            {% static 'images/category_icons/Nationwide_Delivery.png' as tb2_icon %}
+            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
+                {% include 'components/trust_badge/trust_badge.html' with title="Nationwide Delivery" subtitle="Fast and reliable delivery across Kenya" icon_url=tb2_icon %}
+            </div>
+
+            {% static 'images/category_icons/Support_local.png' as tb3_icon %}
+            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
+                {% include 'components/trust_badge/trust_badge.html' with title="Support Local Makers" subtitle="Empowering communities and creativity" icon_url=tb3_icon %}
+            </div>
+
+            {% static 'images/category_icons/Quality_Guranteed.png' as tb4_icon %}
+            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
+                {% include 'components/trust_badge/trust_badge.html' with title="Quality Guarantee" subtitle="Handpicked products you can trust" icon_url=tb4_icon %}
+            </div>
+
+            {% static 'images/category_icons/Buyer_Protection.png' as tb5_icon %}
+            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
+                {% include 'components/trust_badge/trust_badge.html' with title="Buyer Protection" subtitle="Shop with confidence on Ziuza" icon_url=tb5_icon %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Shop by Category Grid Section -->
+    {% if 'categories' in show_section_types %}
+    <section class="space-y-5 pt-6 sm:pt-8">
+        <div class="flex items-center justify-between gap-4">
+            <h2 class="text-xl sm:text-2xl font-display font-bold text-gray-900">Shop by category</h2>
+            <a href="{% url 'listings:category_index' %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-[#008751] hover:text-emerald-800 transition-colors">
+                <span>View all categories</span>
+                <span class="w-6 h-6 rounded-full bg-[#E8F4EC] flex items-center justify-center text-[#008751]">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5 lg:gap-6">
+            {% url 'listings:category_detail' 'home-living' as cat1_url %}
+            {% static 'images/category_icons/homeliving.png' as cat1_icon %}
+            {% include 'components/category_card/category_card.html' with title="Home & Living" subtitle="Decor, kitchen, furniture & more" url=cat1_url icon_url=cat1_icon tone="green" %}
+
+            {% url 'listings:category_detail' 'fashion' as cat2_url %}
+            {% static 'images/category_icons/fashion.png' as cat2_icon %}
+            {% include 'components/category_card/category_card.html' with title="Fashion" subtitle="Clothing, bags, shoes & accessories" url=cat2_url icon_url=cat2_icon tone="red" %}
+
+            {% url 'listings:category_detail' 'art-collectibles' as cat3_url %}
+            {% static 'images/category_icons/art collectables.png' as cat3_icon %}
+            {% include 'components/category_card/category_card.html' with title="Art & Collectibles" subtitle="Paintings, prints, sculptures & more" url=cat3_url icon_url=cat3_icon tone="green" %}
+
+            {% url 'listings:category_detail' 'jewelry' as cat4_url %}
+            {% static 'images/category_icons/jewelry.png' as cat4_icon %}
+            {% include 'components/category_card/category_card.html' with title="Jewelry" subtitle="Beads, metals, handmade jewelry" url=cat4_url icon_url=cat4_icon tone="red" %}
+
+            {% url 'listings:category_detail' 'craft-supplies' as cat5_url %}
+            {% static 'images/category_icons/craft supplies.png' as cat5_icon %}
+            {% include 'components/category_card/category_card.html' with title="Craft Supplies" subtitle="Tools, materials, essentials" url=cat5_url icon_url=cat5_icon tone="green" %}
+
+            {% url 'listings:category_detail' 'vintage' as cat6_url %}
+            {% static 'images/category_icons/vintage.png' as cat6_icon %}
+            {% include 'components/category_card/category_card.html' with title="Vintage" subtitle="Retro, antique, classic finds" url=cat6_url icon_url=cat6_icon tone="red" %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Featured Listings Section -->
+    {% if personalized_listings %}<section class="space-y-4 pt-2"><div class="flex justify-between gap-3"><div><p class="text-xs font-semibold uppercase text-emerald-800">Picked for you</p><h2 class="text-xl sm:text-2xl font-display font-bold">Based on what you save and follow</h2></div><a class="text-sm font-semibold text-kenya-green" href="{% url 'favorites:list' %}">Manage discovery</a></div><div class="grid grid-cols-2 lg:grid-cols-4 gap-6">{% for listing in personalized_listings %}{% url 'listings:detail' listing.slug as listing_url %}{% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}{% endwith %}{% endfor %}</div></section>{% endif %}
+    {% if recent_listings %}<section class="space-y-4 pt-2"><h2 class="text-xl sm:text-2xl font-display font-bold">Recently viewed</h2><div class="grid grid-cols-2 lg:grid-cols-4 gap-6">{% for listing in recent_listings %}{% url 'listings:detail' listing.slug as listing_url %}{% with cover=listing.images.first %}{% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}{% endwith %}{% endfor %}</div></section>{% endif %}
+
+    <!-- Featured Listings Section -->
+    {% if 'featured_listings' in show_section_types %}
+    <section class="space-y-4 pt-2">
+        <div class="flex items-center justify-between gap-4">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">Fresh discovery</p>
+                <h2 class="mt-1 text-xl sm:text-2xl font-display font-bold text-gray-900">
+                    {% if discovery_is_mixed %}Fresh finds from Kenyan makers{% elif featured_category %}Explore {{ featured_category.name }}{% else %}Featured listings{% endif %}
+                </h2>
+                {% if discovery_is_mixed and featured_category %}<p class="mt-1 text-sm text-gray-500">Starting with {{ featured_category.name }}, plus more active shops.</p>{% endif %}
+            </div>
+            {% if featured_category %}
+            <a href="{% url 'listings:category_detail' featured_category.slug %}" class="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-800 hover:text-emerald-900 transition-colors whitespace-nowrap">
+                <span>{% if discovery_is_mixed %}More {{ featured_category.name }}{% else %}View all{% endif %}</span>
+                <span class="w-7 h-7 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-800">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+                </span>
+            </a>
+            {% endif %}
+        </div>
+        {% if featured_listings %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% for listing in featured_listings %}
+            {% url 'listings:detail' listing.slug as listing_url %}
+            {% with cover=listing.images.first %}
+            {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}
+            {% endwith %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="bg-white rounded-2xl border border-brand-surface-border">
+            {% include 'components/empty_state/empty_state.html' with title="No featured listings yet" message="Featured picks appear when sellers publish and admins feature them." action_label="Browse categories" action_url="/categories/" %}
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+
+    <!-- Collections Section -->
+    {% if 'collections' in show_section_types and collections %}
+    <section class="space-y-4 pt-2">
+        <h2 class="text-xl sm:text-2xl font-display font-bold text-gray-900">Collections</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for collection in collections %}
+            {% url 'content:collection_detail' collection.slug as col_url %}
+            {% include 'components/collection_card/collection_card.html' with title=collection.name subtitle=collection.description count=collection.listings.count url=col_url %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Seller Spotlight Section -->
+    {% if 'featured_shops' in show_section_types and featured_shops %}
+    <section class="space-y-5 pt-4 sm:pt-8">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+            <div><p class="text-xs font-bold uppercase tracking-[0.18em] text-kenya-green">Meet the makers</p><h2 class="mt-1 text-2xl sm:text-3xl font-display font-bold text-gray-950">Seller spotlight</h2><p class="mt-2 max-w-2xl text-sm text-gray-600">Discover verified Kenyan studios, the stories behind their work, and pieces made with care.</p></div>
+            <div class="hidden items-center gap-2 text-xs font-semibold text-gray-500 sm:flex">{% include 'components/verified_badge/verified_badge.html' %} Verified · Active · Ready to shop</div>
+        </div>
+        {% if featured_shops|length == 1 %}
+        {% include 'components/shop_card/shop_card.html' with shop=featured_shops.0 wide=True %}
+        {% else %}
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {% for shop in featured_shops %}{% include 'components/shop_card/shop_card.html' with shop=shop %}{% endfor %}
+        </div>
+        {% endif %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

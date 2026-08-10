@@ -1,0 +1,29 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Messages | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-xl font-display font-bold">Messages</h2>
+        <p class="mt-1 text-sm text-gray-600">Conversations with sellers about listings and orders.</p>
+    </div>
+    {% if conversations %}
+    <ul class="space-y-3">
+        {% for c in conversations %}
+        <li>
+            <a href="{% url 'messaging:detail' c.id %}" class="block bg-white rounded-2xl border border-brand-surface-border p-4 hover:border-kenya-green shadow-ziuza-sm transition-colors">
+                <p class="font-semibold">{{ c.shop.name }}{% if c.listing %} · {{ c.listing.title }}{% endif %}</p>
+                <p class="text-sm text-gray-500 mt-1">{{ c.subject }} · {{ c.updated_at|date:"M j, Y" }}</p>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    {% url 'listings:category_index' as browse_url %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="No messages" message="Contact a shop from a listing page to start a conversation." action_label="Browse listings" action_url=browse_url %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Messages · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-2xl font-display font-bold text-kenya-black">Messages</h2>
+        <p class="mt-1 text-sm text-gray-600">Buyer conversations about listings and orders.</p>
+    </div>
+
+    {% if conversations %}
+    <ul class="space-y-3">
+        {% for c in conversations %}
+        <li>
+            <a href="{% url 'messaging:detail' c.id %}" class="block bg-white rounded-2xl border border-brand-surface-border p-4 shadow-ziuza-sm hover:border-kenya-green transition-colors">
+                <p class="font-semibold text-kenya-black">
+                    {{ c.buyer.display_name|default:c.buyer.email }}
+                    {% if c.listing %}<span class="text-gray-500 font-normal"> · {{ c.listing.title }}</span>{% endif %}
+                </p>
+                <p class="text-sm text-gray-500 mt-1">{{ c.updated_at|date:"M j, Y H:i" }}</p>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="Inbox empty" message="Buyer conversations will appear here when someone messages your shop." %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

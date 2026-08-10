@@ -1,0 +1,83 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Bulk tools · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+        <h2 class="text-2xl font-display font-bold text-kenya-black">Bulk catalogue tools</h2>
+        <p class="mt-1 text-sm text-gray-600">Update catalogue details, prices and base inventory with one CSV file.</p>
+    </div>
+    <a href="{% url 'listings:seller_bulk_export' %}" class="btn-secondary shrink-0">Download current catalogue</a>
+</div>
+
+{% if current_operation and current_operation.summary.errors %}
+<div class="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5">
+    <h3 class="font-bold text-red-900">Import errors</h3>
+    <p class="mt-1 text-sm text-red-800">No rows were changed.</p>
+    <ul class="mt-3 space-y-2 text-sm text-red-900">
+        {% for error in current_operation.summary.errors %}
+        <li>{% if error.row %}<strong>Row {{ error.row }}:</strong> {% endif %}{{ error.message }}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<div class="grid gap-6 xl:grid-cols-5">
+    <section class="xl:col-span-3 rounded-2xl border border-brand-surface-border bg-white p-6 shadow-ziuza-sm">
+        <h3 class="text-lg font-display font-bold text-kenya-black">Upload catalogue CSV</h3>
+        <p class="mt-2 text-sm text-gray-600">Start with the download above, edit it in your spreadsheet app, then save it as a UTF-8 CSV. Up to 500 rows and 2 MB are accepted.</p>
+        <form method="post" enctype="multipart/form-data" class="mt-5 space-y-5">
+            {% csrf_token %}
+            <div>
+                <label for="catalogue_file" class="block text-sm font-semibold text-gray-800">CSV file</label>
+                <input id="catalogue_file" name="catalogue_file" type="file" accept=".csv,text/csv" required class="mt-2 block w-full rounded-ziuza border border-brand-surface-border bg-white px-3 py-2 text-sm">
+            </div>
+            <label class="flex items-start gap-3 rounded-xl bg-brand-surface-muted p-4">
+                <input type="checkbox" name="dry_run" checked class="mt-1 rounded border-gray-300 text-kenya-green focus:ring-kenya-green">
+                <span>
+                    <span class="block text-sm font-semibold text-gray-900">Validate only first</span>
+                    <span class="block text-xs text-gray-600">Recommended. Checks every row without changing your catalogue.</span>
+                </span>
+            </label>
+            <button type="submit" class="btn-primary">Process CSV</button>
+        </form>
+    </section>
+
+    <aside class="xl:col-span-2 rounded-2xl border border-brand-surface-border bg-brand-surface-muted p-6">
+        <h3 class="font-display font-bold text-kenya-black">How matching works</h3>
+        <ul class="mt-3 space-y-3 text-sm text-gray-700">
+            <li>Keep <strong>slug</strong> unchanged to update an existing listing.</li>
+            <li>Leave slug blank to create a new draft listing. A unique SKU can also match one of your listings.</li>
+            <li>Imports never publish, archive or change another seller's listing.</li>
+            <li>If any row fails validation, the entire import is rejected.</li>
+        </ul>
+        <p class="mt-5 text-xs text-gray-500">Columns: slug, title, category_slug, product_type, base_price, currency, sku, quantity_available, low_stock_threshold, short_description, description.</p>
+    </aside>
+</div>
+
+<section class="mt-8">
+    <h3 class="mb-3 text-lg font-display font-bold text-kenya-black">Recent activity</h3>
+    {% if operations %}
+    <div class="overflow-x-auto rounded-2xl border border-brand-surface-border bg-white shadow-ziuza-sm">
+        <table class="min-w-full text-sm">
+            <thead class="bg-brand-surface-muted text-left text-xs uppercase tracking-wide text-gray-500">
+                <tr><th class="px-4 py-3">Activity</th><th class="px-4 py-3">Result</th><th class="px-4 py-3">Rows</th><th class="px-4 py-3">Date</th></tr>
+            </thead>
+            <tbody class="divide-y divide-brand-surface-border">
+                {% for operation in operations %}
+                <tr>
+                    <td class="px-4 py-3 font-semibold">{{ operation.get_operation_display }}{% if operation.dry_run %} · validation only{% endif %}</td>
+                    <td class="px-4 py-3">{{ operation.get_status_display }}{% if operation.error_count %} · {{ operation.error_count }} error{{ operation.error_count|pluralize }}{% endif %}</td>
+                    <td class="px-4 py-3">{{ operation.total_rows }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ operation.created_at|date:"j M Y, H:i" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="rounded-2xl border border-brand-surface-border bg-white p-6 text-sm text-gray-600">No bulk activity yet.</div>
+    {% endif %}
+</section>
+{% endblock %}

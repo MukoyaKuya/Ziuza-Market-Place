@@ -1,0 +1,31 @@
+{# Usage: {% include 'components/pagination/pagination.html' with page=2 total_pages=8 base_url="/search/?q=kiondo" %} #}
+{% with current=page|default:1 total=total_pages|default:1 %}
+{% if total > 1 %}
+<nav aria-label="{{ aria_label|default:'Pagination' }}" class="flex items-center justify-between gap-4 {{ extra_classes }}">
+    <p class="text-sm text-gray-500">
+        Page <span class="font-semibold text-kenya-black">{{ current }}</span> of <span class="font-semibold text-kenya-black">{{ total }}</span>
+    </p>
+    <div class="flex items-center gap-2">
+        {% if current > 1 %}
+        <a href="{{ prev_url|default:base_url }}{% if not prev_url %}&page={{ current|add:'-1' }}{% endif %}"
+           class="btn-secondary btn-sm"
+           {% if hx_get %}hx-get="{{ hx_get }}" hx-target="{{ hx_target|default:'#results' }}" hx-swap="{{ hx_swap|default:'innerHTML' }}" hx-push-url="true"{% endif %}>
+            Previous
+        </a>
+        {% else %}
+        <span class="btn-secondary btn-sm opacity-50 cursor-not-allowed" aria-disabled="true">Previous</span>
+        {% endif %}
+
+        {% if current < total %}
+        <a href="{{ next_url|default:base_url }}{% if not next_url %}&page={{ current|add:'1' }}{% endif %}"
+           class="btn-secondary btn-sm"
+           {% if hx_get %}hx-get="{{ hx_get }}" hx-target="{{ hx_target|default:'#results' }}" hx-swap="{{ hx_swap|default:'innerHTML' }}" hx-push-url="true"{% endif %}>
+            Next
+        </a>
+        {% else %}
+        <span class="btn-secondary btn-sm opacity-50 cursor-not-allowed" aria-disabled="true">Next</span>
+        {% endif %}
+    </div>
+</nav>
+{% endif %}
+{% endwith %}

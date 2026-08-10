@@ -1,0 +1,139 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}{{ listing.title }} · Seller | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">{{ listing.get_status_display }}</p>
+            <h2 class="text-2xl font-display font-bold text-kenya-black">{{ listing.title }}</h2>
+            <p class="mt-1 text-sm text-gray-600">{{ listing.currency }} {{ listing.base_price }} · {{ listing.category.name }}</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'listings:seller_edit' listing.id %}" class="btn-secondary btn-sm">Edit</a>
+            {% if listing.status == 'active' %}
+            <a href="{% url 'listings:detail' listing.slug %}" class="btn-ghost btn-sm" target="_blank" rel="noopener">View public</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+        {% if listing.status != 'active' and listing.status != 'archived' and listing.status != 'rejected' %}
+        <form method="post" action="{% url 'listings:seller_publish' listing.id %}">{% csrf_token %}<button class="btn-red btn-sm" type="submit">Publish</button></form>
+        {% endif %}
+        {% if listing.status == 'active' or listing.status == 'sold_out' %}
+        <form method="post" action="{% url 'listings:seller_pause' listing.id %}">{% csrf_token %}<button class="btn-secondary btn-sm" type="submit">Pause</button></form>
+        {% endif %}
+        {% if listing.status != 'archived' %}
+        <form method="post" action="{% url 'listings:seller_archive' listing.id %}" onsubmit="return confirm('Archive this listing?');">{% csrf_token %}<button class="btn-ghost btn-sm text-kenya-red" type="submit">Archive</button></form>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {% if listing.product_type == 'digital' %}<section class="bg-white rounded-2xl border border-brand-surface-border p-5 space-y-4"><h3 class="font-display font-bold">Private digital files</h3>{% for asset in listing.digital_assets.all %}<p class="text-sm">{{ asset.title }}{% if asset.version %} · {{ asset.version }}{% endif %}</p>{% empty %}<p class="text-sm text-gray-500">Upload at least one file before publishing.</p>{% endfor %}<form method="post" enctype="multipart/form-data" action="{% url 'listings:seller_add_digital_asset' listing.id %}" class="space-y-3">{% csrf_token %}{% for field in digital_asset_form %}<div><label class="field-label">{{ field.label }}</label>{{ field }}</div>{% endfor %}<button class="btn-secondary btn-sm">Add private file</button></form></section>{% endif %}
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold">Inventory</h3>
+            <p class="text-sm text-gray-600">Available to sell: <strong>{% if base_inventory %}{{ base_inventory.available_to_sell }}{% else %}0{% endif %}</strong></p>
+            <form method="post" action="{% url 'listings:seller_set_inventory' listing.id %}" class="space-y-3">
+                {% csrf_token %}
+                {% for field in inventory_form %}
+                <div>
+                    <label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-secondary btn-sm">Update stock</button>
+            </form>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold">Images</h3>
+            {% if listing.images.all %}
+            <ul class="grid grid-cols-3 gap-2">
+                {% for image in listing.images.all %}
+                <li class="aspect-square rounded-ziuza overflow-hidden bg-brand-surface-muted">
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text }}" class="h-full w-full object-cover" loading="lazy">
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500">No images yet.</p>
+            {% endif %}
+            <form method="post" action="{% url 'listings:seller_add_image' listing.id %}" enctype="multipart/form-data" class="space-y-3">
+                {% csrf_token %}
+                {% for field in image_form %}
+                <div>
+                    <label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-secondary btn-sm">Add image</button>
+            </form>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold">Variants</h3>
+            {% if listing.variants.all %}
+            <ul class="text-sm space-y-1">
+                {% for variant in listing.variants.all %}
+                <li>{{ variant.name }}{% if variant.option_summary %} · {% for key, value in variant.option_summary.items %}{{ key }}: {{ value }}{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}{% if variant.price_override %} · {{ listing.currency }} {{ variant.price_override }}{% endif %}</li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500">No variants. Optional for size/color/etc.</p>
+            {% endif %}
+            <form method="post" action="{% url 'listings:seller_add_variant' listing.id %}" class="space-y-3">
+                {% csrf_token %}
+                {% for field in variant_form %}
+                <div>
+                    <label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-secondary btn-sm">Add variant</button>
+            </form>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold">Option groups</h3>
+            {% for option in listing.option_groups.all %}<p class="text-sm"><strong>{{ option.name }}:</strong> {% for value in option.values.all %}{{ value.value }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% empty %}<p class="text-sm text-gray-500">Add size, color, material, or another selectable option.</p>{% endfor %}
+            <form method="post" action="{% url 'listings:seller_add_option' listing.id %}" class="space-y-3">{% csrf_token %}{% for field in option_form %}<div><label class="field-label">{{ field.label }}</label>{{ field }}</div>{% endfor %}<button class="btn-secondary btn-sm">Add option group</button></form>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold">Personalization fields</h3>
+            {% for field in listing.personalization_fields.all %}<p class="text-sm"><strong>{{ field.label }}</strong> · {{ field.get_field_type_display }}{% if field.is_required %} · Required{% endif %}</p>{% empty %}<p class="text-sm text-gray-500">Collect names, messages, colors, or other custom choices.</p>{% endfor %}
+            <form method="post" action="{% url 'listings:seller_add_personalization' listing.id %}" class="space-y-3">{% csrf_token %}{% for field in personalization_form %}<div><label class="field-label">{{ field.label }}</label>{{ field }}</div>{% endfor %}<button class="btn-secondary btn-sm">Add personalization field</button></form>
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold">Attributes</h3>
+            {% if listing.attributes.all %}
+            <ul class="text-sm space-y-1">
+                {% for attr in listing.attributes.all %}
+                <li><span class="font-semibold">{{ attr.name }}:</span> {{ attr.value }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <form method="post" action="{% url 'listings:seller_add_attribute' listing.id %}" class="space-y-3">
+                {% csrf_token %}
+                {% for field in attribute_form %}
+                <div>
+                    <label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn-secondary btn-sm">Save attribute</button>
+            </form>
+        </section>
+    </div>
+
+    {% if listing.description %}
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+        <h3 class="font-display font-bold mb-2">Description</h3>
+        <p class="text-sm text-gray-700 whitespace-pre-line">{{ listing.description }}</p>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

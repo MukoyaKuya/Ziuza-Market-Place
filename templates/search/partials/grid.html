@@ -1,0 +1,25 @@
+{% if listings_page %}
+<div class="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600">
+    <p>{{ listings_page.paginator.count }} result{{ listings_page.paginator.count|pluralize }}</p>
+    {% if used_typo_fallback %}<p class="rounded-full bg-amber-50 px-3 py-1 font-semibold text-amber-900">Showing close matches for “{{ query }}”</p>{% endif %}
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for listing in listings_page %}
+    {% url 'listings:detail' listing.slug as listing_url %}
+    {% with cover=listing.images.first %}
+    {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}
+    {% endwith %}
+    {% endfor %}
+</div>
+{% if listings_page.paginator.num_pages > 1 %}
+<div class="mt-6 flex justify-between text-sm">
+    {% if listings_page.has_previous %}<a class="btn-secondary btn-sm" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ listings_page.previous_page_number }}">Previous</a>{% else %}<span></span>{% endif %}
+    <span class="text-gray-500">Page {{ listings_page.number }} of {{ listings_page.paginator.num_pages }}</span>
+    {% if listings_page.has_next %}<a class="btn-secondary btn-sm" href="?{% if filter_query %}{{ filter_query }}&{% endif %}page={{ listings_page.next_page_number }}">Next</a>{% else %}<span></span>{% endif %}
+</div>
+{% endif %}
+{% else %}
+<div class="bg-white rounded-2xl border border-brand-surface-border">
+    {% include 'components/empty_state/empty_state.html' with title="No results" message="Try another search or browse categories." action_label="Browse categories" action_url="/categories/" icon="search" %}
+</div>
+{% endif %}

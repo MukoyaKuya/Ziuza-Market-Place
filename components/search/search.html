@@ -1,0 +1,27 @@
+{# Usage: {% include 'components/search/search.html' with name="q" placeholder="Search Kenyan makers..." %} #}
+<div class="w-full {{ wrapper_classes }}">
+    {% if label %}
+    <label for="{{ id|default:name|default:'q' }}" class="field-label">{{ label }}</label>
+    {% endif %}
+    <div class="relative">
+        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400" aria-hidden="true">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
+            </svg>
+        </span>
+        <input
+            type="search"
+            id="{{ id|default:name|default:'q' }}"
+            name="{{ name|default:'q' }}"
+            value="{{ value|default:'' }}"
+            placeholder="{{ placeholder|default:'Search…' }}"
+            class="field-search {{ extra_classes }}"
+            {% if disabled %}disabled{% endif %}
+            {% if hx_get %}hx-get="{{ hx_get }}"{% endif %}
+            {% if hx_trigger %}hx-trigger="{{ hx_trigger }}"{% endif %}
+            {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
+            {% if hx_swap %}hx-swap="{{ hx_swap }}"{% endif %}
+            aria-label="{{ aria_label|default:label|default:'Search' }}"
+        >
+    </div>
+</div>

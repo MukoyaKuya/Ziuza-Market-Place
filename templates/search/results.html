@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ page_title }} | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <form method="get" action="{% url 'search:results' %}" class="bg-white rounded-2xl border border-brand-surface-border p-4 shadow-ziuza-sm grid grid-cols-1 md:grid-cols-4 gap-3"
+          hx-get="{% url 'search:results' %}" hx-target="#search-results" hx-push-url="true">
+        <input class="field-input md:col-span-2" type="search" name="q" value="{{ query }}" placeholder="Search Kenyan makers…" aria-label="Search">
+        <select class="field-select" name="category">
+            <option value="">All categories</option>
+            {% for category in categories %}
+            <option value="{{ category.slug }}" {% if category_slug == category.slug %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+        </select>
+        <select class="field-select" name="sort">
+            <option value="relevance" {% if sort == 'relevance' %}selected{% endif %}>Relevance</option>
+            <option value="newest" {% if sort == 'newest' %}selected{% endif %}>Newest</option>
+            <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Price: low to high</option>
+            <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: high to low</option>
+            <option value="rating" {% if sort == 'rating' %}selected{% endif %}>Top rated shops</option>
+        </select>
+        <input class="field-input" type="number" min="0" step="0.01" name="min_price" value="{{ min_price }}" placeholder="Minimum price" aria-label="Minimum price">
+        <input class="field-input" type="number" min="0" step="0.01" name="max_price" value="{{ max_price }}" placeholder="Maximum price" aria-label="Maximum price">
+        <select class="field-select" name="product_type" aria-label="Product type">
+            <option value="">All product types</option>
+            <option value="physical" {% if product_type == 'physical' %}selected{% endif %}>Physical items</option>
+            <option value="digital" {% if product_type == 'digital' %}selected{% endif %}>Digital downloads</option>
+            <option value="made_to_order" {% if product_type == 'made_to_order' %}selected{% endif %}>Made to order</option>
+        </select>
+        <select class="field-select" name="county" aria-label="Seller county">
+            <option value="">All counties</option>
+            {% for option in counties %}<option value="{{ option }}" {% if county == option %}selected{% endif %}>{{ option }}</option>{% endfor %}
+        </select>
+        <div class="md:col-span-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-700">
+            <label class="flex items-center gap-2"><input type="checkbox" name="verified" value="1" {% if verified_only %}checked{% endif %}> Verified shops</label>
+            <label class="flex items-center gap-2"><input type="checkbox" name="personalizable" value="1" {% if personalizable_only %}checked{% endif %}> Personalizable</label>
+            <label class="flex items-center gap-2"><input type="checkbox" name="in_stock" value="1" {% if in_stock_only %}checked{% endif %}> In stock</label>
+        </div>
+        <button class="btn-red md:col-span-4 md:w-auto md:justify-self-start" type="submit">Apply search</button>
+    </form>
+
+    {% if request.user.is_authenticated and query or request.user.is_authenticated and category_slug %}
+    <form method="post" action="{% url 'search:save' %}" class="rounded-2xl border border-brand-surface-border bg-white p-4 shadow-ziuza-sm flex flex-col gap-3 sm:flex-row sm:items-center">
+        {% csrf_token %}
+        <input type="hidden" name="q" value="{{ query }}">
+        <input type="hidden" name="category" value="{{ category_slug }}">
+        <input type="hidden" name="sort" value="{{ sort }}">
+        <input type="hidden" name="min_price" value="{{ min_price }}">
+        <input type="hidden" name="max_price" value="{{ max_price }}">
+        <input type="hidden" name="product_type" value="{{ product_type }}">
+        <input type="hidden" name="county" value="{{ county }}">
+        {% if verified_only %}<input type="hidden" name="verified" value="1">{% endif %}
+        {% if personalizable_only %}<input type="hidden" name="personalizable" value="1">{% endif %}
+        {% if in_stock_only %}<input type="hidden" name="in_stock" value="1">{% endif %}
+        <input class="field-input flex-1" type="text" name="name" maxlength="120" placeholder="Name this search (optional)" aria-label="Saved search name">
+        <label class="flex items-center gap-2 whitespace-nowrap text-sm text-gray-700"><input type="checkbox" name="alerts_enabled" checked> Alert me to new matches</label>
+        <button class="btn-secondary shrink-0" type="submit">Save search</button>
+    </form>
+    {% endif %}
+
+    <div id="search-results">
+        {% include 'search/partials/grid.html' %}
+    </div>
+</div>
+{% endblock %}

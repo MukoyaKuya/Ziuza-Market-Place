@@ -1,0 +1,49 @@
+{% load static %}
+{# Pass category_slug and is_verified. Image-less cards use category-matched artwork. #}
+<div class="market-card market-card-interactive group relative flex h-full flex-col">
+    <!-- Image container -->
+    <div class="relative aspect-square w-full overflow-hidden bg-brand-surface-ground">
+        <img src="{% if image_url %}{{ image_url }}{% elif category_slug == 'art-collectibles' %}{% static 'images/categories/art.png' %}{% elif category_slug == 'craft-supplies' %}{% static 'images/categories/craft_supplies.png' %}{% elif category_slug == 'fashion' %}{% static 'images/categories/fashion.png' %}{% elif category_slug == 'home-living' %}{% static 'images/categories/home_living.png' %}{% elif category_slug == 'jewelry' %}{% static 'images/categories/jewelry.png' %}{% elif category_slug == 'vintage' %}{% static 'images/categories/vintage.png' %}{% else %}{% static 'images/hero_kiondo_basket.png' %}{% endif %}"
+             alt="{{ title }}" 
+             loading="lazy"
+             class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500">
+        
+        <!-- Favorite Button (HTMX ready) -->
+        <button type="button" 
+                hx-post="#" 
+                hx-swap="outerHTML" 
+                class="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-600 hover:text-kenya-red hover:bg-white transition-colors shadow-sm">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+        </button>
+
+        {% if badge %}
+        <span class="absolute top-3 left-3 bg-kenya-black text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+            {{ badge }}
+        </span>
+        {% endif %}
+    </div>
+
+    <!-- Content container -->
+    <div class="p-4 flex-1 flex flex-col justify-between space-y-2">
+        <div>
+            <!-- Shop name -->
+            <div class="flex items-center gap-1 text-xs text-gray-500 font-medium mb-1">
+                <span>{{ shop_name|default:"Kenyan Creator" }}</span>
+                {% if is_verified %}{% include 'components/verified_badge/verified_badge.html' %}{% endif %}
+            </div>
+
+            <!-- Title -->
+            <h3 class="font-semibold text-sm text-kenya-black line-clamp-2 group-hover:text-kenya-red transition-colors">
+                <a href="{{ listing_url|default:'#' }}">{{ title|default:"Handcrafted Kenyan Product" }}</a>
+            </h3>
+        </div>
+
+        <!-- Rating & Price -->
+        <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
+            {% include 'components/rating/rating.html' with score=rating count=reviews_count %}
+            {% include 'components/price/price.html' with price=price %}
+        </div>
+    </div>
+</div>

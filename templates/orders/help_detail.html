@@ -1,0 +1,30 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Protection case | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="max-w-2xl space-y-5">
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-6">
+        <div class="flex justify-between gap-4"><div><p class="text-xs font-semibold uppercase text-gray-500">{{ case.get_case_type_display }}</p><h2 class="text-xl font-display font-bold">{{ case.get_reason_display }}</h2></div><span class="badge">{{ case.get_status_display }}</span></div>
+        <p class="text-sm text-gray-500 mt-1">{{ case.order.public_number }} · {{ case.seller_order.shop.name }}</p>
+        {% if case.requested_outcome %}<p class="mt-3 text-sm"><strong>Preferred resolution:</strong> {{ case.get_requested_outcome_display }}</p>{% endif %}
+        {% if case.desired_resolution %}<p class="mt-1 text-sm">{{ case.desired_resolution }}</p>{% endif %}
+        {% if case.response_due_at and not case.first_seller_response_at %}<p class="mt-3 text-xs text-gray-500">Seller response expected by {{ case.response_due_at|date:"j M Y, H:i" }}.</p>{% endif %}
+    </section>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-6">
+        <h3 class="font-semibold">Discussion</h3>
+        <div class="mt-3 space-y-3">{% for entry in case.messages.all %}{% if not entry.is_internal %}<div class="rounded-xl bg-brand-surface-muted p-3 text-sm"><p class="font-semibold">{% if entry.author_id == case.buyer_id %}You{% else %}{{ case.seller_order.shop.name }}{% endif %}</p><p class="mt-1 whitespace-pre-line">{{ entry.body }}</p><p class="mt-1 text-xs text-gray-500">{{ entry.created_at|date:"j M Y, H:i" }}</p></div>{% endif %}{% endfor %}</div>
+        {% if case.status == 'open' or case.status == 'seller_responded' or case.status == 'escalated' %}<form method="post" action="{% url 'orders:case_message' case.id %}" class="mt-4 space-y-2">{% csrf_token %}<textarea class="field-input" name="body" minlength="3" required rows="3" placeholder="Add an update"></textarea><button class="btn-red btn-sm">Send update</button></form>{% endif %}
+    </section>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-6">
+        <h3 class="font-semibold">Evidence</h3>
+        <ul class="mt-3 space-y-2 text-sm">{% for item in case.evidence.all %}<li><a class="font-semibold text-kenya-green" href="{% url 'orders:case_evidence_download' item.id %}">{{ item.original_name }}</a>{% if item.description %} · {{ item.description }}{% endif %}</li>{% empty %}<li class="text-gray-500">No evidence uploaded.</li>{% endfor %}</ul>
+        {% if case.status == 'open' or case.status == 'seller_responded' or case.status == 'escalated' %}<form method="post" enctype="multipart/form-data" action="{% url 'orders:case_evidence' case.id %}" class="mt-4 space-y-2">{% csrf_token %}<input class="field-input" type="file" name="evidence" accept="image/jpeg,image/png,image/webp,application/pdf" required><input class="field-input" name="description" maxlength="300" placeholder="What this evidence shows"><button class="btn-outline btn-sm">Upload securely</button><p class="text-xs text-gray-500">JPG, PNG, WebP or PDF up to 10 MB. Only case participants and Ziuza moderators can access it.</p></form>{% endif %}
+    </section>
+
+    {% if case.resolution_notes %}<section class="bg-green-50 rounded-2xl border border-green-200 p-6"><h3 class="font-semibold">Ziuza resolution · {{ case.get_resolution_outcome_display }}</h3><p class="mt-2">{{ case.resolution_notes }}</p>{% if case.refund_recommendation %}<p class="mt-2 font-semibold">Refund recommendation: KES {{ case.refund_recommendation }}</p><p class="mt-1 text-xs text-gray-600">This recommendation is recorded for manual action; no payment was moved automatically.</p>{% endif %}</section>{% endif %}
+    {% if case.status == 'open' or case.status == 'seller_responded' %}<form method="post" action="{% url 'orders:buyer_help_escalate' case.id %}">{% csrf_token %}<button class="btn-outline" type="submit">Escalate to Ziuza support</button></form>{% endif %}
+</div>
+{% endblock %}

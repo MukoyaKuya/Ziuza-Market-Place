@@ -1,0 +1,37 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Pay {{ order.public_number }} | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 py-12">
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-6 space-y-4 shadow-ziuza-sm">
+        <h1 class="text-2xl font-display font-bold">M-Pesa · {{ order.public_number }}</h1>
+        <p class="text-sm text-gray-600">
+            Enter your Safaricom number and approve the payment prompt on your phone.
+        </p>
+        {% if not payment %}
+        <form method="post" class="space-y-3">
+            {% csrf_token %}
+            <label for="phone" class="block text-sm font-medium">M-Pesa phone number</label>
+            <input id="phone" name="phone" type="tel" autocomplete="tel" required
+                   placeholder="0712 345 678" class="input w-full">
+            <button type="submit" class="btn-red w-full">Send payment prompt</button>
+        </form>
+        {% else %}
+        <dl class="text-sm space-y-2">
+            <div class="flex justify-between"><dt>Amount</dt><dd class="font-bold">KES {{ payment.amount }}</dd></div>
+            <div class="flex justify-between"><dt>Checkout ID</dt><dd class="font-mono text-xs">{{ payment.provider_reference }}</dd></div>
+            <div class="flex justify-between"><dt>Status</dt><dd>{{ payment.get_status_display }}</dd></div>
+        </dl>
+        {% if payment.status != 'confirmed' and not daraja_enabled %}
+        <form method="post" action="{% url 'payments:mpesa_sandbox_confirm' order.public_number %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-red w-full">Confirm M-Pesa (sandbox)</button>
+        </form>
+        {% else %}
+        <a href="{% url 'orders:buyer_detail' order.public_number %}" class="btn-secondary w-full inline-flex justify-center">View order</a>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{# Usage: {% include 'components/radio/radio.html' with name="shipping" value="pickup" label="Local pickup" group_label="Shipping method" %} #}
+{# For a group, wrap multiple radios sharing the same name; set show_group_label on the first. #}
+<div class="{{ wrapper_classes }}">
+    {% if show_group_label and group_label %}
+    <p class="field-label" id="{{ name }}-legend">{{ group_label }}</p>
+    {% endif %}
+    <div class="flex items-start gap-3">
+        <input
+            type="radio"
+            id="{{ id|default:name }}_{{ value }}"
+            name="{{ name }}"
+            value="{{ value }}"
+            class="field-radio mt-1 {{ extra_classes }}"
+            {% if checked %}checked{% endif %}
+            {% if required %}required{% endif %}
+            {% if disabled %}disabled{% endif %}
+            {% if show_group_label and group_label %}aria-describedby="{{ name }}-legend"{% endif %}
+        >
+        {% if label %}
+        <label for="{{ id|default:name }}_{{ value }}" class="text-sm font-medium text-kenya-black">
+            {{ label }}
+        </label>
+        {% endif %}
+    </div>
+</div>

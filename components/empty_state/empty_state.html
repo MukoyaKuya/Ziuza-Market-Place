@@ -1,0 +1,21 @@
+{# Usage: {% include 'components/empty_state/empty_state.html' with title="No favorites yet" message="Save listings you love." action_label="Browse marketplace" action_url="/" %} #}
+<div class="flex flex-col items-center justify-center text-center px-6 py-12 {{ extra_classes }}">
+    <div class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-surface-muted text-kenya-green" aria-hidden="true">
+        {% if icon == 'cart' %}
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2 9m12-9l2 9m-9-4h4"/></svg>
+        {% elif icon == 'search' %}
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z"/></svg>
+        {% else %}
+        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4m16 0H4"/></svg>
+        {% endif %}
+    </div>
+    <h3 class="text-lg font-display font-bold text-kenya-black">{{ title|default:'Nothing here yet' }}</h3>
+    {% if message %}
+    <p class="mt-2 max-w-sm text-sm text-gray-600">{{ message }}</p>
+    {% endif %}
+    {% if action_label %}
+    <div class="mt-6">
+        <a href="{{ action_url|default:'#' }}" class="btn-red btn-sm">{{ action_label }}</a>
+    </div>
+    {% endif %}
+</div>

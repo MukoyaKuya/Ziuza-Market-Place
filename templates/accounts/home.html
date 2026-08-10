@@ -1,0 +1,75 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Your account | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-xl font-display font-bold text-kenya-black">
+            Habari{% if request.user.display_name %}, {{ request.user.display_name }}{% endif %}
+        </h2>
+        <p class="mt-1 text-sm text-gray-600">Orders, saved finds, and messages in one place.</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <a href="{% url 'orders:buyer_list' %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm hover:border-kenya-green transition-colors">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Orders</p>
+            <p class="mt-2 text-3xl font-display font-bold">{{ order_count }}</p>
+            <p class="mt-1 text-sm text-kenya-red font-semibold">View orders →</p>
+        </a>
+        <a href="{% url 'favorites:list' %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm hover:border-kenya-green transition-colors">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Favorites</p>
+            <p class="mt-2 text-3xl font-display font-bold">{{ favorite_count }}</p>
+            <p class="mt-1 text-sm text-kenya-red font-semibold">Saved listings →</p>
+        </a>
+        <a href="{% url 'search:saved' %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm hover:border-kenya-green transition-colors">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Saved searches</p>
+            <p class="mt-2 text-3xl font-display font-bold">{{ saved_search_count }}</p>
+            <p class="mt-1 text-sm text-kenya-red font-semibold">Search alerts →</p>
+        </a>
+        <a href="{% url 'messaging:buyer_inbox' %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm hover:border-kenya-green transition-colors">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Messages</p>
+            <p class="mt-2 text-3xl font-display font-bold">{{ message_count }}</p>
+            <p class="mt-1 text-sm text-kenya-red font-semibold">Inbox →</p>
+        </a>
+        <a href="{% url 'notifications:list' %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm hover:border-kenya-green transition-colors">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Notifications</p>
+            <p class="mt-2 text-3xl font-display font-bold">{{ unread_notification_count }}</p>
+            <p class="mt-1 text-sm text-kenya-red font-semibold">{% if unread_notification_count %}Unread →{% else %}All caught up →{% endif %}</p>
+        </a>
+    </div>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+        <div class="flex items-center justify-between gap-2">
+            <h3 class="font-display font-bold">Recent orders</h3>
+            <a href="{% url 'orders:buyer_list' %}" class="text-sm font-semibold text-kenya-red hover:underline">All orders</a>
+        </div>
+        {% if recent_orders %}
+        <ul class="divide-y divide-brand-surface-border">
+            {% for order in recent_orders %}
+            <li class="py-3 flex flex-wrap justify-between gap-2">
+                <div>
+                    <a href="{% url 'orders:buyer_detail' order.public_number %}" class="font-semibold hover:text-kenya-red">{{ order.public_number }}</a>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ order.created_at|date:"M j, Y" }} · {{ order.get_payment_status_display }}</p>
+                </div>
+                <p class="font-display font-bold text-sm">KES {{ order.grand_total }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-gray-500">No purchases yet.</p>
+        <a href="{% url 'listings:category_index' %}" class="btn-red btn-sm inline-flex">Start shopping</a>
+        {% endif %}
+    </section>
+
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'accounts:profile' %}" class="btn-secondary btn-sm">Edit profile</a>
+        <a href="{% url 'accounts:address_list' %}" class="btn-secondary btn-sm">Addresses ({{ address_count }})</a>
+        {% if has_shop %}
+        <a href="{% url 'shops:dashboard' %}" class="btn-red btn-sm">Seller dashboard</a>
+        {% else %}
+        <a href="{% url 'shops:sell_entry' %}" class="btn-red btn-sm">Sell on Ziuza</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

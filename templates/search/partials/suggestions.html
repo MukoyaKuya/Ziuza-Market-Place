@@ -1,0 +1,30 @@
+{% if suggestions or category_suggestions or shop_suggestions %}
+<ul class="bg-white border border-brand-surface-border rounded-ziuza shadow-ziuza-md overflow-hidden">
+    {% for category in category_suggestions %}
+    <li>
+        <a href="{% url 'listings:category_detail' category.slug %}" class="block px-4 py-2 text-sm hover:bg-brand-surface-muted">
+            <span class="text-xs font-bold uppercase tracking-wide text-kenya-green-dark">Category</span>
+            <span class="ml-2 font-semibold text-kenya-black">{{ category.name }}</span>
+        </a>
+    </li>
+    {% endfor %}
+    {% for shop in shop_suggestions %}
+    <li>
+        <a href="{% url 'shops:public_shop' shop.slug %}" class="block px-4 py-2 text-sm hover:bg-brand-surface-muted">
+            <span class="text-xs font-bold uppercase tracking-wide text-kenya-red">Shop</span>
+            <span class="ml-2 font-semibold text-kenya-black">{{ shop.name }}</span>
+        </a>
+    </li>
+    {% endfor %}
+    {% for listing in suggestions %}
+    <li>
+        <a href="{% url 'listings:detail' listing.slug %}" class="block px-4 py-2 text-sm hover:bg-brand-surface-muted">
+            <span class="font-semibold text-kenya-black">{{ listing.title }}</span>
+            <span class="text-gray-500"> · {{ listing.shop.name }}</span>
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+{% elif query %}
+<p class="text-sm text-gray-500 px-2">No suggestions</p>
+{% endif %}

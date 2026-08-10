@@ -1,0 +1,86 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Checkout | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10 space-y-6">
+    <h1 class="text-3xl font-display font-bold">Checkout</h1>
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'error' %}alert-error{% else %}alert-success{% endif %}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if not lines %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="Nothing to check out" message="Add items to your cart first." action_label="Browse marketplace" action_url="/" %}
+    </div>
+    {% else %}
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <form method="post" class="lg:col-span-3 space-y-5 bg-white rounded-2xl border border-brand-surface-border p-5">
+            {% csrf_token %}
+            {% if requires_shipping %}<fieldset>
+                <legend class="font-display font-bold text-lg mb-3">Shipping address</legend>
+                {% if addresses %}
+                <ul class="space-y-2">
+                    {% for address in addresses %}
+                    <li>
+                        <label class="flex gap-3 items-start rounded-ziuza border border-brand-surface-border p-3 cursor-pointer hover:border-kenya-green">
+                            <input type="radio" name="address_id" value="{{ address.id }}" required {% if address.is_default_shipping %}checked{% endif %}>
+                            <span class="text-sm">
+                                <strong>{{ address.recipient_name }}</strong><br>
+                                {{ address.address_line_1 }}, {{ address.city_or_town }}, {{ address.county }}
+                            </span>
+                        </label>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-sm text-gray-600 mb-3">Add an address for delivery, or choose local pickup when available.</p>
+                <a href="{% url 'accounts:address_create' %}" class="btn-secondary btn-sm">Add address</a>
+                {% endif %}
+            </fieldset>{% endif %}
+
+            <div>
+                <label class="field-label" for="coupon_code">Coupon code</label>
+                <input class="field-input uppercase" id="coupon_code" name="coupon_code" maxlength="32" placeholder="Optional">
+            </div>
+
+            {% if requires_shipping %}<fieldset>
+                <legend class="font-display font-bold text-lg mb-3">Shipping method</legend>
+                {% for method in shipping_methods %}
+                <label class="flex gap-3 items-center rounded-ziuza border border-brand-surface-border p-3 mb-2">
+                    <input type="radio" name="shipping_method" value="{{ method.code }}" {% if forloop.first %}checked{% endif %} required>
+                    <span class="text-sm">
+                        {{ method.name }} — {% if method.base_fee %}KES {{ method.base_fee }}{% else %}Free{% endif %}
+                        <span class="block text-xs text-gray-500">Estimated {{ method.estimated_days_min }}–{{ method.estimated_days_max }} days</span>
+                    </span>
+                </label>
+                {% empty %}
+                <p class="alert-error">No delivery methods are currently available.</p>
+                {% endfor %}
+            </fieldset>{% else %}<p class="rounded-ziuza bg-green-50 border border-green-200 p-3 text-sm">Digital products are available in your account after payment. No shipping fee.</p>{% endif %}
+
+            {% if addresses or not requires_shipping or allows_addressless_pickup %}
+            <button type="submit" class="btn-red">Place order & pay</button>
+            {% endif %}
+        </form>
+
+        <aside class="lg:col-span-2 bg-white rounded-2xl border border-brand-surface-border p-5 h-fit space-y-3">
+            <h2 class="font-display font-bold">Order summary</h2>
+            <ul class="text-sm space-y-2">
+                {% for line in lines %}
+                <li class="flex justify-between gap-2">
+                    <span>{{ line.item.listing.title }} × {{ line.item.quantity }}</span>
+                    <span>KES {{ line.line_total }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <p class="font-semibold border-t border-brand-surface-border pt-3">Subtotal: KES {{ subtotal }}</p>
+        </aside>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

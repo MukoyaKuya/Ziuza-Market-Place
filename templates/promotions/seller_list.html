@@ -1,0 +1,91 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Promotions · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-2xl font-display font-bold text-kenya-black">Promotions</h2>
+        <p class="mt-1 text-sm text-gray-600">Create coupon codes and control when they apply at checkout.</p>
+    </div>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-6 shadow-ziuza-sm">
+        <h3 class="font-display font-bold text-kenya-black">Create promotion</h3>
+        <form method="post" class="mt-4 grid sm:grid-cols-2 gap-4">
+            {% csrf_token %}
+            <div>
+                <label class="field-label" for="promo-name">Name</label>
+                <input id="promo-name" class="field-input" name="name" required>
+            </div>
+            <div>
+                <label class="field-label" for="promo-code">Coupon code</label>
+                <input id="promo-code" class="field-input uppercase" name="code" maxlength="32" required>
+            </div>
+            <div>
+                <label class="field-label" for="promo-type">Discount type</label>
+                <select id="promo-type" class="field-input" name="discount_type">
+                    {% for value, label in discount_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="field-label" for="promo-value">Value</label>
+                <input id="promo-value" class="field-input" type="number" step="0.01" min="0.01" name="value" required>
+            </div>
+            <div>
+                <label class="field-label" for="promo-min">Minimum shop spend (KES)</label>
+                <input id="promo-min" class="field-input" type="number" step="0.01" min="0" name="minimum_spend" value="0">
+            </div>
+            <div>
+                <label class="field-label" for="promo-limit">Total usage limit</label>
+                <input id="promo-limit" class="field-input" type="number" min="1" name="usage_limit" placeholder="Unlimited">
+            </div>
+            <div>
+                <label class="field-label" for="promo-per-user">Uses per buyer</label>
+                <input id="promo-per-user" class="field-input" type="number" min="1" name="per_user_limit" value="1">
+            </div>
+            <div>
+                <label class="field-label" for="promo-starts">Starts</label>
+                <input id="promo-starts" class="field-input" type="datetime-local" name="starts_at" required>
+            </div>
+            <div>
+                <label class="field-label" for="promo-ends">Ends</label>
+                <input id="promo-ends" class="field-input" type="datetime-local" name="ends_at" required>
+            </div>
+            <div class="sm:col-span-2">
+                <button class="btn-red" type="submit">Create promotion</button>
+            </div>
+        </form>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border overflow-hidden shadow-ziuza-sm">
+        <div class="px-5 py-4 border-b border-brand-surface-border">
+            <h3 class="font-display font-bold text-kenya-black">Your promotions</h3>
+        </div>
+        {% for promotion in promotions %}
+        <div class="p-5 border-b border-brand-surface-border last:border-b-0 flex flex-wrap items-center justify-between gap-4">
+            <div>
+                <p class="font-semibold text-kenya-black">
+                    <span class="font-mono tracking-wide">{{ promotion.code }}</span>
+                    <span class="text-gray-500 font-normal"> · {{ promotion.name }}</span>
+                </p>
+                <p class="text-sm text-gray-500 mt-1">
+                    {{ promotion.value }} {{ promotion.get_discount_type_display }}
+                    · {{ promotion.starts_at|date:"M j" }}–{{ promotion.ends_at|date:"M j, Y" }}
+                    · {% if promotion.is_active %}Active{% else %}Paused{% endif %}
+                </p>
+            </div>
+            <form method="post" action="{% url 'promotions:toggle' promotion.id %}">
+                {% csrf_token %}
+                <button class="btn-outline btn-sm" type="submit">
+                    {% if promotion.is_active %}Pause{% else %}Activate{% endif %}
+                </button>
+            </form>
+        </div>
+        {% empty %}
+        {% include 'components/empty_state/empty_state.html' with title="No promotions yet" message="Create a coupon above to reward buyers and drive repeat orders." %}
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

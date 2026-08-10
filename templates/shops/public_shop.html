@@ -1,0 +1,190 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}{{ shop.seo_title|default:shop.name }} | Ziuza{% endblock %}
+{% block meta_description %}{{ shop.seo_description|default:shop.description|default:shop.name }}{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'shops:public_shop' shop.slug %}">{% endblock %}
+{% block extra_head %}
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ shop.seo_title|default:shop.name }}">
+<meta property="og:description" content="{{ shop.seo_description|default:shop.description|default:shop.name }}">
+<meta property="og:url" content="{{ shop_share_url }}">
+{% if shop_banner_url %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ shop_banner_url }}">{% elif shop.logo %}<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ shop.logo.url }}">{% endif %}
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"{{ shop.name|escapejs }}","description":"{{ shop.seo_description|default:shop.description|escapejs }}","url":"{{ shop_share_url|escapejs }}","aggregateRating":{% if shop.rating_count %}{"@type":"AggregateRating","ratingValue":"{{ shop.rating_average }}","reviewCount":"{{ shop.rating_count }}"}{% else %}null{% endif %},"address":{"@type":"PostalAddress","addressRegion":"{{ shop.county|escapejs }}","addressCountry":"KE"}}</script>
+{% endblock %}
+
+{% block content %}
+<div class="bg-[#fbfaf8] pb-12">
+    <div class="mx-auto max-w-[1500px] px-4 py-6 sm:px-6 lg:px-8">
+        <nav class="mb-5 flex items-center gap-2 text-xs text-gray-500" aria-label="Breadcrumb">
+            <a href="/" class="transition hover:text-kenya-green">Home</a>
+            <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="m7 4 6 6-6 6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <a href="{% url 'listings:category_index' %}" class="transition hover:text-kenya-green">Shop directory</a>
+            <svg class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="m7 4 6 6-6 6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="truncate font-semibold text-gray-900">{{ shop.name }}</span>
+        </nav>
+
+        <header class="relative">
+            <div class="relative h-44 overflow-hidden rounded-t-[1.65rem] bg-[#153c2b] sm:h-56 lg:h-64 lg:rounded-[1.65rem]">
+                <img src="{% if shop_banner_url %}{{ shop_banner_url }}{% else %}{% static 'images/hero_ziuza_picks.png' %}{% endif %}" alt="{{ shop.name }} shop cover" class="h-full w-full object-cover object-center">
+                <div class="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/5"></div>
+            </div>
+
+            <section class="relative -mt-5 rounded-[1.65rem] border border-[#e5e2dd] bg-white px-5 pb-6 pt-20 shadow-[0_10px_35px_rgba(20,20,20,0.04)] sm:-mt-14 sm:mx-4 sm:px-7 sm:pb-7 sm:pl-40 sm:pt-5 lg:mx-4 lg:pl-48">
+                <div class="absolute -top-14 left-5 flex h-28 w-28 items-center justify-center rounded-[1.3rem] border-[5px] border-white bg-[#071e16] shadow-md sm:-top-5 sm:left-7 sm:h-32 sm:w-32 lg:left-9 lg:h-36 lg:w-36">
+                    {% if shop.logo %}
+                    <img src="{{ shop.logo.url }}" alt="{{ shop.name }} logo" class="h-full w-full rounded-[1rem] object-cover">
+                    {% else %}
+                    <span class="font-display text-5xl font-bold text-white">{{ shop.name|slice:":1" }}</span>
+                    <span class="absolute inset-2 rounded-xl border border-white/10"></span>
+                    {% endif %}
+                </div>
+
+                <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_170px] lg:items-start">
+                    <div class="min-w-0">
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <h1 class="font-display text-2xl font-bold leading-tight text-gray-950 sm:text-[2rem]">{{ shop.name }}</h1>
+                            {% if shop.is_verified %}{% include 'components/verified_badge/verified_badge.html' with label="Verified shop" %}{% endif %}
+                            {% if shop.vacation_mode %}<span class="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800">On a short break</span>{% endif %}
+                        </div>
+                        <p class="mt-1.5 text-sm text-gray-600">{{ shop.description|default:"Authentic Kenyan goods, made with care."|truncatewords:12 }}</p>
+
+                        <div class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-gray-500">
+                            <span class="inline-flex items-center gap-1.5"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z" stroke-width="1.7"/><circle cx="12" cy="10" r="2.5" stroke-width="1.7"/></svg>{{ shop.location_text|default:shop.county }}{% if shop.sub_county %}, {{ shop.sub_county }}{% endif %}</span>
+                            <span class="hidden h-3 w-px bg-gray-300 sm:block"></span>
+                            <span class="inline-flex items-center gap-1.5"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>Joined {{ shop.created_at|date:"F Y" }}</span>
+                            <span class="hidden h-3 w-px bg-gray-300 sm:block"></span>
+                            <span class="inline-flex items-center gap-1.5"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 5h14v11H9l-4 3V5Z" stroke-width="1.7" stroke-linejoin="round"/></svg>Messages welcomed</span>
+                        </div>
+
+                        <div class="mt-4 flex flex-wrap items-center gap-3 text-sm">
+                            <span class="font-bold"><span class="mr-1 text-amber-500">★</span>{% if shop.rating_count %}{{ shop.rating_average|floatformat:1 }} <span class="font-normal text-gray-500">({{ shop.rating_count }} review{{ shop.rating_count|pluralize }})</span>{% else %}New shop{% endif %}</span>
+                            <span class="h-4 w-px bg-gray-300"></span>
+                            <span><strong>{{ sales_count }}</strong> sale{{ sales_count|pluralize }}</span>
+                            <span class="h-4 w-px bg-gray-300"></span>
+                            <span><strong>{{ follower_count }}</strong> follower{{ follower_count|pluralize }}</span>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-row flex-wrap gap-2 lg:flex-col lg:items-stretch">
+                        {% if is_shop_staff %}
+                        <a href="{% url 'shops:dashboard' %}" class="btn-secondary btn-sm">Manage shop</a>
+                        {% elif listings.0 %}
+                        <form method="post" action="{% url 'messaging:start_from_listing' listings.0.id %}">{% csrf_token %}<button class="w-full rounded-full border border-gray-900 bg-white px-5 py-2 text-xs font-semibold transition hover:bg-gray-50">Message</button></form>
+                        {% endif %}
+                        {% if is_shop_staff %}{% elif user.is_authenticated %}
+                        <form method="post" action="{% url 'favorites:shop_follow_toggle' shop.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="w-full rounded-full px-5 py-2 text-xs font-bold transition {% if is_following %}border border-kenya-red bg-white text-kenya-red{% else %}bg-kenya-red text-white hover:bg-kenya-red-dark{% endif %}">{% if is_following %}✓ Following{% else %}Follow shop{% endif %}</button></form>
+                        {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="rounded-full bg-kenya-red px-5 py-2 text-center text-xs font-bold text-white transition hover:bg-kenya-red-dark">Follow shop</a>
+                        {% endif %}
+                        <div class="flex items-center justify-center gap-2 pt-1">
+                            <a href="https://wa.me/?text={{ shop.name|urlencode }}%20{{ shop_share_url|urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" class="flex h-8 w-8 items-center justify-center rounded-full text-gray-800 transition hover:bg-gray-100"><span class="text-xs font-extrabold">WA</span></a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u={{ shop_share_url|urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="Share on Facebook" class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold text-gray-800 transition hover:bg-gray-100">f</a>
+                            <a href="https://twitter.com/intent/tweet?url={{ shop_share_url|urlencode }}&text={{ shop.name|urlencode }}" target="_blank" rel="noopener noreferrer" aria-label="Share on X" class="flex h-8 w-8 items-center justify-center rounded-full text-sm font-extrabold text-gray-800 transition hover:bg-gray-100">𝕏</a>
+                        </div>
+                    </div>
+                </div>
+
+                {% if shop.announcement %}<div class="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-xs text-emerald-950"><strong>Shop announcement:</strong> {{ shop.announcement }}</div>{% endif %}
+
+                <div class="mt-6 grid gap-3 rounded-2xl bg-gradient-to-r from-[#f3f7f4] to-[#f8f7f2] p-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-kenya-green"><svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 12c-3 0-5 2-5 5v2h10v-2c0-3-2-5-5-5Zm0 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm8-2 2 2 4-5M14 20h7v-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><strong class="block text-xs">Handmade with care</strong><span class="text-[11px] text-gray-500">Authentic Kenyan craftsmanship</span></div></div>
+                    <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-kenya-green"><svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 5h16v14H4V5Zm0 4h16m-5 6 2 2 4-4" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><strong class="block text-xs">Buyer protection</strong><span class="text-[11px] text-gray-500">Secure checkout support</span></div></div>
+                    <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-kenya-green"><svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12a8 8 0 0 1 14-5m2-3v5h-5M20 12a8 8 0 0 1-14 5m-2 3v-5h5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><strong class="block text-xs">Clear returns</strong><span class="text-[11px] text-gray-500">Seller policies shown upfront</span></div></div>
+                    <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-kenya-green"><svg class="h-8 w-8" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21V10m0 4c-4 0-7-2-7-6 4 0 7 2 7 6Zm0-4c0-4 3-7 7-7 0 4-3 7-7 7Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><div><strong class="block text-xs">Supports local</strong><span class="text-[11px] text-gray-500">Empowering Kenyan sellers</span></div></div>
+                </div>
+            </section>
+        </header>
+
+        <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+            <main id="items" class="min-w-0 overflow-hidden rounded-2xl border border-[#e5e2dd] bg-white">
+                <nav class="flex overflow-x-auto border-b border-[#e8e5df] px-4 sm:px-6" aria-label="Shop sections">
+                    <a href="#items" class="whitespace-nowrap border-b-[3px] border-kenya-red px-4 py-4 text-sm font-bold text-kenya-red">Shop</a>
+                    <a href="#about" class="whitespace-nowrap border-b-[3px] border-transparent px-4 py-4 text-sm text-gray-600 transition hover:text-gray-950">About</a>
+                    <a href="#policies" class="whitespace-nowrap border-b-[3px] border-transparent px-4 py-4 text-sm text-gray-600 transition hover:text-gray-950">Policies</a>
+                    <a href="#reviews" class="whitespace-nowrap border-b-[3px] border-transparent px-4 py-4 text-sm text-gray-600 transition hover:text-gray-950">Reviews{% if shop_review_summary.count %} ({{ shop_review_summary.count }}){% endif %}</a>
+                </nav>
+
+                <div class="p-4 sm:p-6">
+                    <div class="flex flex-wrap items-end justify-between gap-3">
+                        <div><h2 class="font-display text-xl font-bold text-gray-950">{% if selected_section %}{{ selected_section.name }}{% else %}All items{% endif %}</h2><p class="mt-0.5 text-xs text-gray-500">{{ listing_count }} product{{ listing_count|pluralize }}</p></div>
+                        {% if sections %}<div class="flex flex-wrap gap-1.5"><a href="{% url 'shops:public_shop' shop.slug %}#items" class="rounded-full border px-3 py-1.5 text-xs font-semibold {% if not selected_section %}border-kenya-red bg-red-50 text-kenya-red{% else %}border-gray-200{% endif %}">All</a>{% for section in sections %}<a href="?section={{ section.slug }}#items" class="rounded-full border px-3 py-1.5 text-xs font-semibold {% if selected_section.id == section.id %}border-kenya-red bg-red-50 text-kenya-red{% else %}border-gray-200{% endif %}">{{ section.name }}</a>{% endfor %}</div>{% endif %}
+                    </div>
+
+                    <form method="get" class="mt-4 grid gap-2 sm:grid-cols-[minmax(0,1fr)_190px_auto]">
+                        {% if selected_section %}<input type="hidden" name="section" value="{{ selected_section.slug }}">{% endif %}
+                        <label class="relative block"><span class="sr-only">Search this shop</span><svg class="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path d="m16 16 4 4" stroke-width="1.8" stroke-linecap="round"/></svg><input class="h-11 w-full rounded-xl border border-gray-200 bg-white pl-10 pr-4 text-sm outline-none transition placeholder:text-gray-400 focus:border-kenya-green focus:ring-2 focus:ring-kenya-green/10" type="search" name="q" value="{{ shop_query }}" placeholder="Search in shop"></label>
+                        <label><span class="sr-only">Sort products</span><select class="h-11 w-full rounded-xl border border-gray-200 bg-white px-3 text-xs font-semibold outline-none focus:border-kenya-green" name="sort"><option value="newest" {% if shop_sort == 'newest' %}selected{% endif %}>Sort: Most recent</option><option value="price_asc" {% if shop_sort == 'price_asc' %}selected{% endif %}>Price: Low to high</option><option value="price_desc" {% if shop_sort == 'price_desc' %}selected{% endif %}>Price: High to low</option><option value="name" {% if shop_sort == 'name' %}selected{% endif %}>Name: A to Z</option></select></label>
+                        <button class="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-gray-200 px-4 text-xs font-semibold transition hover:bg-gray-50"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 7h10m4 0h2M10 17h10M4 17h2M14 4v6M10 14v6" stroke-width="1.8" stroke-linecap="round"/></svg>Filter</button>
+                    </form>
+
+                    {% if listings %}
+                    <div class="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
+                        {% for listing in listings %}
+                        <article class="group overflow-hidden rounded-xl border border-[#e6e2db] bg-white transition duration-200 hover:-translate-y-0.5 hover:shadow-lg">
+                            <div class="relative aspect-[1/1.04] overflow-hidden bg-[#f2eee8]">
+                                {% with cover=listing.images.first %}<a href="{% url 'listings:detail' listing.slug %}"><img src="{% if cover %}{{ cover.image.url }}{% else %}{% static 'images/hero_kiondo_basket.png' %}{% endif %}" alt="{{ listing.title }}" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105"></a>{% endwith %}
+                                {% if listing.is_featured %}<span class="absolute left-2 top-2 rounded-full bg-[#317455] px-2.5 py-1 text-[10px] font-bold text-white">Bestseller</span>{% endif %}
+                                {% if user.is_authenticated %}<button type="button" hx-post="{% url 'favorites:toggle' listing.id %}" hx-swap="outerHTML" aria-label="{% if listing.is_favorited_by_viewer %}Remove favorite{% else %}Add favorite{% endif %}" class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm transition hover:text-kenya-red"><svg class="h-4 w-4" fill="{% if listing.is_favorited_by_viewer %}currentColor{% else %}none{% endif %}" viewBox="0 0 24 24" stroke="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>{% else %}<a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" aria-label="Sign in to save {{ listing.title }}" class="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-gray-700 shadow-sm transition hover:text-kenya-red"><svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>{% endif %}
+                            </div>
+                            <div class="p-3">
+                                <h3 class="line-clamp-1 text-xs font-semibold text-gray-950"><a href="{% url 'listings:detail' listing.slug %}" class="hover:text-kenya-red">{{ listing.title }}</a></h3>
+                                <p class="mt-1 line-clamp-1 text-[11px] text-gray-500">{{ listing.category.name }}</p>
+                                <p class="mt-2 text-sm font-bold text-gray-950">{{ listing.currency }} {{ listing.base_price|floatformat:0 }}</p>
+                                <p class="mt-1.5 text-[11px] text-gray-500"><span class="text-amber-500">★</span> {% if listing.display_review_count %}{{ listing.display_rating|floatformat:1 }} ({{ listing.display_review_count }}){% elif shop.rating_count %}{{ shop.rating_average|floatformat:1 }}{% else %}New{% endif %}</p>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    </div>
+                    {% if has_more_listings %}<div class="mt-7 text-center"><a href="?{% if selected_section %}section={{ selected_section.slug }}&{% endif %}{% if shop_query %}q={{ shop_query|urlencode }}&{% endif %}sort={{ shop_sort }}&limit={{ next_listing_limit }}#items" class="inline-flex items-center gap-2 rounded-xl border border-kenya-green px-8 py-3 text-sm font-semibold text-kenya-green transition hover:bg-emerald-50">Load more <svg class="h-4 w-4" viewBox="0 0 20 20" fill="none" stroke="currentColor"><path d="m5 7 5 5 5-5" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a></div>{% endif %}
+                    {% else %}
+                    <div class="mt-4 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-10 text-center"><h3 class="font-display font-bold">No matching items</h3><p class="mt-1 text-sm text-gray-500">Try another search or browse all products from this shop.</p><a href="{{ request.path }}#items" class="mt-4 inline-flex text-sm font-semibold text-kenya-green">Clear filters</a></div>
+                    {% endif %}
+                </div>
+            </main>
+
+            <aside class="space-y-4">
+                <section id="about" class="rounded-2xl border border-[#e5e2dd] bg-white p-5">
+                    <h2 class="font-display text-lg font-bold">About the shop</h2>
+                    <p class="mt-3 text-sm leading-6 text-gray-600">{{ shop.description|default:"This seller is preparing their shop story." }}</p>
+                    <div class="mt-5 space-y-3 border-t border-gray-100 pt-4 text-xs">
+                        <div class="flex items-center justify-between gap-4"><span class="inline-flex items-center gap-2 text-gray-500"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 5h14v11H9l-4 3V5Z" stroke-width="1.7"/></svg>Seller status</span><strong>{% if shop.is_verified %}Verified{% else %}Active{% endif %}</strong></div>
+                        <div class="flex items-center justify-between gap-4"><span class="inline-flex items-center gap-2 text-gray-500"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9" stroke-width="1.7"/><path d="M12 7v5l3 2" stroke-width="1.7"/></svg>Dispatch estimate</span><strong>{{ shop.processing_days_min }}–{{ shop.processing_days_max }} days</strong></div>
+                        <div class="flex items-center justify-between gap-4"><span class="inline-flex items-center gap-2 text-gray-500"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 8h14v12H5V8Zm3-4v4m8-4v4M5 12h14" stroke-width="1.7"/></svg>On Ziuza since</span><strong>{{ shop.created_at|date:"F Y" }}</strong></div>
+                        <div class="flex items-center justify-between gap-4"><span class="inline-flex items-center gap-2 text-gray-500"><svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 10h16v10H4V10Zm3 0V7h10v3" stroke-width="1.7"/></svg>Shop location</span><strong>{{ shop.county }}</strong></div>
+                    </div>
+                </section>
+
+                <section id="policies" class="rounded-2xl border border-[#e5e2dd] bg-white p-5">
+                    <h2 class="font-display text-lg font-bold">Shop policy highlights</h2>
+                    <div class="mt-4 space-y-4 text-xs">
+                        <div class="flex gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 7h11v10H3V7Zm11 4h4l3 3v3h-7v-6Zm-7 8a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" stroke-width="1.6"/></svg><div><strong>Shipping & processing</strong><p class="mt-1 leading-5 text-gray-500">{% if shop.shipping_policy %}{{ shop.shipping_policy|truncatewords:22 }}{% else %}Prepared for dispatch in {{ shop.processing_days_min }}–{{ shop.processing_days_max }} business days.{% endif %}</p></div></div>
+                        <div class="flex gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 8h11a5 5 0 0 1 0 10H9M4 8l4-4M4 8l4 4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Returns & exchanges</strong><p class="mt-1 leading-5 text-gray-500">{% if shop.return_policy %}{{ shop.return_policy|truncatewords:22 }}{% else %}Contact the seller to confirm eligibility and return terms.{% endif %}</p></div></div>
+                        <div class="flex gap-3"><svg class="mt-0.5 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m8 12 3 3 5-6m-4-6 8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3Z" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg><div><strong>Buyer protection</strong><p class="mt-1 leading-5 text-gray-500">Eligible orders include tracked support and a documented resolution process.</p></div></div>
+                    </div>
+                    {% if shop.policies %}<details class="mt-4 border-t border-gray-100 pt-4 text-xs"><summary class="cursor-pointer font-semibold text-kenya-green">Read all shop policies</summary><p class="mt-3 whitespace-pre-line leading-5 text-gray-600">{{ shop.policies }}</p></details>{% endif %}
+                </section>
+
+                <section id="reviews" class="rounded-2xl border border-[#e5e2dd] bg-white p-5">
+                    <div class="flex items-center justify-between"><h2 class="font-display text-lg font-bold">Shop reviews</h2>{% if shop_review_summary.count %}<a href="#shop-review-list" class="text-xs font-semibold text-kenya-green">See all</a>{% endif %}</div>
+                    {% if shop_review_summary.count %}
+                    <div class="mt-3 flex items-center gap-2"><strong class="font-display text-3xl">{{ shop_review_summary.overall|floatformat:1 }}</strong><span class="tracking-wider text-amber-500">★★★★★</span><span class="text-[10px] text-gray-500">({{ shop_review_summary.count }})</span></div>
+                    <div class="mt-3 space-y-1.5">{% for row in review_breakdown %}<div class="grid grid-cols-[14px_12px_1fr_22px] items-center gap-1 text-[10px]"><span>{{ row.rating }}</span><span class="text-amber-500">★</span><span class="h-1.5 overflow-hidden rounded-full bg-gray-100"><span class="block h-full rounded-full bg-kenya-green" style="width: {{ row.percentage }}%"></span></span><span class="text-right text-gray-500">{{ row.count }}</span></div>{% endfor %}</div>
+                    <div id="shop-review-list" class="mt-4 space-y-3">{% for review in shop_reviews %}<article class="rounded-xl border border-gray-100 p-3"><div class="flex items-start justify-between gap-3"><div class="flex items-center gap-2"><span class="flex h-8 w-8 items-center justify-center rounded-full bg-[#efe9df] text-xs font-bold">{{ review.buyer.display_name|default:review.buyer.email|slice:":1"|upper }}</span><div><strong class="block text-xs">{{ review.buyer.display_name|default:"Ziuza buyer" }}</strong>{% if review.is_verified_purchase %}<span class="text-[10px] font-semibold text-kenya-green">● Verified buyer</span>{% endif %}</div></div><time class="text-[9px] text-gray-400">{{ review.created_at|timesince }} ago</time></div><p class="mt-2 text-[11px] text-amber-500">★★★★★</p>{% if review.body %}<p class="mt-2 text-xs leading-5 text-gray-600">{{ review.body|truncatewords:28 }}</p>{% endif %}{% if review.seller_response %}<div class="mt-3 rounded-lg bg-[#f6f4ef] p-2.5 text-[11px] leading-5 text-gray-600"><strong class="text-gray-900">Response from {{ shop.name }}</strong><p class="mt-1">{{ review.seller_response }}</p></div>{% endif %}</article>{% endfor %}</div>
+                    {% else %}<p class="mt-3 text-sm text-gray-500">No reviews yet. Be the first buyer to support this shop.</p>{% endif %}
+                </section>
+
+                {% if user.is_authenticated and not is_shop_staff %}<details class="rounded-2xl border border-[#e5e2dd] bg-white p-5"><summary class="cursor-pointer text-xs font-semibold text-gray-500">Report this shop</summary><form method="post" action="{% url 'shops:report_shop' shop.slug %}" class="mt-4 space-y-2">{% csrf_token %}<select name="reason" class="field-input" required>{% for value, label in report_reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select><textarea name="details" minlength="20" required class="field-textarea" rows="3" placeholder="Describe your concern"></textarea><button class="btn-secondary btn-sm">Submit report</button></form></details>{% endif %}
+            </aside>
+        </div>
+
+        {% if not is_shop_staff %}<section class="mt-6 grid gap-5 rounded-2xl border border-[#e5e2dd] bg-white p-5 sm:p-6 lg:grid-cols-[1.35fr_repeat(3,1fr)] lg:items-center">
+            <div class="flex items-center gap-4 lg:border-r lg:border-gray-100 lg:pr-6"><span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-red-50 text-kenya-red"><svg class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm8 0v6m3-3h-6" stroke-width="1.7" stroke-linecap="round"/></svg></span><div class="min-w-0"><h2 class="font-display font-bold">Love this shop?</h2><p class="mt-1 text-xs leading-5 text-gray-500">Follow for new arrivals, exclusive offers and maker updates.</p>{% if user.is_authenticated %}<form class="mt-3" method="post" action="{% url 'favorites:shop_follow_toggle' shop.id %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button class="rounded-lg bg-kenya-red px-6 py-2.5 text-xs font-bold text-white">{% if is_following %}Following shop{% else %}Follow shop{% endif %}</button></form>{% else %}<a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}" class="mt-3 inline-flex rounded-lg bg-kenya-red px-6 py-2.5 text-xs font-bold text-white">Follow shop</a>{% endif %}</div></div>
+            <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-kenya-green">↓</span><div><strong class="block text-xs">New arrivals</strong><span class="text-[11px] text-gray-500">See new products first</span></div></div>
+            <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-800">◇</span><div><strong class="block text-xs">Exclusive offers</strong><span class="text-[11px] text-gray-500">Follower-only promotions</span></div></div>
+            <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-kenya-red">◉</span><div><strong class="block text-xs">Shop updates</strong><span class="text-[11px] text-gray-500">Never miss an update</span></div></div>
+        </section>{% endif %}
+    </div>
+</div>
+{% endblock %}

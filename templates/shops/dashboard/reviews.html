@@ -1,0 +1,89 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Reviews · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-2xl font-display font-bold text-kenya-black">Reviews</h2>
+        <p class="mt-1 text-sm text-gray-600">Verified buyer feedback and your public responses.</p>
+    </div>
+
+    {% if reviews %}
+    <div class="space-y-4">
+        {% for review in reviews %}
+        <article class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+            <div class="flex flex-wrap items-start justify-between gap-2">
+                <div>
+                    <p class="font-semibold text-kenya-black">{{ review.listing.title }}</p>
+                    <p class="text-sm text-gray-500 mt-0.5">
+                        {{ review.rating }}/5 overall
+                        · Quality {{ review.quality_rating }}
+                        · Delivery {{ review.shipping_rating }}
+                        · Service {{ review.service_rating }}
+                    </p>
+                </div>
+                <span class="inline-flex items-center rounded-full bg-kenya-green/10 px-2.5 py-1 text-xs font-semibold text-kenya-green">
+                    Verified purchase
+                </span>
+            </div>
+
+            {% if review.title %}
+            <p class="text-sm font-semibold text-kenya-black">{{ review.title }}</p>
+            {% endif %}
+            {% if review.body %}
+            <p class="text-sm text-gray-700">{{ review.body }}</p>
+            {% endif %}
+
+            {% if review.media.all %}
+            <div class="flex flex-wrap gap-2">
+                {% for media in review.media.all %}
+                <img class="h-16 w-16 rounded-lg object-cover" src="{{ media.image.url }}" alt="Review photo">
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <p class="text-xs text-gray-400">
+                {{ review.buyer.display_name|default:"Buyer" }}
+                · {{ review.created_at|date:"M j, Y" }}
+                · {{ review.get_moderation_status_display }}
+            </p>
+
+            {% if review.seller_response %}
+            <div class="rounded-xl bg-brand-surface-muted p-3 text-sm">
+                <p class="font-semibold text-kenya-black">Your public response</p>
+                <p class="mt-1 text-gray-700">{{ review.seller_response }}</p>
+            </div>
+            {% endif %}
+
+            {% if can_respond_to_reviews and review.is_visible %}
+            <form method="post" action="{% url 'reviews:seller_response' review.id %}" class="space-y-2">
+                {% csrf_token %}
+                <label class="field-label" for="response-{{ review.id }}">
+                    {% if review.seller_response %}Update response{% else %}Respond publicly{% endif %}
+                </label>
+                <textarea
+                    id="response-{{ review.id }}"
+                    class="field-input"
+                    name="response"
+                    minlength="3"
+                    maxlength="1000"
+                    rows="3"
+                    required
+                    placeholder="Respond publicly and professionally"
+                >{{ review.seller_response }}</textarea>
+                <button class="btn-red btn-sm" type="submit">
+                    {% if review.seller_response %}Update response{% else %}Publish response{% endif %}
+                </button>
+            </form>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="No reviews yet" message="Verified purchase reviews will appear here after buyers leave feedback." %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

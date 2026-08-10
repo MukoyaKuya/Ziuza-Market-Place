@@ -1,0 +1,9 @@
+<button type="button"
+        class="btn-icon {% if is_favorited %}text-kenya-red{% endif %}"
+        hx-post="{% url 'favorites:toggle' listing.id %}"
+        hx-swap="outerHTML"
+        aria-label="{% if is_favorited %}Remove favorite{% else %}Add favorite{% endif %}">
+    <svg class="h-5 w-5" fill="{% if is_favorited %}currentColor{% else %}none{% endif %}" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+    </svg>
+</button>

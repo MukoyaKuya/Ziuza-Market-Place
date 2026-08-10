@@ -1,0 +1,92 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-8">
+        <h1 class="text-2xl sm:text-3xl font-display font-bold text-kenya-black">Your account</h1>
+        <p class="mt-1 text-sm text-gray-600">{{ request.user.email }}</p>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-8">
+        <nav aria-label="Account" class="md:w-56 shrink-0">
+            <ul class="space-y-1">
+                <li>
+                    <a href="{% url 'accounts:account_home' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'home' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Overview
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'accounts:profile' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'profile' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'accounts:address_list' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'addresses' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Addresses
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'orders:buyer_list' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'orders' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Orders
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'favorites:list' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'favorites' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Saved & following
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'search:saved' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'saved_searches' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Saved searches
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'messaging:buyer_inbox' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'messages' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Messages
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'notifications:list' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'notifications' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Notifications{% if unread_notification_count %} <span class="text-kenya-red">({{ unread_notification_count }})</span>{% endif %}
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'notifications:settings' %}"
+                       class="block rounded-ziuza px-3 py-2 text-sm font-semibold {% if account_section == 'notification_settings' %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                        Notification settings
+                    </a>
+                </li>
+                <li class="pt-3 mt-3 border-t border-brand-surface-border">
+                    <form method="post" action="{% url 'accounts:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left rounded-ziuza px-3 py-2 text-sm font-semibold text-kenya-red hover:bg-kenya-red-subtle">
+                            Sign out
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+
+        <div class="flex-1 min-w-0">
+            {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-warning{% endif %}" role="status">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block account_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+import uuid
+
+from django.db import models
+
+from apps.marketplace.orders.models import Order
+
+
+class PaymentStatusChoice(models.TextChoices):
+    INITIATED = 'initiated', 'Initiated'
+    PENDING = 'pending', 'Pending'
+    CONFIRMED = 'confirmed', 'Confirmed'
+    FAILED = 'failed', 'Failed'
+    REFUNDED = 'refunded', 'Refunded'
+
+
+class Payment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='payments')
+    provider = models.CharField(max_length=40)
+    provider_reference = models.CharField(max_length=120, unique=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    currency = models.CharField(max_length=3, default='KES')
+    status = models.CharField(max_length=20, choices=PaymentStatusChoice.choices, default=PaymentStatusChoice.INITIATED)
+    initiated_at = models.DateTimeField(auto_now_add=True)
+    confirmed_at = models.DateTimeField(null=True, blank=True)
+    raw_metadata = models.JSONField(default=dict, blank=True)

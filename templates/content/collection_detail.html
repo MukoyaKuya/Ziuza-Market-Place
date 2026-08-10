@@ -1,0 +1,29 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ collection.name }} | Ziuza{% endblock %}
+{% block canonical %}<link rel="canonical" href="{{ request.scheme }}://{{ request.get_host }}{% url 'content:collection_detail' collection.slug %}">{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div>
+        <h1 class="text-3xl font-display font-bold text-kenya-black">{{ collection.name }}</h1>
+        {% if collection.description %}
+        <p class="mt-2 text-gray-600 max-w-2xl">{{ collection.description }}</p>
+        {% endif %}
+    </div>
+    {% if listings %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for listing in listings %}
+        {% url 'listings:detail' listing.slug as listing_url %}
+        {% with cover=listing.images.first %}
+        {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="Nothing in this collection yet" message="Check back soon." action_label="Browse marketplace" action_url="/" %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

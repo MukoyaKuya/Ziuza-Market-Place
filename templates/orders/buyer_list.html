@@ -1,0 +1,38 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Orders | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-xl font-display font-bold">Orders</h2>
+        <p class="mt-1 text-sm text-gray-600">Track payment and delivery for your purchases.</p>
+    </div>
+    {% if orders %}
+    <ul class="space-y-3">
+        {% for order in orders %}
+        <li class="bg-white rounded-2xl border border-brand-surface-border p-4 flex flex-wrap justify-between gap-3 items-center shadow-ziuza-sm">
+            <div>
+                <a href="{% url 'orders:buyer_detail' order.public_number %}" class="font-semibold hover:text-kenya-red">{{ order.public_number }}</a>
+                <p class="text-sm text-gray-500 mt-1">
+                    {{ order.created_at|date:"M j, Y" }}
+                    ·
+                    <span class="{% if order.payment_status == 'paid' %}text-kenya-green font-medium{% endif %}">{{ order.get_payment_status_display }}</span>
+                    · {{ order.get_fulfillment_status_display }}
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <p class="font-display font-bold">KES {{ order.grand_total }}</p>
+                <a href="{% url 'orders:buyer_detail' order.public_number %}" class="btn-secondary btn-sm">Details</a>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    {% url 'listings:category_index' as shop_url %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="No orders yet" message="When you buy from Kenyan makers, your orders will show here." action_label="Start shopping" action_url=shop_url %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Pay {{ order.public_number }} | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto px-4 py-12">
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-6 space-y-4 shadow-ziuza-sm">
+        <h1 class="text-2xl font-display font-bold">Pay for {{ order.public_number }}</h1>
+        <p class="text-sm text-gray-600">Sandbox payment provider (Fake). Amount and reference are verified server-side.</p>
+        <dl class="text-sm space-y-2">
+            <div class="flex justify-between"><dt>Amount</dt><dd class="font-bold">KES {{ payment.amount }}</dd></div>
+            <div class="flex justify-between"><dt>Reference</dt><dd class="font-mono text-xs">{{ payment.provider_reference }}</dd></div>
+            <div class="flex justify-between"><dt>Status</dt><dd>{{ payment.get_status_display }}</dd></div>
+        </dl>
+        {% if payment.status != 'confirmed' %}
+        <form method="post" action="{% url 'payments:fake_confirm' order.public_number %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-red w-full">Confirm sandbox payment</button>
+        </form>
+        {% else %}
+        <a href="{% url 'orders:buyer_detail' order.public_number %}" class="btn-secondary w-full inline-flex justify-center">View order</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

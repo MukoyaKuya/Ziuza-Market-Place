@@ -1,0 +1,80 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Verification · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6 max-w-2xl">
+    <div>
+        <h2 class="text-2xl font-display font-bold text-kenya-black">Seller verification</h2>
+        <p class="mt-1 text-sm text-gray-600">
+            Current status:
+            <strong class="text-kenya-black">{{ shop.get_verification_status_display }}</strong>
+        </p>
+    </div>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-6 shadow-ziuza-sm space-y-4">
+        <p class="text-sm text-gray-600">
+            For privacy, Ziuza stores only the final four characters of your identity document in this application.
+        </p>
+        {% if shop.verification_status != 'verified' and shop.verification_status != 'pending' %}
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label class="field-label" for="legal-name">Legal name</label>
+                <input id="legal-name" class="field-input" name="legal_name" required maxlength="160">
+            </div>
+            <div>
+                <label class="field-label" for="identity-type">Identity type</label>
+                <select id="identity-type" class="field-input" name="identity_type" required>
+                    {% for value, label in identity_types %}
+                    <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="field-label" for="identity-last4">Final 4 characters only</label>
+                <input id="identity-last4" class="field-input" name="identity_last4" required minlength="4" maxlength="4">
+            </div>
+            <div>
+                <label class="field-label" for="contact-phone">Contact phone</label>
+                <input id="contact-phone" class="field-input" type="tel" name="contact_phone" required>
+            </div>
+            <div>
+                <label class="field-label" for="biz-reg">Business registration number (optional)</label>
+                <input id="biz-reg" class="field-input" name="business_registration_number" maxlength="80">
+            </div>
+            <label class="flex gap-2 text-sm items-start">
+                <input type="checkbox" name="consent_confirmed" required class="mt-1">
+                <span>I confirm this information is accurate and consent to verification review.</span>
+            </label>
+            <button class="btn-red" type="submit">Submit for review</button>
+        </form>
+        {% else %}
+        <p class="text-sm text-gray-600">
+            {% if shop.verification_status == 'verified' %}
+            Your shop is verified. The verified badge appears on your public listings and shop page.
+            {% else %}
+            Your application is under review. We will update this page when a decision is ready.
+            {% endif %}
+        </p>
+        {% endif %}
+    </section>
+
+    {% if applications %}
+    <section class="space-y-3">
+        <h3 class="font-display font-bold text-kenya-black">Application history</h3>
+        {% for application in applications %}
+        <article class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm text-sm">
+            <p class="font-semibold text-kenya-black">
+                {{ application.get_status_display }}
+                <span class="text-gray-500 font-normal"> · {{ application.submitted_at|date:"M j, Y" }}</span>
+            </p>
+            {% if application.reviewer_notes %}
+            <p class="mt-2 text-gray-600">{{ application.reviewer_notes }}</p>
+            {% endif %}
+        </article>
+        {% endfor %}
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

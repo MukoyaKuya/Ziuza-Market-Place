@@ -1,0 +1,11 @@
+{# Usage: {% include 'components/price/price.html' with price=2500 old_price=3200 currency="KSh" %} #}
+<div class="flex items-baseline space-x-2">
+    <span class="font-display font-extrabold text-lg text-kenya-black">
+        {{ currency|default:"KSh" }} {{ price }}
+    </span>
+    {% if old_price %}
+    <span class="text-xs text-gray-400 line-through">
+        {{ currency|default:"KSh" }} {{ old_price }}
+    </span>
+    {% endif %}
+</div>

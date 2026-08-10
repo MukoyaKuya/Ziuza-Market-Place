@@ -1,0 +1,147 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Design System | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
+    <div class="border-b border-brand-surface-border pb-5">
+        <h1 class="text-3xl font-extrabold font-display text-kenya-black">Ziuza Design System</h1>
+        <p class="mt-2 text-sm text-gray-600 max-w-2xl">
+            Authoritative UI primitives for Ziuza Marketplace. Reuse these components — do not invent page-specific duplicates.
+        </p>
+    </div>
+
+    <!-- Colors -->
+    <section class="space-y-4" aria-labelledby="ds-colors">
+        <h2 id="ds-colors" class="text-xl font-bold font-display">1. Brand &amp; Kenyan color tokens</h2>
+        <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-4">
+            <div class="p-4 rounded-2xl bg-kenya-green text-white"><p class="font-bold text-xs">Kenya Green</p><p class="text-[10px] opacity-80">#008751</p></div>
+            <div class="p-4 rounded-2xl bg-kenya-green-dark text-white"><p class="font-bold text-xs">Green Dark</p><p class="text-[10px] opacity-80">#004D25</p></div>
+            <div class="p-4 rounded-2xl bg-kenya-red text-white"><p class="font-bold text-xs">Kenya Red</p><p class="text-[10px] opacity-80">#C8102E</p></div>
+            <div class="p-4 rounded-2xl bg-kenya-black text-white"><p class="font-bold text-xs">Kenya Black</p><p class="text-[10px] opacity-80">#111111</p></div>
+            <div class="p-4 rounded-2xl bg-brand-surface-ground text-kenya-black border border-brand-surface-border"><p class="font-bold text-xs">Surface Ground</p><p class="text-[10px] opacity-80">#FAF8F5</p></div>
+            <div class="p-4 rounded-2xl bg-kenya-green-subtle text-kenya-green font-bold"><p class="font-bold text-xs">Subtle Green</p><p class="text-[10px] opacity-80">#E6F4ED</p></div>
+        </div>
+    </section>
+
+    <!-- Buttons -->
+    <section class="space-y-4" aria-labelledby="ds-buttons">
+        <h2 id="ds-buttons" class="text-xl font-bold font-display">2. Buttons &amp; icon buttons</h2>
+        <div class="flex flex-wrap gap-4 items-center bg-white p-6 rounded-2xl border border-brand-surface-border">
+            {% include 'components/button/button.html' with label="Shop Now" variant="red" icon="true" %}
+            {% include 'components/button/button.html' with label="Secondary" variant="secondary" size="sm" %}
+            {% include 'components/button/button.html' with label="Ghost" variant="ghost" %}
+            {% include 'components/button/button.html' with label="Loading" variant="red" loading="true" %}
+            {% include 'components/button/button.html' with label="Disabled" variant="secondary" disabled="true" %}
+            {% include 'components/icon_button/icon_button.html' with label="Favorites" icon="heart" %}
+            {% include 'components/icon_button/icon_button.html' with label="Cart" icon="cart" %}
+        </div>
+    </section>
+
+    <!-- Forms -->
+    <section class="space-y-4" aria-labelledby="ds-forms">
+        <h2 id="ds-forms" class="text-xl font-bold font-display">3. Form controls</h2>
+        <div class="bg-white p-6 rounded-2xl border border-brand-surface-border grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% include 'components/input/input.html' with name="display_name" label="Display name" placeholder="Amina Wanjiku" hint="Shown on your public profile" %}
+            {% include 'components/input/input.html' with name="email_err" label="Email" type="email" error="Enter a valid email address" value="not-an-email" %}
+            {% include 'components/search/search.html' with name="q" label="Search" placeholder="Search Kenyan makers…" %}
+            {% include 'components/select/select.html' with name="county" label="County" placeholder="Select county" option_label_1="Nairobi" option_label_2="Kisumu" option_label_3="Mombasa" %}
+            <div class="md:col-span-2">
+                {% include 'components/textarea/textarea.html' with name="bio" label="Shop story" placeholder="Tell buyers about your craft…" rows="3" %}
+            </div>
+            {% include 'components/checkbox/checkbox.html' with name="terms" label="I agree to the Ziuza seller terms" %}
+            <div class="space-y-3">
+                {% include 'components/radio/radio.html' with name="ship" value="pickup" label="Local pickup" group_label="Fulfillment" show_group_label="true" checked="true" %}
+                {% include 'components/radio/radio.html' with name="ship" value="courier" label="Courier delivery" %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Badges / price / rating / avatar -->
+    <section class="space-y-4" aria-labelledby="ds-primitives">
+        <h2 id="ds-primitives" class="text-xl font-bold font-display">4. Badges, price, rating &amp; avatar</h2>
+        <div class="bg-white p-6 rounded-2xl border border-brand-surface-border space-y-6">
+            <div class="flex flex-wrap gap-3">
+                {% include 'components/badge/badge.html' with label="Verified Seller" variant="green" icon="verified" %}
+                {% include 'components/badge/badge.html' with label="Bestseller" variant="black" %}
+                {% include 'components/badge/badge.html' with label="Low Stock" variant="red" %}
+                {% include 'components/badge/badge.html' with label="Made in Kenya" variant="gold" %}
+            </div>
+            <div class="flex flex-wrap gap-8 items-center">
+                {% include 'components/price/price.html' with price="2,800" old_price="3,500" %}
+                {% include 'components/rating/rating.html' with score="4.9" count="54" %}
+                {% include 'components/avatar/avatar.html' with name="Amina Wanjiku" initials="AW" %}
+                {% include 'components/avatar/avatar.html' with name="Shop" initials="KS" size="lg" %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Navigation -->
+    <section class="space-y-4" aria-labelledby="ds-nav">
+        <h2 id="ds-nav" class="text-xl font-bold font-display">5. Breadcrumbs &amp; pagination</h2>
+        <div class="bg-white p-6 rounded-2xl border border-brand-surface-border space-y-6">
+            {% include 'components/breadcrumbs/breadcrumbs.html' with crumb_1_label="Home" crumb_1_url="/" crumb_2_label="Fashion" crumb_2_url="#" crumb_3_label="Kikoy Wrap" %}
+            {% include 'components/pagination/pagination.html' with page=2 total_pages=8 base_url="/search/?q=kiondo" %}
+        </div>
+    </section>
+
+    <!-- Tabs -->
+    <section class="space-y-4" aria-labelledby="ds-tabs">
+        <h2 id="ds-tabs" class="text-xl font-bold font-display">6. Tabs</h2>
+        <div class="bg-white p-6 rounded-2xl border border-brand-surface-border">
+            {% include 'components/tabs/tabs.html' with tab_1_label="Overview" tab_2_label="Shipping" tab_3_label="Policies" tab_1_content="Discover handmade goods from Kenyan creators." tab_2_content="County-based delivery and local pickup options." tab_3_content="Returns and seller vacation policies appear here." %}
+        </div>
+    </section>
+
+    <!-- Cards -->
+    <section class="space-y-4" aria-labelledby="ds-cards">
+        <h2 id="ds-cards" class="text-xl font-bold font-display">7. Marketplace cards</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {% include 'components/listing_card/listing_card.html' with title="Authentic Sisal Kiondo Basket" price="2,800" shop_name="Nairobi Craftsmen" is_verified=True category_slug="home-living" rating="4.9" reviews_count="38" badge="Bestseller" %}
+            {% include 'components/shop_card/shop_card.html' with name="Kisii Soapstone Carvers" county="Kisii" rating="4.9" items="48" %}
+            {% include 'components/category_card/category_card.html' with title="Home & Living" subtitle="Decor, kitchen, furniture" icon="H" %}
+            {% include 'components/collection_card/collection_card.html' with title="Made in Kenya" subtitle="Curated crafts & culture" count="128" %}
+        </div>
+    </section>
+
+    </section>
+
+    <!-- Charts -->
+    <section class="space-y-4" aria-labelledby="ds-charts">
+        <h2 id="ds-charts" class="text-xl font-bold font-display">8b. Charts</h2>
+        <div class="bg-white p-6 rounded-2xl border border-brand-surface-border">
+            {% include 'components/bar_chart/bar_chart.html' with rows=demo_chart_rows chart_max=5 label="Sample orders by day" caption="Seller analytics uses this bar chart for paid orders." %}
+        </div>
+    </section>
+
+    <!-- Empty / skeleton / error -->
+    <section class="space-y-4" aria-labelledby="ds-states">
+        <h2 id="ds-states" class="text-xl font-bold font-display">8. Empty, loading &amp; error states</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-2xl border border-brand-surface-border">
+                {% include 'components/empty_state/empty_state.html' with title="Your cart is empty" message="Browse handmade finds from Kenyan makers." action_label="Start shopping" action_url="/" icon="cart" %}
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-brand-surface-border">
+                {% include 'components/skeleton/skeleton.html' with variant="card" %}
+            </div>
+            <div class="space-y-3">
+                {% include 'components/error_state/error_state.html' with title="Could not update quantity" message="That item is no longer available in the requested amount." %}
+                {% include 'components/error_state/error_state.html' with tone="success" title="Address saved" message="Your default shipping address was updated." %}
+                {% include 'components/error_state/error_state.html' with tone="warning" title="Low stock" message="Only 2 left from this seller." %}
+            </div>
+        </div>
+    </section>
+
+    <!-- Overlays -->
+    <section class="space-y-4" aria-labelledby="ds-overlays">
+        <h2 id="ds-overlays" class="text-xl font-bold font-display">9. Modal, drawer &amp; toast</h2>
+        <div class="bg-white p-6 rounded-2xl border border-brand-surface-border flex flex-wrap gap-4 items-start">
+            {% include 'components/modal/modal.html' with show_trigger="true" trigger_label="Open modal" title="Confirm favorite" content="Save this listing to your favorites?" confirm_label="Save" %}
+            {% include 'components/drawer/drawer.html' with show_trigger="true" trigger_label="Open drawer" title="Mini cart" content="Cart line items will appear here in a later phase." %}
+            <button type="button" @click="$dispatch('toast', { message: 'Item added to your Ziuza cart', type: 'success' })" class="btn-red btn-sm">
+                Trigger toast
+            </button>
+        </div>
+    </section>
+</div>
+{% endblock %}

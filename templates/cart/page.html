@@ -1,0 +1,41 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Cart | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-10 space-y-6">
+    <h1 class="text-3xl font-display font-bold">Your cart</h1>
+    {% if lines %}
+    <ul class="space-y-4">
+        {% for line in lines %}
+        <li class="bg-white rounded-2xl border border-brand-surface-border p-4 flex flex-wrap gap-4 justify-between">
+            <div>
+                <a href="{% url 'listings:detail' line.item.listing.slug %}" class="font-semibold hover:text-kenya-red">{{ line.item.listing.title }}</a>
+                <p class="text-sm text-gray-500">{{ line.item.listing.shop.name }}</p>
+                {% if line.item.variant %}<p class="text-sm">Option: {{ line.item.variant.name }}</p>{% endif %}
+                {% for label, value in line.item.personalization_data.items %}<p class="text-sm"><strong>{{ label }}:</strong> {{ value }}</p>{% endfor %}
+                <p class="text-sm mt-1">{{ line.item.listing.currency }} {{ line.unit_price }} × {{ line.item.quantity }} = <strong>{{ line.item.listing.currency }} {{ line.line_total }}</strong></p>
+                {% if not line.is_available %}<p class="text-kenya-red text-xs mt-1">Unavailable or insufficient stock</p>{% endif %}
+            </div>
+            <div class="flex items-center gap-2">
+                <form method="post" action="{% url 'cart:update_quantity' line.item.id %}">
+                    {% csrf_token %}
+                    <input class="field-input w-20" type="number" min="1" name="quantity" value="{{ line.item.quantity }}">
+                    <button class="btn-secondary btn-sm" type="submit">Update</button>
+                </form>
+                <form method="post" action="{% url 'cart:remove' line.item.id %}">{% csrf_token %}<button class="btn-ghost btn-sm text-kenya-red" type="submit">Remove</button></form>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-5 flex flex-wrap items-center justify-between gap-4">
+        <p class="text-lg font-display font-bold">Subtotal: KES {{ subtotal }}</p>
+        <a href="{% url 'orders:checkout' %}" class="btn-red">Checkout</a>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="Your cart is empty" message="Browse handmade finds from Kenyan makers." action_label="Start shopping" action_url="/" icon="cart" %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

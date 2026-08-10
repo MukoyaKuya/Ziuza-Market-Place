@@ -1,0 +1,49 @@
+{% extends 'layouts/base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+        <aside class="lg:w-64 shrink-0">
+            <div class="mb-6 rounded-2xl border border-brand-surface-border bg-white p-4 shadow-ziuza-sm">
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Seller dashboard</p>
+                <h1 class="mt-1 text-xl font-display font-bold text-kenya-black truncate">{{ shop.name }}</h1>
+                <p class="mt-1 text-xs text-gray-500">
+                    {{ shop.get_verification_status_display }}{% if shop.vacation_mode %} · Vacation mode{% endif %}
+                </p>
+            </div>
+
+            <nav aria-label="Seller dashboard" class="space-y-1">
+                {% for item in dashboard_nav %}
+                <a href="{% url item.url_name %}"
+                   class="block rounded-ziuza px-3 py-2 text-sm font-semibold
+                          {% if dashboard_section == item.key %}bg-kenya-green-subtle text-kenya-green-dark{% else %}text-gray-700 hover:bg-brand-surface-muted{% endif %}">
+                    {{ item.label }}
+                </a>
+                {% endfor %}
+            </nav>
+
+            <div class="mt-6 pt-6 border-t border-brand-surface-border space-y-2">
+                <a href="{% url 'shops:public_shop' shop.slug %}" class="block text-sm font-semibold text-kenya-red hover:underline">
+                    View public shop
+                </a>
+                <a href="{% url 'accounts:account_home' %}" class="block text-sm font-medium text-gray-600 hover:text-kenya-black">
+                    Buyer account
+                </a>
+            </div>
+        </aside>
+
+        <div class="flex-1 min-w-0">
+            {% if messages %}
+            <div class="mb-4 space-y-2">
+                {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% else %}alert-warning{% endif %}" role="status">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

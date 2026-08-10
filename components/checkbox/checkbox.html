@@ -1,0 +1,27 @@
+{# Usage: {% include 'components/checkbox/checkbox.html' with name="terms" label="I agree to the terms" %} #}
+<div class="flex items-start gap-3 {{ wrapper_classes }}">
+    <input
+        type="checkbox"
+        id="{{ id|default:name }}"
+        name="{{ name }}"
+        value="{{ value|default:'on' }}"
+        class="field-checkbox mt-1 {{ extra_classes }}"
+        {% if checked %}checked{% endif %}
+        {% if required %}required{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {% if error %}aria-invalid="true" aria-describedby="{{ id|default:name }}-error"{% endif %}
+    >
+    <div class="min-w-0">
+        {% if label %}
+        <label for="{{ id|default:name }}" class="text-sm font-medium text-kenya-black">
+            {{ label }}{% if required %}<span class="text-kenya-red" aria-hidden="true"> *</span>{% endif %}
+        </label>
+        {% endif %}
+        {% if hint and not error %}
+        <p class="field-hint">{{ hint }}</p>
+        {% endif %}
+        {% if error %}
+        <p id="{{ id|default:name }}-error" class="field-error" role="alert">{{ error }}</p>
+        {% endif %}
+    </div>
+</div>

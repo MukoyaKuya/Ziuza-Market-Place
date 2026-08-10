@@ -1,0 +1,122 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Overview · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-display font-bold text-kenya-black">Overview</h2>
+            <p class="mt-1 text-sm text-gray-600">Stock, sales, and what needs attention for {{ shop.name }}.</p>
+        </div>
+        {% if pending_fulfillment %}
+        <a href="{% url 'orders:seller_list' %}" class="btn-red btn-sm">
+            {{ pending_fulfillment }} to fulfill
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Active listings</p>
+            <p class="mt-2 text-3xl font-display font-bold text-kenya-black">{{ active_listings_count }}</p>
+            <p class="mt-1 text-xs text-gray-500">{% if draft_listings_count %}{{ draft_listings_count }} draft{% if draft_listings_count != 1 %}s{% endif %}{% else %}Ready to publish{% endif %}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Low stock</p>
+            <p class="mt-2 text-3xl font-display font-bold text-kenya-black">{{ low_stock_count }}</p>
+            <p class="mt-1 text-xs text-gray-500">
+                <a href="{% url 'listings:seller_inventory' %}" class="text-kenya-red hover:underline">{{ total_listings_count }} total · manage inventory</a>
+            </p>
+        </div>
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Paid orders</p>
+            <p class="mt-2 text-3xl font-display font-bold text-kenya-black">{{ paid_orders_count }}</p>
+            <p class="mt-1 text-xs text-gray-500">{% if paid_orders_count %}{{ units_sold }} unit{% if units_sold != 1 %}s{% endif %} sold{% else %}Awaiting first paid sale{% endif %}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Gross sales</p>
+            <p class="mt-2 text-3xl font-display font-bold text-kenya-black">KES {{ gross_sales }}</p>
+            <p class="mt-1 text-xs text-gray-500">{% if avg_rating %}{{ avg_rating }}/5 · {{ review_count }} review{% if review_count != 1 %}s{% endif %}{% else %}Paid orders only{% endif %}</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <div class="flex items-center justify-between gap-2">
+                <h3 class="font-display font-bold text-kenya-black">Recent orders</h3>
+                <a href="{% url 'orders:seller_list' %}" class="text-sm font-semibold text-kenya-red hover:underline">All orders</a>
+            </div>
+            {% if recent_orders %}
+            <ul class="divide-y divide-brand-surface-border">
+                {% for so in recent_orders %}
+                <li class="py-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <a href="{% url 'orders:seller_detail' so.id %}" class="font-semibold hover:text-kenya-red">{{ so.order.public_number }}</a>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ so.order.get_payment_status_display }} · {{ so.get_fulfillment_status_display }} · {{ so.created_at|date:"M j" }}</p>
+                    </div>
+                    <p class="text-sm font-display font-bold">KES {{ so.subtotal }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500">No orders yet. Publish listings and share your shop link to get started.</p>
+            {% endif %}
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <div class="flex items-center justify-between gap-2">
+                <h3 class="font-display font-bold text-kenya-black">Top sellers</h3>
+                <a href="{% url 'analytics:seller' %}" class="text-sm font-semibold text-kenya-red hover:underline">Analytics</a>
+            </div>
+            {% if top_listings %}
+            <ul class="space-y-3 text-sm">
+                {% for row in top_listings %}
+                <li class="flex justify-between gap-3">
+                    <span class="font-medium text-kenya-black truncate">{{ row.title_snapshot }}</span>
+                    <span class="text-gray-500 shrink-0">{{ row.units_sold }} sold</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500">Top listings appear after your first paid sale.</p>
+            {% endif %}
+        </section>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-6 shadow-ziuza-sm">
+        <h3 class="font-display font-bold text-kenya-black">Shop status</h3>
+        <dl class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+            <div>
+                <dt class="text-gray-500">Verification</dt>
+                <dd class="mt-1 font-semibold text-kenya-black flex items-center gap-2">
+                    {{ verification_label }}
+                    {% if is_verified %}
+                    {% include 'components/badge/badge.html' with label="Verified" variant="green" icon="verified" %}
+                    {% endif %}
+                </dd>
+            </div>
+            <div>
+                <dt class="text-gray-500">County</dt>
+                <dd class="mt-1 font-semibold text-kenya-black">{{ shop.county }}</dd>
+            </div>
+            <div>
+                <dt class="text-gray-500">Vacation mode</dt>
+                <dd class="mt-1 font-semibold text-kenya-black">{% if shop.vacation_mode %}On — sales paused{% else %}Off{% endif %}</dd>
+            </div>
+            <div>
+                <dt class="text-gray-500">Public URL</dt>
+                <dd class="mt-1">
+                    <a href="{% url 'shops:public_shop' shop.slug %}" class="font-semibold text-kenya-red hover:underline">/shop/{{ shop.slug }}/</a>
+                </dd>
+            </div>
+        </dl>
+        <div class="mt-6 flex flex-wrap gap-3">
+            <a href="{% url 'listings:seller_create' %}" class="btn-red btn-sm">Add listing</a>
+            <a href="{% url 'listings:seller_list' %}" class="btn-secondary btn-sm">Manage listings</a>
+            <a href="{% url 'shops:dashboard_shop' %}" class="btn-secondary btn-sm">Shop settings</a>
+            <a href="{% url 'messaging:seller_inbox' %}" class="btn-secondary btn-sm">Messages</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

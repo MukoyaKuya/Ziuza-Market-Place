@@ -1,0 +1,57 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ page_title }} | Ziuza{% endblock %}
+{% block meta_description %}{{ meta_description|default:category.description }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    {% url 'listings:category_index' as cats_url %}
+    {% include 'components/breadcrumbs/breadcrumbs.html' with crumb_1_label="Home" crumb_1_url="/" crumb_2_label="Categories" crumb_2_url=cats_url crumb_3_label=category.name %}
+
+    <div>
+        <h1 class="text-3xl font-display font-bold text-kenya-black">{{ category.name }}</h1>
+        {% if category.description %}
+        <p class="mt-2 text-gray-600 max-w-2xl">{{ category.description }}</p>
+        {% endif %}
+        {% if category.children.all %}
+        <div class="mt-4 flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <span class="text-xs font-bold text-gray-500 uppercase tracking-wider shrink-0 mr-1">Filter Sub-category:</span>
+            {% for child in category.children.all %}
+            {% if child.is_visible %}
+            <a href="{% url 'listings:category_detail' child.slug %}" class="inline-flex items-center px-4 py-2 rounded-full bg-white border border-gray-200 text-sm font-semibold text-gray-800 hover:border-kenya-red hover:text-kenya-red hover:shadow-2xs transition-all shrink-0">
+                {{ child.name }}
+            </a>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+    {% if listings_page %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for listing in listings_page %}
+        {% url 'listings:detail' listing.slug as listing_url %}
+        {% with cover=listing.images.first %}
+        {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% if listings_page.paginator.num_pages > 1 %}
+    <div class="flex justify-between items-center text-sm">
+        {% if listings_page.has_previous %}
+        <a class="btn-secondary btn-sm" href="?page={{ listings_page.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-gray-500">Page {{ listings_page.number }} of {{ listings_page.paginator.num_pages }}</span>
+        {% if listings_page.has_next %}
+        <a class="btn-secondary btn-sm" href="?page={{ listings_page.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% url 'listings:category_index' as cats_url %}
+        {% include 'components/empty_state/empty_state.html' with title="No listings in this category" message="Check back soon — sellers are adding new pieces." action_label="Browse categories" action_url=cats_url %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

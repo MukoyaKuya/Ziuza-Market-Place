@@ -1,0 +1,25 @@
+{# Usage: {% include 'components/input/input.html' with name="email" label="Email" type="email" required="true" %} #}
+<div class="w-full {{ wrapper_classes }}">
+    {% if label %}
+    <label for="{{ id|default:name }}" class="field-label">
+        {{ label }}{% if required %}<span class="text-kenya-red" aria-hidden="true"> *</span>{% endif %}
+    </label>
+    {% endif %}
+    <input
+        type="{{ type|default:'text' }}"
+        id="{{ id|default:name }}"
+        name="{{ name }}"
+        value="{{ value|default:'' }}"
+        placeholder="{{ placeholder|default:'' }}"
+        class="field-input {% if error %}field-input-error{% endif %} {{ extra_classes }}"
+        {% if required %}required{% endif %}
+        {% if disabled %}disabled{% endif %}
+        {% if autocomplete %}autocomplete="{{ autocomplete }}"{% endif %}
+        {% if aria_describedby %}aria-describedby="{{ aria_describedby }}"{% elif error %}aria-describedby="{{ id|default:name }}-error" aria-invalid="true"{% elif hint %}aria-describedby="{{ id|default:name }}-hint"{% endif %}
+    >
+    {% if error %}
+    <p id="{{ id|default:name }}-error" class="field-error" role="alert">{{ error }}</p>
+    {% elif hint %}
+    <p id="{{ id|default:name }}-hint" class="field-hint">{{ hint }}</p>
+    {% endif %}
+</div>

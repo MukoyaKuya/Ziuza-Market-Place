@@ -1,0 +1,44 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Inventory · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-6">
+    <h2 class="text-2xl font-display font-bold text-kenya-black">Inventory</h2>
+    <p class="mt-1 text-sm text-gray-600">Base stock across your listings. Variant stock is managed on each listing.</p>
+</div>
+
+{% if rows %}
+<div class="bg-white rounded-2xl border border-brand-surface-border shadow-ziuza-sm overflow-hidden">
+    <table class="min-w-full text-sm">
+        <thead class="bg-brand-surface-muted text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+                <th class="px-4 py-3 font-semibold">Listing</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold">Available</th>
+                <th class="px-4 py-3 font-semibold">Reserved</th>
+                <th class="px-4 py-3 font-semibold"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-brand-surface-border">
+            {% for row in rows %}
+            <tr class="{% if row.inventory and row.inventory.available_to_sell <= row.inventory.low_stock_threshold %}bg-amber-50/60{% endif %}">
+                <td class="px-4 py-3 font-semibold">{{ row.listing.title }}</td>
+                <td class="px-4 py-3">{{ row.listing.get_status_display }}</td>
+                <td class="px-4 py-3">{% if row.inventory %}{{ row.inventory.available_to_sell }}{% else %}—{% endif %}</td>
+                <td class="px-4 py-3">{% if row.inventory %}{{ row.inventory.quantity_reserved }}{% else %}—{% endif %}</td>
+                <td class="px-4 py-3 text-right">
+                    <a href="{% url 'listings:seller_detail' row.listing.id %}" class="font-semibold text-kenya-red hover:underline">Manage</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white rounded-2xl border border-brand-surface-border">
+    {% url 'listings:seller_create' as create_url %}
+    {% include 'components/empty_state/empty_state.html' with title="No inventory yet" message="Create a listing to track stock." action_label="New listing" action_url=create_url %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,52 @@
+{# Accessible Alpine modal. Open with @open-modal.window or show_trigger. #}
+<div
+    x-data="{ open: false }"
+    @open-modal.window="open = true"
+    @keydown.escape.window="if (open) open = false"
+    class="relative z-50"
+>
+    {% if show_trigger %}
+    <button type="button" class="btn-secondary" @click="open = true">{{ trigger_label|default:'Open modal' }}</button>
+    {% endif %}
+
+    <div
+        x-show="open"
+        x-cloak
+        x-transition.opacity
+        class="fixed inset-0 bg-kenya-black/60"
+        @click="open = false"
+        aria-hidden="true"
+    ></div>
+
+    <div
+        x-show="open"
+        x-cloak
+        x-transition
+        class="fixed inset-0 z-10 overflow-y-auto p-4 sm:p-6 flex items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+    >
+        <div class="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-ziuza-lg border border-brand-surface-border relative" @click.stop>
+            <button type="button" @click="open = false" class="absolute top-4 right-4 btn-icon" aria-label="Close dialog">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            {% if title %}
+            <h2 id="modal-title" class="text-xl font-display font-bold text-kenya-black pr-8 mb-3">{{ title }}</h2>
+            {% else %}
+            <span id="modal-title" class="sr-only">Dialog</span>
+            {% endif %}
+            <div class="text-sm text-gray-700">
+                {% firstof content "Modal content goes here." %}
+            </div>
+            {% if confirm_label %}
+            <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                <button type="button" class="btn-secondary btn-sm" @click="open = false">{{ cancel_label|default:'Cancel' }}</button>
+                <button type="button" class="btn-red btn-sm" @click="open = false">{{ confirm_label }}</button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>

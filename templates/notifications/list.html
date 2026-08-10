@@ -1,0 +1,40 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Notifications | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-6">
+    <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+        <h2 class="text-xl font-display font-bold">Notifications</h2>
+        <p class="mt-1 text-sm text-gray-600">Order and message alerts.</p>
+        </div>
+        <a href="{% url 'notifications:settings' %}" class="btn-secondary btn-sm">Email preferences</a>
+    </div>
+    {% if notifications %}
+    <ul class="space-y-3">
+        {% for n in notifications %}
+        <li class="bg-white rounded-2xl border border-brand-surface-border p-4 shadow-ziuza-sm {% if not n.is_read %}border-l-4 border-l-kenya-green{% endif %}">
+            <div class="flex flex-wrap justify-between gap-2">
+                <div>
+                    <p class="font-semibold">{% if not n.is_read %}<span class="text-kenya-green text-xs uppercase mr-1">New</span>{% endif %}{{ n.title }}</p>
+                    <p class="text-sm text-gray-600 mt-1">{{ n.body }}</p>
+                    <p class="text-xs text-gray-400 mt-2">{{ n.created_at|date:"M j, Y H:i" }}</p>
+                </div>
+                <div class="flex gap-2 items-start">
+                    {% if n.target_url %}<a href="{{ n.target_url }}" class="btn-ghost btn-sm">Open</a>{% endif %}
+                    {% if not n.is_read %}
+                    <form method="post" action="{% url 'notifications:mark_read' n.id %}">{% csrf_token %}<button class="btn-secondary btn-sm" type="submit">Mark read</button></form>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% include 'components/empty_state/empty_state.html' with title="All caught up" message="Order and message alerts will appear here." action_label="Go to overview" action_url="/account/" %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

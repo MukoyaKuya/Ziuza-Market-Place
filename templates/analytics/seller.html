@@ -1,0 +1,164 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Analytics · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <div class="flex flex-wrap items-end justify-between gap-3">
+        <div>
+            <h2 class="text-2xl font-display font-bold text-kenya-black">Analytics</h2>
+            <p class="mt-1 text-sm text-gray-600">
+                Paid-order performance for {{ shop.name }}
+                · {{ range_start|date:"M j" }}–{{ range_end|date:"M j, Y" }}.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+            {% if pending_fulfillment %}
+            <a href="{% url 'orders:seller_list' %}" class="btn-red btn-sm">
+                {{ pending_fulfillment }} to fulfill
+            </a>
+            {% endif %}
+            <div class="inline-flex rounded-full border border-brand-surface-border bg-white p-1 text-sm font-semibold" role="group" aria-label="Date range">
+                <a href="?days=7" class="px-3 py-1.5 rounded-full {% if selected_days == 7 %}bg-kenya-green text-white{% else %}text-gray-600 hover:text-kenya-black{% endif %}">7d</a>
+                <a href="?days=14" class="px-3 py-1.5 rounded-full {% if selected_days == 14 %}bg-kenya-green text-white{% else %}text-gray-600 hover:text-kenya-black{% endif %}">14d</a>
+                <a href="?days=30" class="px-3 py-1.5 rounded-full {% if selected_days == 30 %}bg-kenya-green text-white{% else %}text-gray-600 hover:text-kenya-black{% endif %}">30d</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Revenue (last {{ selected_days }} days)</p>
+            <p class="text-2xl font-display font-bold mt-1 text-kenya-black">KES {{ revenue }}</p>
+            <p class="mt-1 text-xs text-gray-500">Lifetime KES {{ lifetime_revenue }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Paid orders (last {{ selected_days }} days)</p>
+            <p class="text-2xl font-display font-bold mt-1 text-kenya-black">{{ order_count }}</p>
+            <p class="mt-1 text-xs text-gray-500">Lifetime {{ lifetime_order_count }}</p>
+        </div>
+        <div class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm">
+            <p class="text-xs uppercase text-gray-500 font-semibold tracking-wide">Units sold (last {{ selected_days }} days)</p>
+            <p class="text-2xl font-display font-bold mt-1 text-kenya-black">{{ units_sold }}</p>
+            <p class="mt-1 text-xs text-gray-500">Lifetime {{ lifetime_units_sold }}</p>
+        </div>
+    </div>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+        <div class="flex items-center justify-between gap-2">
+            <h3 class="font-display font-bold text-kenya-black">Orders by day</h3>
+            <span class="text-xs text-gray-500">Last {{ selected_days }} days</span>
+        </div>
+        {% include 'components/bar_chart/bar_chart.html' with rows=daily chart_max=daily_chart_max_orders label="Orders by day" caption="Bars show paid seller orders per day (Africa/Nairobi)." empty_message="Daily totals appear after paid orders." %}
+    </section>
+
+    {% if avg_rating %}
+    <section class="rounded-2xl border border-brand-surface-border bg-white p-5 shadow-ziuza-sm space-y-3">
+        <h3 class="font-display font-bold text-kenya-black">Review reputation</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
+            <div>
+                <p class="text-gray-500">Overall</p>
+                <p class="text-xl font-bold text-kenya-black">{{ avg_rating }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Quality</p>
+                <p class="text-xl font-bold text-kenya-black">{{ review_quality_average }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Delivery</p>
+                <p class="text-xl font-bold text-kenya-black">{{ review_shipping_average }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Service</p>
+                <p class="text-xl font-bold text-kenya-black">{{ review_service_average }}</p>
+            </div>
+        </div>
+        <p class="text-sm text-gray-500">
+            {{ review_count }} verified review{{ review_count|pluralize }}
+            · Seller response rate {% if review_response_rate != None %}{{ review_response_rate }}%{% else %}—{% endif %}
+        </p>
+    </section>
+    {% endif %}
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+        <h3 class="font-display font-bold text-kenya-black">Buyer protection health</h3>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            <div>
+                <p class="text-gray-500">Active cases</p>
+                <p class="text-xl font-bold text-kenya-black">{{ active_protection_cases }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Case rate</p>
+                <p class="text-xl font-bold text-kenya-black">{{ protection_case_rate }}%</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Escalated</p>
+                <p class="text-xl font-bold text-kenya-black">{{ escalated_protection_cases }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">On-time responses</p>
+                <p class="text-xl font-bold text-kenya-black">{% if on_time_case_response_rate != None %}{{ on_time_case_response_rate }}%{% else %}—{% endif %}</p>
+            </div>
+        </div>
+        <p class="text-xs text-gray-500">Case rate compares all protection cases with lifetime paid shop orders. Seller responses are due within 48 hours.</p>
+    </section>
+
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+        <h3 class="font-display font-bold text-kenya-black">Audience &amp; retention</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+            <div>
+                <p class="text-gray-500">Followers</p>
+                <p class="text-xl font-bold text-kenya-black">{{ follower_count }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Listing saves</p>
+                <p class="text-xl font-bold text-kenya-black">{{ listing_save_count }}</p>
+            </div>
+            <div>
+                <p class="text-gray-500">Returning viewers</p>
+                <p class="text-xl font-bold text-kenya-black">{{ returning_viewers }}</p>
+            </div>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <h3 class="font-display font-bold text-kenya-black">Top listings</h3>
+            {% if top_listings %}
+            <ul class="text-sm space-y-3">
+                {% for row in top_listings %}
+                <li class="flex justify-between gap-2">
+                    <span class="font-medium truncate text-kenya-black">{{ row.title_snapshot }}</span>
+                    <span class="text-gray-500 shrink-0">{{ row.units_sold }} · KES {{ row.revenue }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            {% include 'components/empty_state/empty_state.html' with title="No paid sales yet" message="Top listings appear after buyers complete paid orders in this range." extra_classes="py-6" %}
+            {% endif %}
+        </section>
+
+        <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">
+            <div class="flex items-center justify-between gap-2">
+                <h3 class="font-display font-bold text-kenya-black">Recent orders</h3>
+                <a href="{% url 'orders:seller_list' %}" class="text-sm font-semibold text-kenya-red hover:underline">All orders</a>
+            </div>
+            {% if recent_orders %}
+            <ul class="divide-y divide-brand-surface-border">
+                {% for so in recent_orders %}
+                <li class="py-3 flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                        <a href="{% url 'orders:seller_detail' so.id %}" class="font-semibold hover:text-kenya-red">{{ so.order.public_number }}</a>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ so.order.get_payment_status_display }} · {{ so.get_fulfillment_status_display }} · {{ so.created_at|date:"M j" }}</p>
+                    </div>
+                    <p class="text-sm font-display font-bold">KES {{ so.subtotal }}</p>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            {% include 'components/empty_state/empty_state.html' with title="No orders yet" message="Recent orders will show here as buyers check out." extra_classes="py-6" %}
+            {% endif %}
+        </section>
+    </div>
+</div>
+{% endblock %}

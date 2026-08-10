@@ -1,0 +1,47 @@
+{# Usage: {% include 'components/trust_badge/trust_badge.html' with title="Secure Payments" subtitle="Pay safely with M-Pesa, card, or other methods" icon="shield" %} #}
+<div class="flex items-center gap-3 sm:gap-3.5 p-1 sm:p-1.5">
+    <div class="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-white border border-gray-200/80 flex items-center justify-center shadow-2xs shrink-0 overflow-hidden p-1.5">
+        {% if icon_url %}
+        <img src="{{ icon_url }}" alt="{{ title }}" class="w-full h-full object-contain">
+        {% elif icon == 'shield' %}
+        <svg class="w-6 h-6 text-[#008751]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+            <path stroke-linejoin="round" d="M12 3.5l7 2.5v5.2c0 4.3-2.9 7.8-7 9.3-4.1-1.5-7-5-7-9.3V6L12 3.5z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.5 12l1.8 1.8L15 10"/>
+        </svg>
+        {% elif icon == 'truck' %}
+        <svg class="w-6 h-6 text-[#C8102E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 7.5h11v8H3z"/>
+            <path d="M14 10.5h4.2L21 13.8v1.7h-7"/>
+            <circle cx="7" cy="17.5" r="1.5"/>
+            <circle cx="17" cy="17.5" r="1.5"/>
+        </svg>
+        {% elif icon == 'support' %}
+        <svg class="w-6 h-6 text-[#008751]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10-4.5 10-10 10z"/>
+            <path d="M7 12l3 3 7-7"/>
+        </svg>
+        {% elif icon == 'quality' %}
+        <svg class="w-6 h-6 text-[#C8102E]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 15l-3.5 2 1-4-3-3 4-.5L12 6l1.5 3.5 4 .5-3 3 1 4z"/>
+            <path d="M8.5 17.5L6 21l3-1 3 1-2.5-3.5"/>
+        </svg>
+        {% else %}
+        <svg class="w-6 h-6 text-[#008751]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="5" y="11" width="14" height="9" rx="2"/>
+            <path d="M8 11V7a4 4 0 018 0v4"/>
+        </svg>
+        {% endif %}
+    </div>
+    <div class="min-w-0 flex-1">
+        <h5 class="font-bold text-sm text-gray-900 leading-tight">{{ title }}</h5>
+        <p class="text-xs text-gray-500 mt-0.5 leading-snug">
+            {% if title == 'Secure Payments' %}
+            Pay safely <span class="underline underline-offset-2 decoration-gray-300">with M-Pesa</span>, card, or other methods
+            {% else %}
+            {{ subtitle }}
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+

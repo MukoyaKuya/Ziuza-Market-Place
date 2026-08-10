@@ -1,0 +1,37 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Team · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-8">
+    <div><h2 class="text-2xl font-display font-bold">Team and activity</h2><p class="mt-1 text-sm text-gray-600">Delegate work with defined roles while sensitive identity and team controls remain owner-only.</p></div>
+
+    {% if is_team_owner %}
+    <section class="rounded-2xl border border-brand-surface-border bg-white p-6 shadow-ziuza-sm">
+        <h3 class="text-lg font-display font-bold">Invite a team member</h3>
+        <p class="mt-1 text-sm text-gray-600">Invitees must already have a Ziuza account and cannot currently manage another shop. Invitations expire after seven days.</p>
+        <form method="post" class="mt-4 grid gap-3 sm:grid-cols-3">
+            {% csrf_token %}<input type="hidden" name="action" value="invite">
+            <input class="field-input sm:col-span-2" type="email" name="email" required placeholder="member@example.com" aria-label="Member email">
+            <select class="field-select" name="role" required>{% for value, label in team_roles %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+            <button class="btn-red sm:col-span-3 sm:w-fit" type="submit">Send invitation</button>
+        </form>
+    </section>
+    {% endif %}
+
+    <section>
+        <h3 class="mb-3 text-lg font-display font-bold">Members</h3>
+        <div class="space-y-3">
+            <article class="rounded-2xl border border-brand-surface-border bg-white p-5"><p class="font-semibold">{{ shop.owner.email }}</p><p class="text-sm text-gray-500">Owner · Full and permanent access</p></article>
+            {% for membership in memberships %}<article class="rounded-2xl border border-brand-surface-border bg-white p-5">
+                <div class="flex flex-wrap items-center justify-between gap-3"><div><p class="font-semibold">{{ membership.user.email }}</p><p class="text-sm text-gray-500">{{ membership.get_role_display }} · {{ membership.get_status_display }}</p></div>
+                {% if is_team_owner and membership.status == 'active' %}<div class="flex flex-wrap gap-2"><form method="post" class="flex gap-2">{% csrf_token %}<input type="hidden" name="action" value="change_role"><input type="hidden" name="membership_id" value="{{ membership.id }}"><select class="field-select text-sm" name="role">{% for value, label in team_roles %}<option value="{{ value }}" {% if membership.role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select><button class="btn-secondary btn-sm">Update</button></form><form method="post">{% csrf_token %}<input type="hidden" name="action" value="revoke"><input type="hidden" name="membership_id" value="{{ membership.id }}"><button class="text-sm font-semibold text-kenya-red px-2 py-1">Revoke</button></form></div>{% endif %}</div>
+            </article>{% endfor %}
+        </div>
+    </section>
+
+    {% if is_team_owner and invitations %}<section><h3 class="mb-3 text-lg font-display font-bold">Pending invitations</h3><div class="rounded-2xl border border-brand-surface-border bg-white divide-y divide-brand-surface-border">{% for invitation in invitations %}<div class="p-4 text-sm"><strong>{{ invitation.email }}</strong> · {{ invitation.get_role_display }} · expires {{ invitation.expires_at|date:"j M Y, H:i" }}</div>{% endfor %}</div></section>{% endif %}
+
+    {% if is_team_owner and audit_events %}<section><h3 class="mb-3 text-lg font-display font-bold">Activity log</h3><div class="rounded-2xl border border-brand-surface-border bg-white divide-y divide-brand-surface-border">{% for event in audit_events %}<div class="p-4 text-sm"><p><strong>{{ event.actor.email|default:"Former user" }}</strong> · {{ event.description }}</p><p class="mt-1 text-xs text-gray-500">{{ event.created_at|date:"j M Y, H:i" }} · {{ event.action }}</p></div>{% endfor %}</div></section>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Listings · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div>
+        <h2 class="text-2xl font-display font-bold text-kenya-black">Listings</h2>
+        <p class="mt-1 text-sm text-gray-600">Create drafts, manage inventory, and publish to the marketplace.</p>
+    </div>
+    <a href="{% url 'listings:seller_create' %}" class="btn-red btn-sm">New listing</a>
+</div>
+
+{% if listings %}
+<div class="bg-white rounded-2xl border border-brand-surface-border shadow-ziuza-sm overflow-hidden">
+    <table class="min-w-full text-sm">
+        <thead class="bg-brand-surface-muted text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+                <th class="px-4 py-3 font-semibold">Listing</th>
+                <th class="px-4 py-3 font-semibold">Status</th>
+                <th class="px-4 py-3 font-semibold">Price</th>
+                <th class="px-4 py-3 font-semibold">Stock</th>
+                <th class="px-4 py-3 font-semibold"></th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-brand-surface-border">
+            {% for listing in listings %}
+            <tr>
+                <td class="px-4 py-3">
+                    <a href="{% url 'listings:seller_detail' listing.id %}" class="font-semibold text-kenya-black hover:text-kenya-red">{{ listing.title }}</a>
+                    <p class="text-xs text-gray-500">{{ listing.category.name }}</p>
+                </td>
+                <td class="px-4 py-3">{{ listing.get_status_display }}</td>
+                <td class="px-4 py-3">{{ listing.currency }} {{ listing.base_price }}</td>
+                <td class="px-4 py-3">
+                    {% with inv=listing.base_inventory.0 %}
+                    {% if inv %}{{ inv.available_to_sell }}{% else %}—{% endif %}
+                    {% endwith %}
+                </td>
+                <td class="px-4 py-3 text-right">
+                    <a href="{% url 'listings:seller_detail' listing.id %}" class="font-semibold text-kenya-red hover:underline">Manage</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="bg-white rounded-2xl border border-brand-surface-border">
+    {% url 'listings:seller_create' as create_url %}
+    {% include 'components/empty_state/empty_state.html' with title="No listings yet" message="Create your first draft to start selling on Ziuza." action_label="New listing" action_url=create_url %}
+</div>
+{% endif %}
+{% endblock %}

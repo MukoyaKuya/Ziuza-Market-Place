@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-brand-surface-ground text-kenya-black antialiased selection:bg-kenya-red/20 selection:text-kenya-red;
+  }
+
+  [x-cloak] {
+    display: none !important;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-kenya-red;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary, .btn-red {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-pill font-semibold text-sm text-white bg-kenya-red hover:bg-kenya-red-dark transition-all duration-200 shadow-ziuza-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-kenya-red/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+  .btn-outline-green {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-pill font-semibold text-sm text-white bg-transparent border-2 border-kenya-green hover:bg-kenya-green/20 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-kenya-green/40 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-ziuza font-semibold text-sm text-kenya-black bg-white border border-brand-surface-border hover:bg-brand-surface-ground transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-kenya-black/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-pill-white {
+    @apply inline-flex items-center justify-center px-5 py-2.5 rounded-pill font-semibold text-sm text-kenya-black bg-white hover:bg-gray-100 transition-all duration-200 shadow-ziuza-sm active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center px-3 py-2 rounded-ziuza font-semibold text-sm text-kenya-black hover:bg-brand-surface-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kenya-black/20 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
+  }
+  .btn-lg {
+    @apply px-8 py-3.5 text-base;
+  }
+  .btn-icon {
+    @apply inline-flex items-center justify-center rounded-ziuza p-2 text-kenya-black hover:bg-brand-surface-muted transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-kenya-red/40 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  /* Form controls */
+  .field-label {
+    @apply block text-sm font-semibold text-kenya-black mb-1.5;
+  }
+  .field-hint {
+    @apply mt-1.5 text-xs text-gray-500;
+  }
+  .field-error {
+    @apply mt-1.5 text-xs font-medium text-kenya-red;
+  }
+  .field-input,
+  .field-textarea,
+  .field-select,
+  .field-search {
+    @apply block w-full rounded-xl border-gray-300 bg-white text-gray-900 px-3.5 py-2.5 text-sm shadow-sm placeholder:text-gray-400 focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none disabled:bg-gray-100 disabled:cursor-not-allowed;
+  }
+  .field-input {
+    @apply h-11;
+  }
+  .field-select {
+    @apply h-11 pr-10;
+  }
+  .field-textarea {
+    @apply min-h-[4.5rem] py-2.5 resize-y;
+  }
+  .field-checkbox,
+  .field-radio {
+    @apply rounded border-brand-surface-border text-kenya-green focus:ring-kenya-green/40;
+  }
+  .field-radio {
+    @apply rounded-full;
+  }
+  .field-search {
+    @apply pl-10;
+  }
+
+  /* Surfaces */
+  .card-base {
+    @apply bg-white border border-brand-surface-border rounded-2xl p-6 shadow-ziuza-sm hover:shadow-ziuza-md transition-shadow;
+  }
+  .market-card {
+    @apply overflow-hidden rounded-2xl border border-[#e6e1d8] bg-white shadow-sm transition-all duration-300;
+  }
+  .market-card-interactive {
+    @apply hover:-translate-y-0.5 hover:border-gray-300 hover:shadow-lg;
+  }
+  .alert-error {
+    @apply rounded-ziuza border border-kenya-red/30 bg-kenya-red-subtle text-kenya-red-dark px-4 py-3 text-sm;
+  }
+  .alert-success {
+    @apply rounded-ziuza border border-kenya-green/30 bg-kenya-green-subtle text-kenya-green-dark px-4 py-3 text-sm;
+  }
+  .alert-warning {
+    @apply rounded-ziuza border border-amber-300 bg-amber-50 text-amber-900 px-4 py-3 text-sm;
+  }
+  .skeleton {
+    @apply animate-pulse rounded-ziuza bg-brand-surface-muted;
+  }
+
+  /* Traditional Maasai Beadwork Pattern Utility for Hero Border */
+  .maasai-pattern-border {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='80' viewBox='0 0 40 80'%3E%3Crect width='40' height='80' fill='%23111111'/%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' fill='%23C8102E'/%3E%3Cpath d='M20 40L40 60L20 80L0 60Z' fill='%23008751'/%3E%3Cpath d='M20 0L40 20L20 40L0 20Z' stroke='%23FFFFFF' stroke-width='2.5' fill='none'/%3E%3Cpath d='M20 40L40 60L20 80L0 60Z' stroke='%23FFFFFF' stroke-width='2.5' fill='none'/%3E%3Cpolygon points='20,8 30,18 20,28 10,18' fill='%23FFFFFF'/%3E%3Cpolygon points='20,11 27,18 20,25 13,18' fill='%23111111'/%3E%3Cpolygon points='20,48 30,58 20,68 10,58' fill='%23FFFFFF'/%3E%3Cpolygon points='20,51 27,58 20,65 13,58' fill='%23111111'/%3E%3C/svg%3E");
+    background-repeat: repeat-y;
+    background-size: 40px auto;
+  }
+}

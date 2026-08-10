@@ -1,0 +1,60 @@
+{# Alpine tabs. Usage wrap: include with tab_1_label, tab_2_label, tab_1_content, tab_2_content #}
+<div
+    x-data="{ active: '{{ default_tab|default:'1' }}' }"
+    class="w-full {{ extra_classes }}"
+>
+    <div role="tablist" aria-label="{{ aria_label|default:'Tabs' }}" class="flex flex-wrap gap-1 border-b border-brand-surface-border">
+        {% if tab_1_label %}
+        <button
+            type="button"
+            role="tab"
+            id="tab-1"
+            :aria-selected="active === '1'"
+            :tabindex="active === '1' ? 0 : -1"
+            @click="active = '1'"
+            :class="active === '1' ? 'border-kenya-red text-kenya-red' : 'border-transparent text-gray-500 hover:text-kenya-black'"
+            class="px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        >{{ tab_1_label }}</button>
+        {% endif %}
+        {% if tab_2_label %}
+        <button
+            type="button"
+            role="tab"
+            id="tab-2"
+            :aria-selected="active === '2'"
+            :tabindex="active === '2' ? 0 : -1"
+            @click="active = '2'"
+            :class="active === '2' ? 'border-kenya-red text-kenya-red' : 'border-transparent text-gray-500 hover:text-kenya-black'"
+            class="px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        >{{ tab_2_label }}</button>
+        {% endif %}
+        {% if tab_3_label %}
+        <button
+            type="button"
+            role="tab"
+            id="tab-3"
+            :aria-selected="active === '3'"
+            :tabindex="active === '3' ? 0 : -1"
+            @click="active = '3'"
+            :class="active === '3' ? 'border-kenya-red text-kenya-red' : 'border-transparent text-gray-500 hover:text-kenya-black'"
+            class="px-4 py-2.5 text-sm font-semibold border-b-2 -mb-px transition-colors"
+        >{{ tab_3_label }}</button>
+        {% endif %}
+    </div>
+
+    {% if tab_1_content %}
+    <div role="tabpanel" id="panel-1" aria-labelledby="tab-1" x-show="active === '1'" x-cloak class="py-4 text-sm text-gray-700">
+        {{ tab_1_content }}
+    </div>
+    {% endif %}
+    {% if tab_2_content %}
+    <div role="tabpanel" id="panel-2" aria-labelledby="tab-2" x-show="active === '2'" x-cloak class="py-4 text-sm text-gray-700">
+        {{ tab_2_content }}
+    </div>
+    {% endif %}
+    {% if tab_3_content %}
+    <div role="tabpanel" id="panel-3" aria-labelledby="tab-3" x-show="active === '3'" x-cloak class="py-4 text-sm text-gray-700">
+        {{ tab_3_content }}
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,81 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}{{ order.public_number }} | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-6">
+    <div>
+        <h2 class="text-xl font-display font-bold">{{ order.public_number }}</h2>
+        <p class="text-sm text-gray-500">{{ order.created_at|date:"M j, Y H:i" }} · Payment: {{ order.get_payment_status_display }} · Fulfillment: {{ order.get_fulfillment_status_display }}</p>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-5 space-y-3">
+        <h3 class="font-semibold">Items</h3>
+        <ul class="space-y-3 text-sm">
+            {% for item in order.items.all %}
+            <li class="flex flex-wrap justify-between gap-2 border-b border-brand-surface-border pb-3">
+                <div>
+                    <p class="font-medium">{{ item.title_snapshot }} × {{ item.quantity }}</p>
+                    <p class="text-gray-500">KES {{ item.unit_price }} each</p>
+                    {% if item.variant_snapshot.name %}<p class="text-xs"><strong>Option:</strong> {{ item.variant_snapshot.name }}</p>{% endif %}
+                    {% for label, value in item.personalization_data.items %}<p class="text-xs"><strong>{{ label }}:</strong> {{ value }}</p>{% endfor %}
+                    {% if item.download_assets %}<a class="text-kenya-green text-xs font-semibold" href="#downloads">Downloads available below</a>{% endif %}
+                    {% if order.payment_status == 'paid' and item.seller_order.fulfillment_status == 'delivered' %}
+                    {% if item.review %}<a href="{% url 'reviews:edit' item.review.id %}" class="text-kenya-green text-xs font-semibold hover:underline">Edit your review</a>{% else %}<a href="{% url 'reviews:create' item.id %}" class="text-kenya-green text-xs font-semibold hover:underline">Write a verified review</a>{% endif %}
+                    {% endif %}
+                </div>
+                <p class="font-semibold">KES {{ item.line_total }}</p>
+            </li>
+            {% endfor %}
+        </ul>
+        <dl class="text-sm space-y-1 pt-2">
+            <div class="flex justify-between"><dt>Subtotal</dt><dd>KES {{ order.subtotal }}</dd></div>
+            <div class="flex justify-between"><dt>Shipping</dt><dd>KES {{ order.shipping_total }}</dd></div>
+            {% for delivery in order.shipping_breakdown %}<div class="flex justify-between text-xs text-gray-500"><dt>{{ delivery.shop }} · {{ delivery.profile }}</dt><dd>{% if delivery.pickup %}Pickup{% else %}KES {{ delivery.fee }}{% endif %}</dd></div>{% endfor %}
+            {% if order.discount_total %}<div class="flex justify-between text-kenya-green"><dt>Discount{% if order.promotion_code %} ({{ order.promotion_code }}){% endif %}</dt><dd>− KES {{ order.discount_total }}</dd></div>{% endif %}
+            <div class="flex justify-between font-bold text-base"><dt>Total</dt><dd>KES {{ order.grand_total }}</dd></div>
+        </dl>
+        {% if order.payment_status == 'pending' or order.payment_status == 'processing' %}
+        <a href="{% url 'payments:initiate' order.public_number %}" class="btn-red btn-sm inline-flex">Complete payment</a>
+        <form method="post" action="{% url 'orders:buyer_cancel' order.public_number %}" class="inline-block ml-2">
+            {% csrf_token %}
+            <button type="submit" class="btn-outline btn-sm">Cancel order</button>
+        </form>
+        {% endif %}
+    </div>
+
+    {% if order.shipping_address_snapshot %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-5 text-sm">
+        <h3 class="font-semibold mb-2">Ship to</h3>
+        <p>{{ order.shipping_address_snapshot.recipient_name }}</p>
+        <p>{{ order.shipping_address_snapshot.address_line_1 }}, {{ order.shipping_address_snapshot.city_or_town }}</p>
+        <p>{{ order.shipping_address_snapshot.county }}, {{ order.shipping_address_snapshot.country }}</p>
+    </div>
+    {% endif %}
+
+    {% if order.payment_status == 'paid' %}
+    <section id="downloads" class="bg-white rounded-2xl border border-brand-surface-border p-5">
+        <h3 class="font-semibold">Digital downloads</h3>
+        {% for item in order.items.all %}{% if item.download_assets %}<div class="mt-3"><p class="text-sm font-medium">{{ item.title_snapshot }}</p>{% for asset in item.download_assets %}<a class="block mt-1 text-kenya-green font-semibold text-sm" href="{% url 'orders:download_asset' item.secure_download_grant.id asset.id %}">Download {{ asset.title }}{% if asset.version %} ({{ asset.version }}){% endif %}</a>{% endfor %}</div>{% endif %}{% empty %}<p class="text-sm text-gray-500">No downloads.</p>{% endfor %}
+    </section>
+    {% endif %}
+
+    {% for seller_order in order.seller_orders.all %}
+    <section class="bg-white rounded-2xl border border-brand-surface-border p-5 text-sm">
+        <h3 class="font-semibold">Delivery from {{ seller_order.shop.name }}</h3>
+        <p class="text-gray-600">{{ seller_order.get_fulfillment_status_display }}</p>
+        {% for shipment in seller_order.shipments.all %}
+        <p class="mt-2">{{ shipment.carrier|default:"Carrier pending" }}{% if shipment.tracking_number %} · <strong>{{ shipment.tracking_number }}</strong>{% endif %}</p>
+        <ol class="mt-3 border-l-2 border-kenya-green pl-4 space-y-3">
+            {% for event in shipment.events.all %}
+            <li><strong>{{ event.get_status_display }}</strong><br><span class="text-gray-500">{{ event.created_at|date:"M j, Y H:i" }}</span>{% if event.note %}<br>{{ event.note }}{% endif %}</li>
+            {% endfor %}
+        </ol>
+        {% endfor %}
+        {% if order.payment_status == 'paid' %}
+        <a href="{% url 'orders:buyer_help_create' seller_order.id %}" class="mt-4 inline-flex text-kenya-red font-semibold hover:underline">Get help with this delivery</a>
+        {% endif %}
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}

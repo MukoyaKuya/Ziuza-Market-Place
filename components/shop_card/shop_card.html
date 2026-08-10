@@ -1,0 +1,51 @@
+{% if shop %}
+<article class="market-card market-card-interactive group relative h-full {% if wide %}lg:grid lg:grid-cols-[minmax(320px,0.9fr)_1.1fr]{% endif %}">
+    <div class="relative min-h-48 overflow-hidden bg-gradient-to-br from-[#063d2c] via-[#008751] to-[#d9a514] {% if wide %}lg:min-h-80{% endif %}">
+        {% if shop.banner %}
+        <img src="{{ shop.banner.url }}" alt="{{ shop.name }} storefront" class="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105">
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+        {% elif shop.spotlight_listings %}
+        <div class="absolute inset-0 grid grid-cols-2 gap-0.5 bg-[#f3eee6]">
+            {% for listing in shop.spotlight_listings %}{% with cover=listing.images.first %}{% if cover %}<img src="{{ cover.image.url }}" alt="{{ listing.title }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105 {% if forloop.first %}row-span-2{% endif %}">{% else %}<div class="maasai-pattern-border {% if forloop.first %}row-span-2{% endif %}"></div>{% endif %}{% endwith %}{% endfor %}
+        </div>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-transparent"></div>
+        {% else %}
+        <div class="absolute inset-0 opacity-40 maasai-pattern-border"></div>
+        <div class="absolute -right-10 -top-12 h-44 w-44 rounded-full border-[28px] border-white/10"></div>
+        <div class="absolute -bottom-16 left-12 h-44 w-44 rotate-45 border-[24px] border-[#f8d34f]/20"></div>
+        {% endif %}
+        {% if shop.is_verified %}<span class="absolute left-4 top-4 rounded-full bg-white/95 shadow-sm">{% include 'components/verified_badge/verified_badge.html' with label="Verified Kenyan maker" %}</span>{% endif %}
+        <p class="absolute bottom-4 left-4 right-4 text-xs font-semibold text-white">Handmade in {{ shop.county|default:"Kenya" }}</p>
+    </div>
+
+    <div class="relative flex flex-col p-5 sm:p-6 {% if wide %}lg:p-8{% endif %}">
+        <div class="flex items-start gap-4">
+            {% if shop.logo %}<img src="{{ shop.logo.url }}" alt="{{ shop.name }} logo" class="h-14 w-14 shrink-0 rounded-2xl border-2 border-white object-cover shadow-md {% if wide %}sm:h-16 sm:w-16{% endif %}">{% else %}<div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-kenya-black font-display text-xl font-bold text-white shadow-md {% if wide %}sm:h-16 sm:w-16 sm:text-2xl{% endif %}">{{ shop.name|slice:":1" }}</div>{% endif %}
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2"><h3 class="truncate font-display text-lg font-bold text-gray-950 {% if wide %}sm:text-2xl{% endif %}">{{ shop.name }}</h3>{% if shop.is_verified %}{% include 'components/verified_badge/verified_badge.html' %}{% endif %}</div>
+                <p class="mt-1 text-sm text-gray-500">{{ shop.location_text|default:shop.county }}</p>
+            </div>
+        </div>
+
+        {% if shop.description %}<p class="mt-4 text-sm leading-6 text-gray-600 {% if wide %}sm:text-base{% endif %}">{{ shop.description|truncatewords:24 }}</p>{% endif %}
+
+        <dl class="mt-5 grid grid-cols-3 divide-x divide-[#eee8df] rounded-2xl bg-[#faf8f4] px-2 py-3 text-center">
+            <div class="px-2"><dt class="text-[10px] font-bold uppercase tracking-wide text-gray-400">Rating</dt><dd class="mt-1 text-sm font-bold text-gray-900">{% if shop.rating_count %}<span class="text-amber-500">★</span> {{ shop.rating_average|floatformat:1 }}{% else %}New maker{% endif %}</dd></div>
+            <div class="px-2"><dt class="text-[10px] font-bold uppercase tracking-wide text-gray-400">Products</dt><dd class="mt-1 text-sm font-bold text-gray-900">{{ shop.product_count }}</dd></div>
+            <div class="px-2"><dt class="text-[10px] font-bold uppercase tracking-wide text-gray-400">Followers</dt><dd class="mt-1 text-sm font-bold text-gray-900">{% if shop.follower_total %}{{ shop.follower_total }}{% else %}Be first{% endif %}</dd></div>
+        </dl>
+
+        <div class="mt-auto flex items-center justify-between gap-4 pt-5">
+            <p class="text-xs text-gray-500">{% if shop.visible_review_count %}{{ shop.visible_review_count }} verified review{{ shop.visible_review_count|pluralize }}{% else %}Recently opened · discover their work{% endif %}</p>
+            <a href="{% url 'shops:public_shop' shop.slug %}" class="inline-flex items-center gap-2 rounded-full bg-kenya-black px-4 py-2.5 text-sm font-bold text-white transition hover:bg-kenya-green focus:outline-none focus:ring-2 focus:ring-kenya-green focus:ring-offset-2">
+                Visit shop <span aria-hidden="true">→</span>
+            </a>
+        </div>
+    </div>
+</article>
+{% else %}
+<article class="market-card">
+    <div class="relative h-32 overflow-hidden bg-gradient-to-br from-[#063d2c] via-[#008751] to-[#d9a514]"><div class="absolute inset-0 opacity-40 maasai-pattern-border"></div></div>
+    <div class="p-5"><div class="flex items-center gap-3"><div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-kenya-black font-display text-lg font-bold text-white">{{ name|slice:":1" }}</div><div><h4 class="font-bold text-kenya-black">{{ name }}</h4><p class="text-xs text-gray-500">{{ county|default:"Kenya" }} · {{ items }} products</p></div></div><div class="mt-4 flex items-center justify-between"><span class="text-sm font-bold"><span class="text-amber-500">★</span> {{ rating|default:"New" }}</span><span class="rounded-full bg-kenya-black px-4 py-2 text-xs font-bold text-white">Visit shop →</span></div></div>
+</article>
+{% endif %}

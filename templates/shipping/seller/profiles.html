@@ -1,0 +1,31 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Shipping profiles · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-8">
+    <div><h2 class="text-2xl font-display font-bold">Shipping profiles</h2><p class="mt-1 text-sm text-gray-600">Reuse delivery prices and promises across listings. Default profiles are assigned to new physical listings.</p></div>
+
+    <section class="rounded-2xl border border-brand-surface-border bg-white p-6 shadow-ziuza-sm">
+        <h3 class="text-lg font-display font-bold">{% if form.instance.pk %}Edit profile{% else %}Create profile{% endif %}</h3>
+        {% if form.non_field_errors %}<div class="alert-error mt-3">{{ form.non_field_errors|striptags }}</div>{% endif %}
+        <form method="post" class="mt-5 grid gap-4 sm:grid-cols-2">
+            {% csrf_token %}<input type="hidden" name="action" value="save">{% if form.instance.pk %}<input type="hidden" name="profile_id" value="{{ form.instance.pk }}">{% endif %}
+            {% for field in form %}
+            <div {% if field.name == 'counties' or field.name == 'pickup_instructions' %}class="sm:col-span-2"{% endif %}>
+                {% if field.field.widget.input_type == 'checkbox' %}<label class="flex items-center gap-2 text-sm font-semibold">{{ field }} {{ field.label }}</label>{% else %}<label class="field-label" for="{{ field.id_for_label }}">{{ field.label }}</label>{{ field }}{% endif %}
+                {% if field.help_text %}<p class="mt-1 text-xs text-gray-500">{{ field.help_text }}</p>{% endif %}{% if field.errors %}<p class="field-error">{{ field.errors|striptags }}</p>{% endif %}
+            </div>
+            {% endfor %}
+            <div class="sm:col-span-2"><button class="btn-red" type="submit">Save profile</button></div>
+        </form>
+    </section>
+
+    {% if profiles %}<section class="space-y-3"><h3 class="text-lg font-display font-bold">Existing profiles</h3>
+        {% for profile in profiles %}<article class="rounded-2xl border border-brand-surface-border bg-white p-5 shadow-ziuza-sm">
+            <div class="flex flex-wrap justify-between gap-4"><div><h4 class="font-bold">{{ profile.name }}{% if profile.is_default %} · Default{% endif %}</h4><p class="mt-1 text-sm text-gray-600">KES {{ profile.base_fee }} base · KES {{ profile.additional_item_fee }} additional item · {{ profile.processing_days_min }}–{{ profile.processing_days_max }} processing days</p><p class="mt-1 text-xs text-gray-500">Used by {{ profile.listings.count }} listing{{ profile.listings.count|pluralize }}{% if profile.allows_local_pickup %} · Local pickup available{% endif %}</p></div>
+            <div class="flex gap-2"><a class="btn-secondary btn-sm" href="?edit={{ profile.id }}">Edit</a><form method="post">{% csrf_token %}<input type="hidden" name="action" value="delete"><input type="hidden" name="profile_id" value="{{ profile.id }}"><button class="text-sm font-semibold text-kenya-red px-2 py-1" type="submit">Delete</button></form></div></div>
+        </article>{% endfor %}
+    </section>{% endif %}
+</div>
+{% endblock %}

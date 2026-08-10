@@ -1,0 +1,19 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}Get help with {{ seller_order.order.public_number }} | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="max-w-xl bg-white rounded-2xl border border-brand-surface-border p-6">
+    <h2 class="text-xl font-display font-bold">Get help from {{ seller_order.shop.name }}</h2>
+    <p class="text-sm text-gray-600 mt-1 mb-5">Order {{ seller_order.order.public_number }}</p>
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div><label class="field-label" for="case_type">Type of request</label><select class="field-input" id="case_type" name="case_type">{% for value, label in case_types %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select><p class="mt-1 text-xs text-gray-500">Returns and exchanges are available for physical items within 14 days after confirmed delivery.</p></div>
+        <div><label class="field-label" for="reason">What went wrong?</label><select class="field-input" id="reason" name="reason" required>{% for value, label in reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+        <div><label class="field-label" for="description">Describe the problem</label><textarea class="field-input" id="description" name="description" minlength="20" rows="5" required></textarea></div>
+        <div><label class="field-label" for="requested_outcome">Preferred outcome</label><select class="field-input" id="requested_outcome" name="requested_outcome"><option value="">Choose an outcome</option>{% for value, label in requested_outcomes %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+        <div><label class="field-label" for="desired_resolution">Additional outcome details</label><input class="field-input" id="desired_resolution" name="desired_resolution" maxlength="200" placeholder="Explain what would resolve this for you"></div>
+        <button type="submit" class="btn-red">Open protection case</button>
+    </form>
+</div>
+{% endblock %}

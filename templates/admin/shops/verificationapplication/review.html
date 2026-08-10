@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs"><a href="{% url 'admin:index' %}">Home</a> › <a href="{{ changelist_url }}">Shop verification</a> › {{ application.shop.name }}</div>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:960px">
+    <div style="display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px">
+        <div>
+            <p style="margin:0;color:#64748b;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em">Verification review</p>
+            <h1 style="margin:6px 0 0;font-size:28px;font-weight:750">{{ application.shop.name }}</h1>
+            <p style="margin:6px 0 0;color:#64748b">Submitted {{ application.submitted_at|date:"j F Y, H:i" }} by {{ application.shop.owner.email }}</p>
+        </div>
+        <span style="border-radius:999px;padding:7px 12px;background:{% if application.status == 'pending' %}#fff7d6{% elif application.status == 'approved' %}#e8f7ee{% else %}#feeceb{% endif %};font-weight:700">{{ application.get_status_display }}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
+        <section style="border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:20px">
+            <h2 style="margin:0 0 16px;font-size:17px;font-weight:700">Identity information</h2>
+            <dl style="display:grid;gap:14px;margin:0">
+                <div><dt style="color:#64748b;font-size:12px">Legal name</dt><dd style="margin:3px 0 0;font-weight:650">{{ application.legal_name }}</dd></div>
+                <div><dt style="color:#64748b;font-size:12px">Document type</dt><dd style="margin:3px 0 0;font-weight:650">{{ application.get_identity_type_display }}</dd></div>
+                <div><dt style="color:#64748b;font-size:12px">Document suffix</dt><dd style="margin:3px 0 0;font-weight:650">•••• {{ application.identity_last4 }}</dd></div>
+                <div><dt style="color:#64748b;font-size:12px">Business registration</dt><dd style="margin:3px 0 0;font-weight:650">{{ application.business_registration_number|default:"Not provided" }}</dd></div>
+            </dl>
+        </section>
+
+        <section style="border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:20px">
+            <h2 style="margin:0 0 16px;font-size:17px;font-weight:700">Shop and contact</h2>
+            <dl style="display:grid;gap:14px;margin:0">
+                <div><dt style="color:#64748b;font-size:12px">Shop owner</dt><dd style="margin:3px 0 0;font-weight:650">{{ application.shop.owner.get_full_name }}</dd></div>
+                <div><dt style="color:#64748b;font-size:12px">Account email</dt><dd style="margin:3px 0 0;font-weight:650">{{ application.shop.owner.email }}</dd></div>
+                <div><dt style="color:#64748b;font-size:12px">Contact phone</dt><dd style="margin:3px 0 0;font-weight:650">{{ application.contact_phone }}</dd></div>
+                <div><dt style="color:#64748b;font-size:12px">Consent</dt><dd style="margin:3px 0 0;font-weight:650;color:{% if application.consent_confirmed %}#166534{% else %}#991b1b{% endif %}">{% if application.consent_confirmed %}Confirmed{% else %}Missing{% endif %}</dd></div>
+            </dl>
+        </section>
+    </div>
+
+    {% if application.status == 'pending' %}
+    <form method="post" style="margin-top:18px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:20px">
+        {% csrf_token %}
+        <h2 style="margin:0;font-size:17px;font-weight:700">Administrator decision</h2>
+        <p style="margin:6px 0 16px;color:#64748b">Approval immediately enables the verified tick across product cards and the public shop page. Rejection notes are required and are sent to the seller.</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+            <label style="display:flex;gap:10px;border:1px solid #bbf7d0;border-radius:12px;background:#f0fdf4;padding:14px;cursor:pointer"><input type="radio" name="decision" value="approve" required><span><strong style="display:block;color:#166534">Approve verification</strong><span style="display:block;margin-top:3px;color:#4b5563;font-size:12px">Identity details meet marketplace requirements.</span></span></label>
+            <label style="display:flex;gap:10px;border:1px solid #fecaca;border-radius:12px;background:#fff7f7;padding:14px;cursor:pointer"><input type="radio" name="decision" value="reject" required><span><strong style="display:block;color:#991b1b">Reject application</strong><span style="display:block;margin-top:3px;color:#4b5563;font-size:12px">Seller must correct or resubmit information.</span></span></label>
+        </div>
+        <label for="notes" style="display:block;margin-top:16px;font-weight:700">Review notes</label>
+        <textarea id="notes" name="notes" rows="5" style="box-sizing:border-box;width:100%;margin-top:7px;border:1px solid #cbd5e1;border-radius:10px;padding:11px" placeholder="Record the checks completed, or explain what the seller must correct."></textarea>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px"><button type="submit" style="border:0;border-radius:9px;background:#008751;padding:10px 18px;font-weight:700;color:#fff;cursor:pointer">Submit decision</button><a href="{{ changelist_url }}" style="border:1px solid #cbd5e1;border-radius:9px;padding:9px 18px;color:#334155;text-decoration:none">Cancel</a></div>
+    </form>
+    {% else %}
+    <section style="margin-top:18px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;padding:20px"><h2 style="margin:0;font-size:17px;font-weight:700">Review completed</h2><p style="margin:8px 0 0">Reviewed by {{ application.reviewed_by|default:"Administrator" }} on {{ application.reviewed_at|date:"j F Y, H:i" }}.</p>{% if application.reviewer_notes %}<p style="margin:12px 0 0;border-radius:10px;background:#f8fafc;padding:12px">{{ application.reviewer_notes }}</p>{% endif %}</section>
+    {% endif %}
+</div>
+{% endblock %}

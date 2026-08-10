@@ -1,0 +1,43 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-brand-surface-ground">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title|default:"Ziuza Marketplace" }}{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Discover authentic Kenyan crafts, fashion, beadwork, art, and handmade treasures directly from artisans and creators on Ziuza Marketplace.{% endblock %}">
+    {% block canonical %}
+    <link rel="canonical" href="{% if canonical_url %}{{ canonical_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
+    {% endblock %}
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+
+    <!-- HTMX & Alpine.js -->
+    <script src="{% static 'vendor/js/htmx.min.js' %}"></script>
+    <script defer src="{% static 'vendor/js/alpine.min.js' %}"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="flex flex-col min-h-full font-sans text-kenya-black bg-brand-surface-ground" hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <!-- Header / Navigation -->
+    {% include 'layouts/navbar.html' %}
+
+    <!-- Main Content -->
+    <main id="main-content" class="flex-grow">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include 'layouts/footer.html' %}
+
+    {% include 'components/toast/toast.html' %}
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

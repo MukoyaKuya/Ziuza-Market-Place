@@ -1,0 +1,27 @@
+{% extends 'accounts/account_base.html' %}
+
+{% block title %}{{ conversation.subject|default:"Conversation" }} | Ziuza{% endblock %}
+
+{% block account_content %}
+<div class="space-y-4">
+    <div>
+        <h2 class="text-xl font-display font-bold">{{ conversation.shop.name }}</h2>
+        <p class="text-sm text-gray-500">{{ conversation.subject }}</p>
+    </div>
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-4 space-y-3 max-h-[28rem] overflow-y-auto">
+        {% for msg in thread %}
+        <div class="text-sm {% if msg.sender_id == request.user.id %}text-right{% endif %}">
+            <p class="inline-block rounded-ziuza px-3 py-2 {% if msg.sender_id == request.user.id %}bg-kenya-green-subtle{% else %}bg-brand-surface-muted{% endif %}">{{ msg.body }}</p>
+            <p class="text-xs text-gray-400 mt-1">{{ msg.created_at|date:"M j H:i" }}</p>
+        </div>
+        {% empty %}
+        <p class="text-sm text-gray-500">No messages yet.</p>
+        {% endfor %}
+    </div>
+    <form method="post" class="flex gap-2">
+        {% csrf_token %}
+        <input class="field-input flex-1" type="text" name="body" placeholder="Write a message…" required>
+        <button type="submit" class="btn-red">Send</button>
+    </form>
+</div>
+{% endblock %}
