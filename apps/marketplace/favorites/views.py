@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.accounts.utils import safe_next_url
 from apps.core.htmx import with_toast
 from apps.marketplace.favorites.models import (
     CollectionItem, Favorite, ListingAlert, ListingCollection, ShopFollow,
@@ -130,7 +131,7 @@ def shop_follow_toggle(request, shop_id):
         raise Http404 from exc
     except ValidationError as exc:
         messages.error(request, '; '.join(exc.messages))
-    return redirect(request.POST.get('next') or 'favorites:list')
+    return redirect(safe_next_url(request, request.POST.get('next'), 'favorites:list'))
 
 
 @login_required
@@ -157,4 +158,4 @@ def listing_alert_toggle(request, listing_id):
         messages.success(request, 'Listing alerts enabled.' if enabled else 'Listing alerts disabled.')
     except ValidationError as exc:
         messages.error(request, '; '.join(exc.messages))
-    return redirect(request.POST.get('next') or 'favorites:list')
+    return redirect(safe_next_url(request, request.POST.get('next'), 'favorites:list'))

@@ -7,6 +7,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
+from apps.accounts.utils import safe_next_url
 from apps.accounts.forms import AddressForm, LoginForm, ProfileForm, RegistrationForm
 from apps.accounts.models import Address
 from apps.accounts.selectors import get_address_for_user, list_addresses_for_user
@@ -62,7 +63,11 @@ def login_view(request):
             form.add_error(None, 'Invalid email or password.')
         else:
             login(request, user)
-            next_url = request.GET.get('next') or reverse('accounts:account_home')
+            next_url = safe_next_url(
+                request,
+                request.GET.get('next'),
+                reverse('accounts:account_home'),
+            )
             return redirect(next_url)
 
     return render(request, 'accounts/login.html', {'form': form, 'page_title': 'Sign in'})

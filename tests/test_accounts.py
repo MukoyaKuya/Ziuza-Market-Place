@@ -93,6 +93,14 @@ def test_login_and_logout(client, user):
 
 
 @pytest.mark.django_db
+def test_login_rejects_open_redirect(client, user):
+    login_url = reverse('accounts:login') + '?next=https://evil.example/phish'
+    response = client.post(login_url, {'email': user.email, 'password': PASSWORD})
+    assert response.status_code in (302, 303)
+    assert 'evil.example' not in response['Location']
+
+
+@pytest.mark.django_db
 def test_login_rejects_bad_password(client, user):
     response = client.post(
         reverse('accounts:login'),

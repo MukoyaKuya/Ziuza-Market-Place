@@ -4,6 +4,7 @@ from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views.decorators.http import require_POST
 
+from apps.accounts.utils import safe_next_url
 from apps.core.htmx import with_toast
 from apps.marketplace.cart.services import (
     add_to_cart,
@@ -54,7 +55,7 @@ def cart_add(request):
         cart = get_or_create_cart(request=request)
         response = render(request, 'cart/partials/count.html', annotate_cart_totals(cart))
         return with_toast(response, message=toast_message, type=toast_type)
-    return redirect(request.POST.get('next') or 'cart:page')
+    return redirect(safe_next_url(request, request.POST.get('next'), 'cart:page'))
 
 
 @require_POST

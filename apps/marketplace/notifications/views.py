@@ -4,6 +4,7 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.http import require_http_methods
 from django.contrib import messages
 
+from apps.accounts.utils import safe_next_url
 from apps.marketplace.notifications.models import Notification
 from apps.marketplace.notifications.models import NotificationPreference
 from apps.marketplace.notifications.forms import NotificationPreferenceForm
@@ -29,7 +30,7 @@ def notification_list(request):
 @require_POST
 def mark_read(request, notification_id):
     mark_notification_read(actor=request.user, notification_id=notification_id)
-    return redirect(request.POST.get('next') or 'notifications:list')
+    return redirect(safe_next_url(request, request.POST.get('next'), 'notifications:list'))
 
 
 @login_required
