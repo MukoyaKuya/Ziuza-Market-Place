@@ -1,6 +1,7 @@
 from django.db.models import Avg, Count, Prefetch, Q
 
 from apps.marketplace.listings.models import Inventory, Listing, ListingStatus
+from apps.marketplace.shops.models import ShopVerificationStatus
 
 
 def seller_listings_for_shop(*, shop):
@@ -34,7 +35,7 @@ def public_listing_detail(*, slug: str) -> Listing:
             status=ListingStatus.ACTIVE,
             shop__is_active=True,
         )
-        .exclude(shop__verification_status='suspended')
+        .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
         .select_related('shop', 'category')
         .prefetch_related('images', 'variants__selected_values__option', 'attributes', 'inventory_rows', 'personalization_fields')
         .get()
@@ -48,7 +49,7 @@ def public_listings_for_category(*, category):
             shop__is_active=True,
         )
         .filter(Q(category=category) | Q(category__parent=category))
-        .exclude(shop__verification_status='suspended')
+        .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
         .select_related('shop', 'category')
         .prefetch_related('images')
         .order_by('-published_at', '-created_at')

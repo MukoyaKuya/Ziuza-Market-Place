@@ -555,18 +555,34 @@ def category_detail(request, slug: str):
         raise Http404('Category not found.') from exc
 
     listings_qs = public_listings_for_category(category=category)
+    query = (request.GET.get('q') or '').strip()[:100]
+    if query:
+        from django.db.models import Q
+        listings_qs = listings_qs.filter(
+            Q(title__icontains=query) | Q(short_description__icontains=query) | Q(description__icontains=query)
+        )
+    sort = request.GET.get('sort') or 'newest'
+    if sort == 'price_asc':
+        listings_qs = listings_qs.order_by('base_price', '-published_at')
+    elif sort == 'price_desc':
+        listings_qs = listings_qs.order_by('-base_price', '-published_at')
+
     paginator = Paginator(listings_qs, 24)
     page = paginator.get_page(request.GET.get('page') or 1)
-    return render(
-        request,
-        'categories/detail.html',
-        {
-            'category': category,
-            'listings_page': page,
-            'page_title': category.seo_title or category.name,
-            'meta_description': category.seo_description or category.description,
-        },
-    )
+
+    context = {
+        'category': category,
+        'listings_page': page,
+        'search_query': query,
+        'current_sort': sort,
+        'page_title': category.seo_title or category.name,
+        'meta_description': category.seo_description or category.description,
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'categories/partials/listings_grid.html', context)
+
+    return render(request, 'categories/detail.html', context)
 
 
 def ziuza_picks(request):

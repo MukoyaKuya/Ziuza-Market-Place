@@ -146,3 +146,14 @@ def test_never_email_preference_does_not_create_delivery(recipient):
 
     assert Notification.objects.filter(id=notification.id).exists()
     assert not NotificationDelivery.objects.filter(notification=notification).exists()
+
+
+@pytest.mark.django_db
+def test_unread_count_partial(client, recipient):
+    notify(recipient=recipient, type='order_placed', title='Unread 1')
+    client.force_login(recipient)
+    response = client.get(reverse('notifications:unread_count'))
+    assert response.status_code == 200
+    assert 'Unread 1' not in response.content.decode()  # Body isn't rendered in badge
+    assert '1' in response.content.decode()
+

@@ -101,6 +101,58 @@ def test_login_rejects_open_redirect(client, user):
 
 
 @pytest.mark.django_db
+def test_login_htmx_returns_modal_partial(client):
+    login_url = reverse('accounts:login')
+    response = client.get(login_url, HTTP_HX_REQUEST='true')
+    assert response.status_code == 200
+    assert 'Sign in' in response.content.decode()
+    assert 'modal-signin-title' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_login_htmx_successful_post_returns_hx_redirect(client, user):
+    login_url = reverse('accounts:login')
+    response = client.post(login_url, {'email': user.email, 'password': PASSWORD}, HTTP_HX_REQUEST='true')
+    assert response.status_code == 200
+    assert response.headers.get('HX-Redirect') == reverse('accounts:account_home')
+
+
+@pytest.mark.django_db
+def test_login_htmx_invalid_post_returns_modal_with_error(client, user):
+    login_url = reverse('accounts:login')
+    response = client.post(login_url, {'email': user.email, 'password': 'wrongpassword'}, HTTP_HX_REQUEST='true')
+    assert response.status_code == 200
+    assert 'Invalid email or password' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_register_htmx_returns_modal_partial(client):
+    reg_url = reverse('accounts:register')
+    response = client.get(reg_url, HTTP_HX_REQUEST='true')
+    assert response.status_code == 200
+    assert 'Create account' in response.content.decode()
+    assert 'modal-signup-title' in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_register_htmx_successful_post_returns_hx_redirect(client):
+    reg_url = reverse('accounts:register')
+    response = client.post(
+        reg_url,
+        {
+            'email': 'htmxnew@ziuza.co.ke',
+            'display_name': 'HTMX User',
+            'password1': PASSWORD,
+            'password2': PASSWORD,
+        },
+        HTTP_HX_REQUEST='true',
+    )
+    assert response.status_code == 200
+    assert response.headers.get('HX-Redirect') == reverse('accounts:account_home')
+    assert User.objects.filter(email='htmxnew@ziuza.co.ke').exists()
+
+
+@pytest.mark.django_db
 def test_login_rejects_bad_password(client, user):
     response = client.post(
         reverse('accounts:login'),

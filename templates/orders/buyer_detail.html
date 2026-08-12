@@ -4,10 +4,7 @@
 
 {% block account_content %}
 <div class="space-y-6">
-    <div>
-        <h2 class="text-xl font-display font-bold">{{ order.public_number }}</h2>
-        <p class="text-sm text-gray-500">{{ order.created_at|date:"M j, Y H:i" }} · Payment: {{ order.get_payment_status_display }} · Fulfillment: {{ order.get_fulfillment_status_display }}</p>
-    </div>
+    {% include 'orders/partials/status_header.html' %}
 
     <div class="bg-white rounded-2xl border border-brand-surface-border p-5 space-y-3">
         <h3 class="font-semibold">Items</h3>

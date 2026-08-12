@@ -403,34 +403,35 @@ def public_shop(request, slug: str):
                 shop_banner_url = shop.banner.url
         except (FileNotFoundError, OSError, ValueError):
             shop_banner_url = None
-    return render(
-        request,
-        'shops/public_shop.html',
-        {
-            'shop': shop,
-            'listings': listings,
-            'hero_listings': listings[:3],
-            'shop_banner_url': shop_banner_url,
-            'listing_count': shop.listings.filter(status=ListingStatus.ACTIVE).count(),
-            'has_more_listings': has_more_listings,
-            'next_listing_limit': min(shop_limit + 8, 48),
-            'sales_count': sales_count,
-            'shop_query': shop_query,
-            'shop_sort': shop_sort,
-            'page_title': shop.name,
-            'is_owner': request.user.is_authenticated and shop.owner_id == request.user.id,
-            'is_shop_staff': is_shop_staff,
-            'is_following': is_following,
-            'follower_count': shop.followers.count(),
-            'shop_reviews': shop_review_queryset[:3],
-            'shop_review_summary': shop_review_summary,
-            'review_breakdown': review_breakdown,
-            'report_reasons': ReportReason.choices,
-            'sections': sections,
-            'selected_section': selected_section,
-            'shop_share_url': request.build_absolute_uri(reverse('shops:public_shop', kwargs={'slug': shop.slug})),
-        },
-    )
+    context = {
+        'shop': shop,
+        'listings': listings,
+        'hero_listings': listings[:3],
+        'shop_banner_url': shop_banner_url,
+        'listing_count': shop.listings.filter(status=ListingStatus.ACTIVE).count(),
+        'has_more_listings': has_more_listings,
+        'next_listing_limit': min(shop_limit + 8, 48),
+        'sales_count': sales_count,
+        'shop_query': shop_query,
+        'shop_sort': shop_sort,
+        'page_title': shop.name,
+        'is_owner': request.user.is_authenticated and shop.owner_id == request.user.id,
+        'is_shop_staff': is_shop_staff,
+        'is_following': is_following,
+        'follower_count': shop.followers.count(),
+        'shop_reviews': shop_review_queryset[:3],
+        'shop_review_summary': shop_review_summary,
+        'review_breakdown': review_breakdown,
+        'report_reasons': ReportReason.choices,
+        'sections': sections,
+        'selected_section': selected_section,
+        'shop_share_url': request.build_absolute_uri(reverse('shops:public_shop', kwargs={'slug': shop.slug})),
+    }
+
+    if request.headers.get('HX-Request'):
+        return render(request, 'shops/partials/shop_items.html', context)
+
+    return render(request, 'shops/public_shop.html', context)
 
 
 @_with_shop

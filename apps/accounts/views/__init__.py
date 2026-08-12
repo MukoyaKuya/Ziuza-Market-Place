@@ -22,6 +22,11 @@ from apps.accounts.services import (
 
 def register_view(request):
     if request.user.is_authenticated:
+        if request.headers.get('HX-Request'):
+            from django.http import HttpResponse
+            response = HttpResponse()
+            response['HX-Redirect'] = reverse('accounts:account_home')
+            return response
         return redirect('accounts:account_home')
 
     form = RegistrationForm(request.POST or None)
@@ -43,13 +48,24 @@ def register_view(request):
         else:
             login(request, user)
             messages.success(request, 'Welcome to Ziuza — your account is ready.')
+            if request.headers.get('HX-Request'):
+                from django.http import HttpResponse
+                response = HttpResponse()
+                response['HX-Redirect'] = reverse('accounts:account_home')
+                return response
             return redirect('accounts:account_home')
 
-    return render(request, 'accounts/register.html', {'form': form, 'page_title': 'Create account'})
+    template_name = 'accounts/partials/register_modal.html' if request.headers.get('HX-Request') else 'accounts/register.html'
+    return render(request, template_name, {'form': form, 'page_title': 'Create account'})
 
 
 def login_view(request):
     if request.user.is_authenticated:
+        if request.headers.get('HX-Request'):
+            from django.http import HttpResponse
+            response = HttpResponse()
+            response['HX-Redirect'] = reverse('accounts:account_home')
+            return response
         return redirect('accounts:account_home')
 
     form = LoginForm(request.POST or None)
@@ -65,12 +81,18 @@ def login_view(request):
             login(request, user)
             next_url = safe_next_url(
                 request,
-                request.GET.get('next'),
+                request.POST.get('next') or request.GET.get('next'),
                 reverse('accounts:account_home'),
             )
+            if request.headers.get('HX-Request'):
+                from django.http import HttpResponse
+                response = HttpResponse()
+                response['HX-Redirect'] = next_url
+                return response
             return redirect(next_url)
 
-    return render(request, 'accounts/login.html', {'form': form, 'page_title': 'Sign in'})
+    template_name = 'accounts/partials/login_modal.html' if request.headers.get('HX-Request') else 'accounts/login.html'
+    return render(request, template_name, {'form': form, 'page_title': 'Sign in'})
 
 
 @require_POST

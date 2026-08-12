@@ -1,4 +1,4 @@
-﻿from decimal import Decimal
+from decimal import Decimal
 
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
@@ -7,7 +7,7 @@ from django.db import transaction
 
 from apps.accounts.models import Address
 from apps.marketplace.categories.models import Category
-from apps.marketplace.listings.models import Listing
+from apps.marketplace.listings.models import Listing, ListingStatus
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.orders.models import FulfillmentStatus
 from apps.marketplace.orders.services import create_checkout_order, mark_order_paid
@@ -123,7 +123,7 @@ class Command(BaseCommand):
                     quantity_available=spec["qty"],
                 )
                 created_listings += 1
-            if listing.status != "active":
+            if listing.status != ListingStatus.ACTIVE:
                 publish_listing(actor=seller, listing=listing)
             if listing.is_featured != spec["featured"]:
                 listing.is_featured = spec["featured"]
@@ -155,7 +155,7 @@ class Command(BaseCommand):
             from django.contrib.sessions.backends.db import SessionStore
             from django.test import RequestFactory
 
-            listing = Listing.objects.filter(shop=shop, status="active").first()
+            listing = Listing.objects.filter(shop=shop, status=ListingStatus.ACTIVE).first()
             if listing:
                 rf = RequestFactory()
                 req = rf.get("/")

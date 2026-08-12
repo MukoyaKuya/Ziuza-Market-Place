@@ -48,3 +48,15 @@ def notification_settings(request):
         'page_title': 'Notification settings',
         'account_section': 'notification_settings',
     })
+
+
+def unread_count_partial(request):
+    count = 0
+    if request.user.is_authenticated:
+        count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    return render(
+        request,
+        'notifications/partials/unread_count.html',
+        {'unread_count': count},
+    )
+

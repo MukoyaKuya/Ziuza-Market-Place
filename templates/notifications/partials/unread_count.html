@@ -1,0 +1,11 @@
+<span id="unread-notification-badge"
+      hx-get="{% url 'notifications:unread_count' %}"
+      hx-trigger="every 30s"
+      hx-swap="outerHTML"
+      class="inline-flex">
+    {% if unread_count and unread_count > 0 %}
+    <span class="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-kenya-red text-[10px] font-bold text-white shadow-xs">
+        {{ unread_count }}
+    </span>
+    {% endif %}
+</span>

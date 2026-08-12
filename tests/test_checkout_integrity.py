@@ -106,6 +106,10 @@ def test_sequential_double_checkout_second_fails_empty_cart(client, buyer, listi
         )
 
 
+@pytest.mark.skipif(
+    connection.vendor == 'sqlite',
+    reason='SQLite does not support row-level locking required for concurrent transaction testing',
+)
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_double_checkout_creates_one_order(client, buyer, listing, address):
     cart = _cart_with_item(client, buyer, listing)

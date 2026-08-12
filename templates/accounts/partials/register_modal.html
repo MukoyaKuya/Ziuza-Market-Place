@@ -1,0 +1,167 @@
+{% load static %}
+<div x-data="{ showModal: true, showP1: false, showP2: false }"
+     x-show="showModal"
+     @keydown.escape.window="showModal = false"
+     class="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto"
+     role="dialog"
+     aria-modal="true"
+     aria-labelledby="modal-signup-title">
+
+    <div x-show="showModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="showModal = false"
+         class="fixed inset-0 bg-black/60 backdrop-blur-[2px]"></div>
+
+    <div x-show="showModal"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 scale-100"
+         x-transition:leave-end="opacity-0 scale-95"
+         class="relative z-10 w-full max-w-md rounded-[28px] border border-[#eeeae3] bg-white p-5 shadow-[0_25px_80px_rgba(17,17,17,0.18)] sm:p-6"
+         style="max-width: 26rem;">
+
+        <button type="button"
+                @click="showModal = false"
+                class="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full bg-white text-gray-400 shadow-xs ring-1 ring-gray-200/80 transition-all duration-300 hover:bg-red-50 hover:text-kenya-red hover:ring-red-200 hover:rotate-90 hover:scale-110 active:scale-95 cursor-pointer"
+                aria-label="Close modal">
+            {% include 'components/icons/flat_icon.html' with name='close' class='h-4 w-4 transition-transform duration-300' %}
+        </button>
+
+        <div class="mx-auto mt-1 flex h-14 items-center justify-center">
+            <img src="{% static 'brand/ziuza-logo.svg' %}" alt="Ziuza" class="h-12 w-auto object-contain" loading="lazy">
+        </div>
+
+        <div class="mt-4 text-left">
+            <p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#008751]">Join The Marketplace</p>
+            <h2 id="modal-signup-title" class="mt-1 text-[2.1rem] font-display font-bold leading-none tracking-[-0.05em] text-gray-900">Create account</h2>
+            <p class="mt-2 text-sm text-gray-500">Join thousands of buyers &amp; makers on Ziuza.</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700" role="alert">
+            {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post"
+              action="{% url 'accounts:register' %}"
+              hx-post="{% url 'accounts:register' %}"
+              hx-target="#modal-container"
+              hx-swap="innerHTML"
+              class="mt-4 space-y-3"
+              novalidate>
+            {% csrf_token %}
+
+            <div>
+                <label for="modal_reg_email" class="mb-1.5 block text-sm font-semibold text-gray-700">Email</label>
+                <div class="relative">
+                    <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        {% include 'components/icons/flat_icon.html' with name='email' class='h-4 w-4' %}
+                    </span>
+                    <input type="email"
+                           name="email"
+                           id="modal_reg_email"
+                           required
+                           value="{{ form.email.value|default:'' }}"
+                           placeholder="you@example.com"
+                           class="w-full rounded-xl border border-gray-200 bg-[#edf1f0] py-3 pl-11 pr-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/15">
+                </div>
+                {% if form.email.errors %}
+                <p class="mt-1 text-xs font-medium text-red-600" role="alert">{{ form.email.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="modal_reg_display_name" class="mb-1.5 block text-sm font-semibold text-gray-700">Display name</label>
+                <div class="relative">
+                    <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        {% include 'components/icons/flat_icon.html' with name='user' class='h-4 w-4' %}
+                    </span>
+                    <input type="text"
+                           name="display_name"
+                           id="modal_reg_display_name"
+                           value="{{ form.display_name.value|default:'' }}"
+                           placeholder="How other members see you"
+                           class="w-full rounded-xl border border-gray-200 bg-[#edf1f0] py-3 pl-11 pr-3 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/15">
+                </div>
+                {% if form.display_name.errors %}
+                <p class="mt-1 text-xs font-medium text-red-600" role="alert">{{ form.display_name.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="modal_reg_password1" class="mb-1.5 block text-sm font-semibold text-gray-700">Password</label>
+                <div class="relative">
+                    <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        {% include 'components/icons/flat_icon.html' with name='lock' class='h-4 w-4' %}
+                    </span>
+                    <input type="password"
+                           :type="showP1 ? 'text' : 'password'"
+                           name="password1"
+                           id="modal_reg_password1"
+                           required
+                           placeholder="At least 8 characters"
+                           class="w-full rounded-xl border border-gray-200 bg-[#edf1f0] py-3 pl-11 pr-11 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/15">
+                    <button type="button"
+                            @click="showP1 = !showP1"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+                            aria-label="Toggle password visibility">
+                        <span x-show="!showP1">{% include 'components/icons/flat_icon.html' with name='eye' class='h-4 w-4' %}</span>
+                        <span x-show="showP1" x-cloak>{% include 'components/icons/flat_icon.html' with name='eye-off' class='h-4 w-4' %}</span>
+                    </button>
+                </div>
+                {% if form.password1.errors %}
+                <p class="mt-1 text-xs font-medium text-red-600" role="alert">{{ form.password1.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="modal_reg_password2" class="mb-1.5 block text-sm font-semibold text-gray-700">Confirm password</label>
+                <div class="relative">
+                    <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400">
+                        {% include 'components/icons/flat_icon.html' with name='lock' class='h-4 w-4' %}
+                    </span>
+                    <input type="password"
+                           :type="showP2 ? 'text' : 'password'"
+                           name="password2"
+                           id="modal_reg_password2"
+                           required
+                           placeholder="Re-enter password"
+                           class="w-full rounded-xl border border-gray-200 bg-[#edf1f0] py-3 pl-11 pr-11 text-sm text-gray-900 placeholder:text-gray-400 outline-none transition focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/15">
+                    <button type="button"
+                            @click="showP2 = !showP2"
+                            class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 transition hover:text-gray-600"
+                            aria-label="Toggle confirm password visibility">
+                        <span x-show="!showP2">{% include 'components/icons/flat_icon.html' with name='eye' class='h-4 w-4' %}</span>
+                        <span x-show="showP2" x-cloak>{% include 'components/icons/flat_icon.html' with name='eye-off' class='h-4 w-4' %}</span>
+                    </button>
+                </div>
+                {% if form.password2.errors %}
+                <p class="mt-1 text-xs font-medium text-red-600" role="alert">{{ form.password2.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <button type="submit"
+                    class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-[#008751] py-3 text-base font-bold text-white shadow-[0_12px_24px_rgba(0,135,81,0.18)] transition hover:bg-[#006d41] active:translate-y-[1px]">
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                <span>Create account</span>
+            </button>
+        </form>
+
+        <div class="mt-6 text-center text-sm text-gray-600">
+            Already have an account?
+            <a href="{% url 'accounts:login' %}"
+               hx-get="{% url 'accounts:login' %}"
+               hx-target="#modal-container"
+               hx-swap="innerHTML"
+               class="ml-1 font-bold text-[#008751] hover:underline">Sign in →</a>
+        </div>
+    </div>
+</div>

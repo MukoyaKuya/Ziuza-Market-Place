@@ -19,4 +19,5 @@ urlpatterns = [
     path('account/help/<uuid:case_id>/evidence/', views.protection_case_evidence, name='case_evidence'),
     path('account/help/evidence/<uuid:evidence_id>/download/', views.protection_case_evidence_download, name='case_evidence_download'),
     path('account/downloads/<uuid:grant_id>/<uuid:asset_id>/', views.download_digital_asset, name='download_asset'),
+    path('account/orders/<str:public_number>/status-partial/', views.buyer_order_status_partial, name='buyer_status_partial'),
 ]

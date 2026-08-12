@@ -335,3 +335,17 @@ def download_digital_asset(request, grant_id, asset_id):
         last_downloaded_at=timezone.now(),
     )
     return FileResponse(asset.file.open('rb'), as_attachment=True, filename=Path(asset.file.name).name)
+
+
+@login_required
+def buyer_order_status_partial(request, public_number):
+    try:
+        order = Order.objects.get(public_number=public_number, buyer=request.user)
+    except Order.DoesNotExist as exc:
+        raise Http404 from exc
+    return render(
+        request,
+        'orders/partials/status_header.html',
+        {'order': order},
+    )
+

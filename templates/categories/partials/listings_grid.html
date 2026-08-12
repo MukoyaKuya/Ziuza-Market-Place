@@ -1,0 +1,36 @@
+<div id="category-listings-grid" class="space-y-6">
+    {% if listings_page %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for listing in listings_page %}
+        {% url 'listings:detail' listing.slug as listing_url %}
+        {% with cover=listing.images.first %}
+        {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url listing=listing %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% if listings_page.paginator.num_pages > 1 %}
+    <div class="flex justify-between items-center text-sm pt-4">
+        {% if listings_page.has_previous %}
+        <a class="btn-secondary btn-sm"
+           href="?page={{ listings_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+           hx-get="{% url 'listings:category_detail' category.slug %}?page={{ listings_page.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+           hx-target="#category-listings-grid"
+           hx-swap="outerHTML">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-gray-500">Page {{ listings_page.number }} of {{ listings_page.paginator.num_pages }}</span>
+        {% if listings_page.has_next %}
+        <a class="btn-secondary btn-sm"
+           href="?page={{ listings_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+           hx-get="{% url 'listings:category_detail' category.slug %}?page={{ listings_page.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_sort %}&sort={{ current_sort }}{% endif %}"
+           hx-target="#category-listings-grid"
+           hx-swap="outerHTML">Next</a>
+        {% else %}<span></span>{% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% url 'listings:category_index' as cats_url %}
+        {% include 'components/empty_state/empty_state.html' with title="No listings found" message="Try adjusting your search terms or filters." action_label="Browse all categories" action_url=cats_url %}
+    </div>
+    {% endif %}
+</div>

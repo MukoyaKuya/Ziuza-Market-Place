@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 
-from apps.marketplace.shops.models import Shop, ShopVerificationStatus
+from apps.marketplace.shops.models import Shop, ShopMembershipStatus, ShopVerificationStatus
 
 User = get_user_model()
 
@@ -13,7 +13,7 @@ def get_shop_for_user(*, user: User) -> Shop | None:
     owned = get_shop_for_owner(user=user)
     if owned is not None:
         return owned
-    return Shop.objects.filter(memberships__user=user, memberships__status='active').distinct().first()
+    return Shop.objects.filter(memberships__user=user, memberships__status=ShopMembershipStatus.ACTIVE).distinct().first()
 
 
 def get_public_shop_by_slug(*, slug: str) -> Shop:
