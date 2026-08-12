@@ -111,6 +111,13 @@ def test_login_rejects_bad_password(client, user):
 
 
 @pytest.mark.django_db
+def test_login_page_shows_favorite_helper_when_intent_present(client):
+    response = client.get(f"{reverse('accounts:login')}?next=/search/&intent=favorite")
+    assert response.status_code == 200
+    assert b'Sign in to save this item to your favorites.' in response.content
+
+
+@pytest.mark.django_db
 def test_profile_requires_login(client):
     response = client.get(reverse('accounts:profile'))
     assert response.status_code == 302

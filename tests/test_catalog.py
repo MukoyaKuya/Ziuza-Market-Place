@@ -91,6 +91,16 @@ def test_seed_categories_command(django_user_model):
     assert Category.objects.filter(slug='fashion-women', parent__slug='fashion').exists()
 
 
+def test_category_uses_admin_uploaded_image_for_card_artwork():
+    category = Category(
+        name='Custom category',
+        slug='custom-category',
+        image='categories/custom-category.jpg',
+    )
+
+    assert category.get_icon_url.endswith('/categories/custom-category.jpg')
+
+
 @pytest.mark.django_db
 def test_create_and_publish_listing(client, user, shop, category, listing):
     client.force_login(user)

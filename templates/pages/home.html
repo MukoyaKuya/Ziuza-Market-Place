@@ -16,11 +16,11 @@
             <div class="p-6 sm:p-7 lg:p-8 flex-1 flex flex-col justify-between z-20 relative max-w-[33rem]">
                 <div class="space-y-2">
                     <h1 class="font-display text-3xl sm:text-4xl font-normal tracking-tight leading-[1.08]">
-                        {% if slide and slide.title != 'Made in Kenya. Loved Everywhere.' %}
+                        {% if slide and slide.title != 'Made in Kenya. Loved Everywhere.' and slide.title != "Welcome to Kenya's Handmade Haven" %}
                         {{ slide.title }}
                         {% else %}
-                        Made in <span class="text-[#E31B23] font-extrabold">Kenya</span>.<br>
-                        <span class="font-serif italic font-normal text-white">Loved</span> <span class="text-[#008751] font-extrabold">Everywhere.</span>
+                        Welcome to <span class="text-[#E31B23] font-extrabold">Kenya's</span><br>
+                        <span class="font-serif italic font-normal text-white">Handmade</span> <span class="text-[#008751] font-extrabold">Haven.</span>
                         {% endif %}
                     </h1>
                     <div class="h-1 w-10 bg-[#E31B23] rounded-full mt-2"></div>
@@ -54,33 +54,32 @@
             </div>
         </div>
 
-        <!-- Ziuza Picks Card (Right Card) -->
-        <div class="relative overflow-hidden bg-[#00482B] text-white rounded-2xl border border-[#003c24] shadow-sm flex flex-col justify-between min-h-[190px] sm:min-h-[220px] lg:h-[22rem] p-6 group">
-            <div class="space-y-2 z-20 max-w-[190px]">
-                <h2 class="font-serif text-2xl sm:text-3xl font-normal tracking-tight text-white">Ziuza Picks</h2>
-                <div class="h-0.5 w-8 bg-[#C8102E] rounded-full"></div>
-                <p class="text-white/90 text-base leading-relaxed pt-2">Handpicked collections just for you.</p>
-                <div class="pt-3">
-                    {% if collections.0 %}
-                    <a href="{% url 'content:collection_detail' collections.0.slug %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#111111] text-sm font-bold hover:bg-gray-100 transition-all shadow-sm">
-                        <span>Explore Picks</span>
+        <!-- Ziuza Picks / Dynamic Promo Card (Right Card) -->
+        {% with promo=active_hero_promo_card %}
+        <div class="relative overflow-hidden bg-[#00482B] text-white rounded-2xl border border-[#003c24] shadow-sm flex flex-col justify-between min-h-[220px] lg:h-[22rem] p-6 lg:p-7 group">
+            <div class="relative z-20 space-y-2 max-w-[62%] sm:max-w-[56%] lg:max-w-[52%]">
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wide bg-white/15 text-white/90 backdrop-blur-xs">
+                    {{ promo.badge_text|default:"Curated Selection" }}
+                </span>
+                <h2 class="font-serif text-2xl sm:text-3xl font-normal tracking-tight leading-tight text-white mt-1 break-words">{{ promo.title|default:"Ziuza Maridadis" }}</h2>
+                <div class="h-0.5 w-8 bg-[#E31B23] rounded-full my-1.5"></div>
+                <p class="text-white/85 text-xs sm:text-sm leading-relaxed">{{ promo.subtitle|default:"Handpicked collections just for you." }}</p>
+                
+                <div class="pt-2">
+                    <a href="{% if promo and promo.button_url %}{{ promo.button_url }}{% else %}{% url 'listings:ziuza_picks' %}{% endif %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-[#111111] text-xs sm:text-sm font-bold hover:bg-gray-100 transition-all shadow-sm">
+                        <span>{{ promo.button_label|default:"Explore Maridadis" }}</span>
                         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </a>
-                    {% else %}
-                    <a href="{% url 'listings:category_index' %}" class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-[#111111] text-sm font-bold hover:bg-gray-100 transition-all shadow-sm">
-                        <span>Explore Picks</span>
-                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-                    </a>
-                    {% endif %}
                 </div>
             </div>
 
             <!-- Craft Product Image Asset (Seamlessly Blended) -->
-            <div class="absolute right-0 top-0 bottom-0 w-1/2 sm:w-7/12 pointer-events-none z-10 overflow-hidden">
-                <img src="{% static 'images/ziuza_picks_card_art.png' %}" alt="Ziuza Picks" class="w-full h-full object-cover object-center filter drop-shadow-md transform group-hover:scale-105 transition-transform duration-500">
-                <div class="absolute inset-0 bg-gradient-to-r from-[#00482B] via-[#00482B]/40 to-transparent"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-[38%] sm:w-[44%] lg:w-[48%] pointer-events-none z-10 overflow-hidden">
+                <img src="{% if promo and promo.image %}{{ promo.image.url }}{% else %}{% static 'images/ziuza_picks_card_art.png' %}{% endif %}" alt="Ziuza Picks" class="w-full h-full object-cover object-center filter drop-shadow-md transform group-hover:scale-105 transition-transform duration-500">
+                <div class="absolute inset-0 bg-gradient-to-r from-[#00482B] via-[#00482B]/60 to-transparent"></div>
             </div>
         </div>
+        {% endwith %}
     </div>
     {% endwith %}
     {% endif %}
@@ -137,7 +136,7 @@
             {% include 'components/category_card/category_card.html' with title="Fashion" subtitle="Clothing, bags, shoes & accessories" url=cat2_url icon_url=cat2_icon tone="red" %}
 
             {% url 'listings:category_detail' 'art-collectibles' as cat3_url %}
-            {% static 'images/category_icons/art collectables.png' as cat3_icon %}
+            {% static 'images/category_icons/art_collectibles.png' as cat3_icon %}
             {% include 'components/category_card/category_card.html' with title="Art & Collectibles" subtitle="Paintings, prints, sculptures & more" url=cat3_url icon_url=cat3_icon tone="green" %}
 
             {% url 'listings:category_detail' 'jewelry' as cat4_url %}
@@ -145,7 +144,7 @@
             {% include 'components/category_card/category_card.html' with title="Jewelry" subtitle="Beads, metals, handmade jewelry" url=cat4_url icon_url=cat4_icon tone="red" %}
 
             {% url 'listings:category_detail' 'craft-supplies' as cat5_url %}
-            {% static 'images/category_icons/craft supplies.png' as cat5_icon %}
+            {% static 'images/category_icons/craft_supplies.png' as cat5_icon %}
             {% include 'components/category_card/category_card.html' with title="Craft Supplies" subtitle="Tools, materials, essentials" url=cat5_url icon_url=cat5_icon tone="green" %}
 
             {% url 'listings:category_detail' 'vintage' as cat6_url %}

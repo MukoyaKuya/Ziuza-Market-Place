@@ -1,0 +1,81 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ page_title }} | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <!-- Hero Banner for Zawadi Exclusive Gift Section -->
+    <div class="bg-gradient-to-r from-[#C8102E] via-[#A00C24] to-[#80081C] text-white rounded-3xl p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden">
+        <div class="space-y-2 max-w-2xl z-10">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold backdrop-blur-sm">
+                {% include 'components/icons/flat_icon.html' with name='gift' class='h-4 w-4 text-white' %}
+                <span>Exclusive Gift Hub</span>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-display font-bold">Zawadi Gifts</h1>
+            <p class="text-red-100 text-sm sm:text-base leading-relaxed">
+                Discover unique, handcrafted gifts for every special person and occasion. Verified artisans curated for memories that last.
+            </p>
+        </div>
+        <div class="hidden md:block opacity-20 transform translate-x-4 translate-y-2 pointer-events-none">
+            {% include 'components/icons/flat_icon.html' with name='gift' class='w-48 h-48 text-white' %}
+        </div>
+    </div>
+
+    <!-- Exclusive Gift Categories Pills Bar -->
+    <div class="space-y-3">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Explore Gift Collections</h3>
+        </div>
+        <div class="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none">
+            <a href="{% url 'listings:zawadi_index' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 {% if not selected_category %}bg-kenya-red text-white shadow-sm{% else %}bg-white text-gray-700 border border-gray-200 hover:border-kenya-red hover:text-kenya-red{% endif %}">
+                {% include 'components/icons/flat_icon.html' with name='gift' class='h-4 w-4' %}
+                <span>All Zawadi Gifts</span>
+            </a>
+            {% for cat in gift_categories %}
+            <a href="{% url 'listings:zawadi_category_detail' cat.slug %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold transition-all shrink-0 {% if selected_category and selected_category.slug == cat.slug %}bg-kenya-red text-white shadow-sm{% else %}bg-white text-gray-700 border border-gray-200 hover:border-kenya-red hover:text-kenya-red{% endif %}">
+                {{ cat.name }}
+            </a>
+            {% empty %}
+            <a href="{% url 'listings:zawadi_category_detail' 'kids-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Kids Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'men-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Men Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'mother-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Mother Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'father-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Father Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'boss-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Boss Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'wedding-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Wedding Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'valentines-gifts' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Valentines Gifts</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'madaraka-specials' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Madaraka Specials</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'jamhuri-day' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Jamhuri Day</a>
+            <a href="{% url 'listings:zawadi_category_detail' 'liberation-day' %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold bg-white border border-gray-200 text-gray-700 hover:border-kenya-red hover:text-kenya-red shrink-0">Liberation Day</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    {% if listings_page %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for listing in listings_page %}
+        {% url 'listings:detail' listing.slug as listing_url %}
+        {% with cover=listing.images.first %}
+        {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url listing=listing %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% if listings_page.paginator.num_pages > 1 %}
+    <div class="flex justify-between items-center text-sm pt-4">
+        {% if listings_page.has_previous %}
+        <a class="btn-secondary btn-sm" href="?page={{ listings_page.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-gray-500">Page {{ listings_page.number }} of {{ listings_page.paginator.num_pages }}</span>
+        {% if listings_page.has_next %}
+        <a class="btn-secondary btn-sm" href="?page={{ listings_page.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% url 'listings:category_index' as cats_url %}
+        {% include 'components/empty_state/empty_state.html' with title="No gift items found in this section" message="Sellers are currently updating their gift section catalog." action_label="Browse all categories" action_url=cats_url %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

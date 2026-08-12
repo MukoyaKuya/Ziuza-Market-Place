@@ -1,27 +1,53 @@
-{# Usage: {% include 'components/category_card/category_card.html' with title="Home & Living" subtitle="..." url="..." icon="chair" tone="green" %} #}
-<a href="{{ url|default:'#' }}" class="market-card market-card-interactive group flex min-h-[5.5rem] items-center gap-3 p-3.5 sm:gap-3.5 sm:p-4">
-    <div class="w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shrink-0 overflow-hidden transition-transform group-hover:scale-105 shadow-2xs p-2 sm:p-2.5
-        {% if tone == 'red' or tone == 'peach' %}
-        bg-[#FAF0EC] text-[#C8102E]
+{# Usage: {% include 'components/category_card/category_card.html' with title="Home & Living" subtitle="..." url="..." icon_url="..." icon="chair" slug="home-living" tone="green" compact=True %} #}
+<a href="{{ url|default:'#' }}" class="group relative flex flex-col overflow-hidden bg-white border border-gray-200/80 shadow-2xs hover:shadow-md transition-shadow duration-300 {% if compact %}rounded-2xl{% else %}rounded-2xl sm:rounded-3xl{% endif %}">
+    <!-- Top Pastel Header Banner with Category Artwork -->
+    <div class="relative {% if compact %}h-32 sm:h-36{% else %}h-44 sm:h-48{% endif %} w-full overflow-hidden flex items-center justify-center
+        {% if slug == 'home-living' or tone == 'green' %}
+        bg-[#E8F2E6]
+        {% elif slug == 'fashion' or tone == 'red' %}
+        bg-[#FCE8E8]
+        {% elif slug == 'art-collectibles' %}
+        bg-[#E3EFE9]
+        {% elif slug == 'jewelry' %}
+        bg-[#F9ECE4]
+        {% elif slug == 'craft-supplies' %}
+        bg-[#ECEEEA]
+        {% elif slug == 'vintage' %}
+        bg-[#F7EFE4]
+        {% elif slug == 'back-to-school' %}
+        bg-[#EAF0F6]
         {% else %}
-        bg-[#EEF4F0] text-[#008751]
+        bg-[#F4F4F4]
         {% endif %}">
         {% if icon_url %}
-        <img src="{{ icon_url }}" alt="{{ title }}" class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110" style="width: 100%; height: 100%; object-fit: contain;">
+        <img src="{{ icon_url }}" alt="{{ title }}" class="block w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
         {% else %}
-        {% include 'components/icons/flat_icon.html' with name=icon|default:'grid' class='h-7 w-7' %}
+        <div class="opacity-30 text-gray-700 transition-transform duration-500 group-hover:scale-105">
+            {% include 'components/icons/flat_icon.html' with name=icon|default:'grid' class='h-20 w-20' %}
+        </div>
         {% endif %}
+        <!-- Smooth Organic Wave Transition at Header Bottom -->
+        <svg class="absolute bottom-0 inset-x-0 w-full {% if compact %}h-3 sm:h-4{% else %}h-4 sm:h-5{% endif %} text-white pointer-events-none z-10" viewBox="0 0 100 20" preserveAspectRatio="none" fill="currentColor">
+            <path d="M0 20 C 35 6, 65 18, 100 8 L 100 20 Z" />
+        </svg>
     </div>
-    <div class="min-w-0 flex-1">
-        <h4 class="font-bold text-sm text-gray-900 group-hover:text-[#C8102E] transition-colors leading-tight">
-            {{ title }}
-        </h4>
-        {% if subtitle %}
-        <p class="text-xs text-gray-500 mt-0.5 leading-tight">
-            {{ subtitle }}
-        </p>
-        {% endif %}
+
+    <!-- The category image is the sole visual identifier; no duplicate icon badge. -->
+    <div class="{% if compact %}p-3.5 sm:p-4 pt-3.5 sm:pt-4{% else %}p-4 sm:p-5 pt-4 sm:pt-5{% endif %} flex flex-col justify-between flex-1 bg-white">
+        <div>
+            <h3 class="font-display font-bold {% if compact %}text-sm sm:text-base{% else %}text-base sm:text-lg{% endif %} text-gray-900 group-hover:text-[#C8102E] transition-colors leading-tight line-clamp-1">
+                {{ title }}
+            </h3>
+            {% if subtitle %}
+            <p class="text-xs text-gray-500 {% if compact %}mt-0.5 min-h-[2rem] leading-snug{% else %}mt-1 min-h-[2.25rem] leading-relaxed{% endif %} line-clamp-2">
+                {{ subtitle }}
+            </p>
+            {% endif %}
+        </div>
+
+        <div class="{% if compact %}mt-2.5 sm:mt-3{% else %}mt-3 sm:mt-4{% endif %} inline-flex items-center gap-1.5 text-xs font-bold text-[#E31B23]">
+            <span>Shop now</span>
+            <svg class="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </div>
     </div>
 </a>
-
-

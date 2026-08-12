@@ -179,3 +179,30 @@ def test_seller_spotlight_requires_live_products_and_expands_single_shop(client,
     assert b'Handwoven homeware' in response.content
     assert b'Visit shop' in response.content
     assert empty_shop.name.encode() not in response.content
+
+
+@pytest.mark.django_db
+def test_hero_promo_card_cms_scheduling(client):
+    from apps.marketplace.content.models import HeroPromoCard
+    from apps.marketplace.content.selectors import live_hero_promo_card
+
+    promo = HeroPromoCard.objects.create(
+        title='Jamhuri Day Specials',
+        badge_text='Limited Time',
+        subtitle='Up to 30% off Kenyan crafts',
+        button_label='Shop Jamhuri Deals',
+        button_url='/zawadi/jamhuri-day/',
+        background_color='#C8102E',
+        status=VisibilityStatus.PUBLISHED,
+        priority=0,
+    )
+
+    live = live_hero_promo_card()
+    assert live == promo
+    assert live.title == 'Jamhuri Day Specials'
+
+    response = client.get(reverse('core:home'))
+    assert response.status_code == 200
+    assert b'Jamhuri Day Specials' in response.content
+    assert b'Shop Jamhuri Deals' in response.content
+

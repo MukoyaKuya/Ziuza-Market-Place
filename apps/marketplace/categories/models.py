@@ -36,6 +36,45 @@ class Category(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    @property
+    def get_icon_url(self) -> str:
+        if self.image:
+            return self.image.url
+
+        static_icons = {
+            'home-living': 'images/category_icons/homeliving.png',
+            'fashion': 'images/category_icons/fashion.png',
+            'art-collectibles': 'images/category_icons/art_collectibles.png',
+            'jewelry': 'images/category_icons/jewelry.png',
+            'craft-supplies': 'images/category_icons/craft_supplies.png',
+            'vintage': 'images/category_icons/vintage.png',
+        }
+        if self.slug in static_icons:
+            from django.templatetags.static import static
+            return static(static_icons[self.slug])
+        return ''
+
+    @property
+    def get_icon_name(self) -> str:
+        if self.icon:
+            return self.icon
+
+        icon_map = {
+            'home-living': 'chair',
+            'fashion': 'dress',
+            'art-collectibles': 'palette',
+            'jewelry': 'necklace',
+            'craft-supplies': 'scissors',
+            'vintage': 'clock',
+            'gifts': 'gift',
+            'accessories': 'cart',
+            'bags-purses': 'cart',
+            'wedding': 'gift',
+            'back-to-school': 'book',
+        }
+        return icon_map.get(self.slug, 'grid')
+
+
     def save(self, *args, **kwargs):
         if not self.slug:
             base = slugify(self.name)[:120] or 'category'

@@ -6,10 +6,10 @@
 {% block content %}
 <div class="w-full max-w-5xl mx-auto">
     <!-- Main Split Card Container -->
-    <div class="bg-white rounded-[2rem] border border-gray-100 shadow-2xl shadow-stone-200/50 overflow-hidden grid grid-cols-1 lg:grid-cols-2 min-h-[580px]">
+    <div class="bg-white/95 rounded-2xl sm:rounded-3xl border border-white shadow-2xl shadow-stone-200/60 overflow-hidden grid grid-cols-1 lg:grid-cols-2 ring-1 ring-black/5">
         
         <!-- Left Side: Artisan & Craft Showcase Card -->
-        <div class="relative hidden lg:flex flex-col justify-between p-10 lg:p-12 text-white bg-cover bg-center overflow-hidden"
+        <div class="relative hidden lg:flex flex-col justify-between p-7 lg:p-8 text-white bg-cover bg-center overflow-hidden"
              style="background-image: url('{% static "images/hero_kenyan_basket.png" %}');">
             
             <!-- Dark Gradient Overlay -->
@@ -25,85 +25,96 @@
             </div>
 
             <!-- Top Left Heading Content -->
-            <div class="relative z-20 space-y-2 max-w-md pt-2">
-                <h2 class="font-serif text-3xl lg:text-4xl font-semibold text-white tracking-tight leading-tight">Welcome back!</h2>
-                <p class="text-gray-200 text-sm font-normal leading-relaxed">
+            <div class="relative z-20 space-y-1 max-w-sm pt-1">
+                <h2 class="auth-display text-2xl lg:text-3xl text-white tracking-tight leading-tight">Welcome back!</h2>
+                <p class="auth-subtitle text-gray-200 font-normal leading-relaxed">
                     Sign in to continue shopping unique, handmade products from Kenya.
                 </p>
             </div>
 
             <!-- Middle Value Bullet Features -->
-            <div class="relative z-20 space-y-6 my-auto py-6 max-w-md">
+            <div class="relative z-20 space-y-2.5 my-auto py-4 max-w-sm">
                 <!-- Bullet 1 -->
-                <div class="flex items-start gap-3.5">
-                    <div class="w-10 h-10 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                <div class="flex items-start gap-3 rounded-xl px-3 py-2" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(2px);">
+                    <div class="w-8 h-8 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                     </div>
                     <div>
                         <h4 class="font-bold text-sm text-white">Shop Authentic</h4>
-                        <p class="text-xs text-gray-300 leading-snug mt-0.5">Discover handmade, vintage and unique Kenyan products.</p>
+                        <p class="text-xs text-gray-200 leading-4 mt-0.5">Discover handmade, vintage and unique Kenyan products.</p>
                     </div>
                 </div>
 
                 <!-- Bullet 2 -->
-                <div class="flex items-start gap-3.5">
-                    <div class="w-10 h-10 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                <div class="flex items-start gap-3 rounded-xl px-3 py-2" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(2px);">
+                    <div class="w-8 h-8 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     </div>
                     <div>
                         <h4 class="font-bold text-sm text-white">Support Creators</h4>
-                        <p class="text-xs text-gray-300 leading-snug mt-0.5">Empower local artisans and small businesses.</p>
+                        <p class="text-xs text-gray-200 leading-4 mt-0.5">Empower local artisans and small businesses.</p>
                     </div>
                 </div>
 
                 <!-- Bullet 3 -->
-                <div class="flex items-start gap-3.5">
-                    <div class="w-10 h-10 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-sm mt-0.5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <div class="flex items-start gap-3 rounded-xl px-3 py-2" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(2px);">
+                    <div class="w-8 h-8 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                     </div>
                     <div>
                         <h4 class="font-bold text-sm text-white">Secure &amp; Easy</h4>
-                        <p class="text-xs text-gray-300 leading-snug mt-0.5">Your data is protected with industry-standard security.</p>
+                        <p class="text-xs text-gray-200 leading-4 mt-0.5">Your data is protected with industry-standard security.</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Right Side: Sign In Form -->
-        <div class="p-8 sm:p-10 lg:p-12 bg-white flex flex-col justify-center" x-data="{ showPassword: false }">
+        <div class="p-6 sm:p-7 lg:p-8 bg-white flex flex-col justify-center" x-data="{ showPassword: false }">
             
             <!-- User Icon Badge -->
-            <div class="text-center mb-6">
-                <div class="w-13 h-13 rounded-2xl bg-[#EEF4F0] text-[#008751] flex items-center justify-center mx-auto mb-3 shadow-2xs">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <div class="text-center mb-4">
+                <div class="w-10 h-10 rounded-xl bg-[#EEF4F0] text-[#008751] flex items-center justify-center mx-auto mb-2 shadow-2xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                     </svg>
                 </div>
-                <h1 class="font-serif text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Sign in to your account</h1>
-                <p class="text-xs sm:text-sm text-gray-500 mt-1">Access your orders, wishlist, and Kenyan shop.</p>
+                <h1 class="auth-display auth-title text-gray-900">Sign in to your account</h1>
+                <p class="auth-subtitle text-gray-500 mt-0.5">Access your orders, wishlist, and Kenyan shop.</p>
+                {% if request.GET.intent == 'favorite' %}
+                <div class="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800 flex items-center justify-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+                    <span>Sign in to save this item to your favorites.</span>
+                </div>
+                {% endif %}
+                <div class="mt-2 flex flex-wrap justify-center gap-1.5 text-[10px] font-semibold text-gray-600">
+                    <span class="rounded-full bg-gray-100 px-2 py-0.5">Fast checkout</span>
+                    <span class="rounded-full bg-gray-100 px-2 py-0.5">Saved favorites</span>
+                    <span class="rounded-full bg-gray-100 px-2 py-0.5">Order tracking</span>
+                </div>
             </div>
 
             {% if form.non_field_errors %}
-            <div class="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs mb-4" role="alert">
+            <div class="p-2.5 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs mb-3" role="alert">
                 {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
             </div>
             {% endif %}
 
             <!-- Form -->
-            <form method="post" class="space-y-4" novalidate>
+            <form method="post" class="space-y-3" novalidate>
                 {% csrf_token %}
 
                 <!-- Email Field -->
-                <div class="space-y-1">
-                    <label for="id_email" class="block text-xs font-semibold text-gray-700">Email address</label>
+                <div>
+                    <label for="id_email" class="auth-label block text-gray-700 mb-1">Email address</label>
                     <div class="relative">
-                        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                         </svg>
-                        <input type="email" name="email" id="id_email" required
+                           <input type="email" name="email" id="id_email" required
                                value="{{ form.email.value|default:'' }}"
-                               placeholder="e.g. buyer@example.com"
-                               class="w-full h-11 pl-10 pr-3.5 text-sm bg-white border border-gray-200 rounded-xl focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none">
+                               placeholder="buyer@example.com"
+                               class="auth-input w-full h-10 pr-3 bg-white border border-gray-200 rounded-xl focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none" style="padding-left: 2.75rem;">
                     </div>
                     {% if form.email.errors %}
                     <p class="text-xs font-medium text-red-600 mt-1" role="alert">{{ form.email.errors|striptags }}</p>
@@ -111,17 +122,20 @@
                 </div>
 
                 <!-- Password Field -->
-                <div class="space-y-1">
-                    <label for="id_password" class="block text-xs font-semibold text-gray-700">Password</label>
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label for="id_password" class="auth-label block text-gray-700">Password</label>
+                        <a href="{% url 'accounts:login' %}" class="text-[11px] font-semibold text-[#008751] hover:underline">Forgot?</a>
+                    </div>
                     <div class="relative">
-                        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                         </svg>
-                        <input type="password" :type="showPassword ? 'text' : 'password'" name="password" id="id_password" required
-                               class="w-full h-11 pl-10 pr-10 text-sm bg-white border border-gray-200 rounded-xl focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none"
+                           <input type="password" :type="showPassword ? 'text' : 'password'" name="password" id="id_password" required
+                               class="auth-input w-full h-10 bg-white border border-gray-200 rounded-xl focus:border-[#008751] focus:ring-2 focus:ring-[#008751]/20 transition-all outline-none" style="padding-left: 2.75rem; padding-right: 2.75rem;"
                                placeholder="••••••••">
                         <button type="button" @click="showPassword = !showPassword"
-                                class="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
                                 aria-label="Toggle password visibility">
                             <svg x-show="!showPassword" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                             <svg x-show="showPassword" x-cloak class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858-5.908a10.018 10.018 0 014.122-.863c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411m-6.28-7.39a3 3 0 11-4.243 4.243"/></svg>
@@ -130,26 +144,22 @@
                     {% if form.password.errors %}
                     <p class="text-xs font-medium text-red-600 mt-1" role="alert">{{ form.password.errors|striptags }}</p>
                     {% endif %}
-
-                    <div class="text-right pt-0.5">
-                        <a href="{% url 'accounts:login' %}" class="text-xs font-semibold text-[#008751] hover:underline">Forgot password?</a>
-                    </div>
                 </div>
 
                 <!-- Sign In Button -->
-                <button type="submit" class="w-full py-3.5 px-6 rounded-xl font-bold text-sm text-white bg-[#008751] hover:bg-[#006E42] transition-all shadow-md shadow-emerald-900/10 active:scale-[0.99] cursor-pointer mt-2 flex items-center justify-center gap-2">
+                <button type="submit" class="auth-button w-full py-2.5 px-4 rounded-xl text-white bg-[#008751] hover:bg-[#0A7D53] transition-all duration-200 shadow-md shadow-emerald-900/15 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-900/25 active:translate-y-0 active:scale-[0.99] cursor-pointer mt-1 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#008751]/35">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
                     <span>Sign in</span>
                 </button>
 
                 <!-- Divider -->
-                <div class="relative my-4 text-center">
+                <div class="relative my-2.5 text-center">
                     <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-gray-200"></div></div>
-                    <span class="relative bg-white px-3 text-xs text-gray-400">or</span>
+                    <span class="relative bg-white px-2.5 text-[11px] text-gray-400 uppercase font-medium">or</span>
                 </div>
 
                 <!-- Continue with Google Button -->
-                <button type="button" class="w-full py-2.5 px-4 rounded-xl border border-gray-200 hover:bg-gray-50 font-semibold text-xs sm:text-sm text-gray-700 flex items-center justify-center gap-2.5 transition-colors shadow-2xs">
+                <button type="button" class="auth-button w-full py-2 px-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 flex items-center justify-center gap-2 transition-colors shadow-2xs">
                     <svg class="w-4 h-4" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -160,18 +170,20 @@
                 </button>
             </form>
 
+            <p class="auth-footnote mt-2 text-center text-gray-500">By signing in, you continue to secure checkout and personalized recommendations.</p>
+
+            <!-- Bottom Switch Link -->
+            <div class="auth-footnote mt-3 text-center text-gray-600 font-medium">
+                New to Ziuza?
+                <a href="{% url 'accounts:register' %}" class="font-bold text-[#008751] hover:underline ml-1">Create an account &rarr;</a>
+            </div>
+
             <!-- Security Guarantee -->
-            <div class="pt-4 mt-2 border-t border-gray-100 flex items-center justify-center gap-1.5 text-xs text-[#008751] font-medium">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="auth-footnote pt-2.5 mt-2.5 border-t border-gray-100 flex items-center justify-center gap-1.5 text-[#008751] font-medium">
+                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <span>256-Bit Encrypted &amp; Secure Checkout</span>
             </div>
         </div>
-    </div>
-
-    <!-- Bottom Switch Link -->
-    <div class="mt-6 text-center text-sm text-gray-600">
-        New to Ziuza?
-        <a href="{% url 'accounts:register' %}" class="font-bold text-[#008751] hover:underline ml-1">Create an account &rarr;</a>
     </div>
 </div>
 {% endblock %}

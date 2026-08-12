@@ -5,6 +5,7 @@ from apps.marketplace.content.selectors import (
     featured_shops,
     homepage_discovery,
     live_collections,
+    live_hero_promo_card,
     live_hero_slides,
     live_homepage_sections,
 )
@@ -25,6 +26,7 @@ class HomeView(TemplateView):
             limit=4,
         )
         self.request.session['home_discovery_position'] = discovery_position + 1
+        hero_slides = live_hero_slides()
         context.update(
             {
                 'page_title': 'Ziuza Marketplace | Celebrating Kenyan Crafts & Creators',
@@ -36,7 +38,9 @@ class HomeView(TemplateView):
                     'featured_listings',
                     'collections',
                 },
-                'hero_slides': live_hero_slides(),
+                'hero_slides': hero_slides,
+                'active_hero_slide': hero_slides[0] if hero_slides else None,
+                'active_hero_promo_card': live_hero_promo_card(),
                 'featured_listings': discovery_listings or featured_listings(limit=4),
                 'featured_category': discovery_category,
                 'discovery_is_mixed': discovery_is_mixed,

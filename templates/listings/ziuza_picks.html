@@ -1,0 +1,47 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Ziuza Maridadis | Handpicked Top Artisans{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div class="bg-gradient-to-r from-[#00482B] to-[#00683E] text-white rounded-3xl p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div class="space-y-2 max-w-2xl">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white/90 text-xs font-semibold backdrop-blur-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Curated Selection
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-display font-bold">Ziuza Maridadis</h1>
+            <p class="text-emerald-100 text-sm sm:text-base leading-relaxed">
+                Handpicked quality items from top-rated promoted artisans (rated 3.0+). Support verified Kenyan craftsmanship.
+            </p>
+        </div>
+    </div>
+
+    {% if listings_page %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {% for listing in listings_page %}
+        {% url 'listings:detail' listing.slug as listing_url %}
+        {% with cover=listing.images.first %}
+        {% include 'components/listing_card/listing_card.html' with title=listing.title price=listing.base_price shop_name=listing.shop.name is_verified=listing.shop.is_verified category_slug=listing.category.slug image_url=cover.image.url|default:"" listing_url=listing_url listing=listing %}
+        {% endwith %}
+        {% endfor %}
+    </div>
+    {% if listings_page.paginator.num_pages > 1 %}
+    <div class="flex justify-between items-center text-sm pt-4">
+        {% if listings_page.has_previous %}
+        <a class="btn-secondary btn-sm" href="?page={{ listings_page.previous_page_number }}">Previous</a>
+        {% else %}<span></span>{% endif %}
+        <span class="text-gray-500">Page {{ listings_page.number }} of {{ listings_page.paginator.num_pages }}</span>
+        {% if listings_page.has_next %}
+        <a class="btn-secondary btn-sm" href="?page={{ listings_page.next_page_number }}">Next</a>
+        {% else %}<span></span>{% endif %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border">
+        {% url 'listings:category_index' as cats_url %}
+        {% include 'components/empty_state/empty_state.html' with title="No Ziuza Maridadis approved yet" message="Admin must approve promoted shops (rated 3.0+) in Django Admin for products to appear in Ziuza Maridadis." action_label="Explore categories" action_url=cats_url %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

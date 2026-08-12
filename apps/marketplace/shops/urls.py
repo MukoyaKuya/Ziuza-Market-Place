@@ -13,6 +13,7 @@ urlpatterns = [
     path('seller/team/', views.team_management, name='team'),
     path('seller/team/accept/<str:token>/', views.accept_team, name='accept_team'),
     path('seller/reviews/', views.dashboard_reviews, name='dashboard_reviews'),
+    path('seller/gifts/', views.dashboard_gifts, name='dashboard_gifts'),
     path('seller/verification/', views.verification, name='verification'),
     path('shop/<slug:slug>/', views.public_shop, name='public_shop'),
     path('shop/<slug:slug>/report/', views.report_shop, name='report_shop'),

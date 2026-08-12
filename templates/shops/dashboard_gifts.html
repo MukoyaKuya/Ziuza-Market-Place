@@ -1,0 +1,80 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block dashboard_content %}
+<div class="space-y-6 max-w-4xl">
+    <div>
+        <h1 class="text-2xl font-bold font-display text-gray-900">Gift Section (Zawadi) Approval</h1>
+        <p class="text-sm text-gray-600 mt-1">
+            Apply to feature your shop products in the exclusive <strong>Zawadi Gift Section</strong> on Ziuza.
+        </p>
+    </div>
+
+    <!-- Status Banner -->
+    <div class="bg-white rounded-2xl border border-gray-200 p-6 shadow-2xs space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-gray-900">Approval Status</h3>
+            {% if gift_approval_status == 'approved' %}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 13l4 4L19 7"/></svg>
+                Approved Gift Seller
+            </span>
+            {% elif gift_approval_status == 'pending' %}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">
+                <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                Under Admin Review
+            </span>
+            {% elif gift_approval_status == 'rejected' %}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">
+                Application Declined
+            </span>
+            {% else %}
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200">
+                Not Applied
+            </span>
+            {% endif %}
+        </div>
+
+        {% if gift_approval_status == 'approved' %}
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-sm space-y-2">
+            <p class="font-semibold">Congratulations! Your shop is an approved Zawadi Gift Seller.</p>
+            <p class="text-xs text-emerald-700">Your products tagged in gift categories (Kids Gifts, Men Gifts, Mother Gifts, Father Gifts, Boss Gifts, Wedding Gifts, Valentines Gifts, Madaraka Specials, Jamhuri Day, Liberation Day) appear in the exclusive Zawadi section.</p>
+            <div class="pt-2">
+                <a href="{% url 'listings:zawadi_index' %}" target="_blank" class="inline-flex items-center gap-1.5 font-bold text-xs text-emerald-800 hover:text-emerald-900">
+                    <span>View Zawadi Gift Section &rarr;</span>
+                </a>
+            </div>
+        </div>
+        {% elif gift_approval_status == 'pending' %}
+        <div class="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm space-y-1">
+            <p class="font-semibold">Application Pending Review</p>
+            <p class="text-xs text-amber-800">Your request to sell in the Zawadi Exclusive Gift Section has been received by Ziuza Admin. You will be notified once reviewed.</p>
+            {% if shop.gift_request_notes %}
+            <p class="text-xs text-amber-900 mt-2 font-mono bg-amber-100/60 p-2.5 rounded-lg">Notes: {{ shop.gift_request_notes }}</p>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="p-4 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 text-sm space-y-2">
+            <p>Sellers must request approval from Admin to feature products in the exclusive <strong>Zawadi Gift Section</strong>.</p>
+            <ul class="list-disc list-inside text-xs space-y-1 text-gray-600">
+                <li>Showcase items in curated subcategories like Kids, Men, Mother, Father, Boss, Wedding, Valentines, Madaraka Specials, Jamhuri Day, and Liberation Day gifts.</li>
+                <li>Gain enhanced visibility across the marketplace gift hub.</li>
+            </ul>
+        </div>
+
+        <form method="POST" class="pt-4 space-y-4">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="request_approval">
+            <div>
+                <label for="id_notes" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+                    Tell Admin why your products are suitable for Zawadi Gifts:
+                </label>
+                <textarea id="id_notes" name="notes" rows="4" required placeholder="Describe your gift offerings, custom packaging, personalization options, or gift categories..." class="w-full rounded-xl border-gray-300 text-sm focus:border-kenya-red focus:ring-kenya-red"></textarea>
+            </div>
+            <button type="submit" class="btn-primary w-full sm:w-auto px-6 py-2.5 text-sm font-bold">
+                Submit Gift Seller Request
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

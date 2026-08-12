@@ -1,9 +1,12 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.http import HttpResponse
 from django.http import Http404
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
+from urllib.parse import urlencode
 
 from apps.accounts.utils import safe_next_url
 from apps.core.htmx import with_toast
@@ -20,9 +23,16 @@ from apps.marketplace.search.saved import recent_listings_for_user, recommendati
 from apps.marketplace.shops.models import Shop
 
 
-@login_required
 @require_POST
 def toggle_favorite_htmx(request, listing_id):
+    if not request.user.is_authenticated:
+        next_url = safe_next_url(request, request.headers.get('Referer'), reverse('core:home'))
+        login_url = f"{reverse('accounts:login')}?{urlencode({'next': next_url, 'intent': 'favorite'})}"
+        if request.headers.get('HX-Request'):
+            response = HttpResponse(status=204)
+            response['HX-Redirect'] = login_url
+            return response
+        return redirect(login_url)
     try:
         listing = Listing.objects.get(id=listing_id)
     except Listing.DoesNotExist as exc:

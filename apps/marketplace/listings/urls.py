@@ -25,6 +25,9 @@ urlpatterns = [
     path('seller/bulk/export/', views.seller_bulk_export, name='seller_bulk_export'),
 
     # Public
+    path('picks/', views.ziuza_picks, name='ziuza_picks'),
+    path('zawadi/', views.zawadi_index, name='zawadi_index'),
+    path('zawadi/<slug:slug>/', views.zawadi_category_detail, name='zawadi_category_detail'),
     path('listing/<slug:slug>/', views.listing_detail, name='detail'),
     path('listing/<slug:slug>/report/', views.report_listing, name='report'),
     path('categories/', views.category_index, name='category_index'),

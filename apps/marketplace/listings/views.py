@@ -567,3 +567,117 @@ def category_detail(request, slug: str):
             'meta_description': category.seo_description or category.description,
         },
     )
+
+
+def ziuza_picks(request):
+    """Ziuza Maridadis — curated items from promoted shops with a rating above 3.0 approved by admin."""
+    from apps.marketplace.listings.models import Listing, ListingStatus
+
+    promoted_listings = (
+        Listing.objects.filter(
+            status=ListingStatus.ACTIVE,
+            shop__is_active=True,
+            shop__vacation_mode=False,
+            shop__is_promoted=True,
+            shop__rating_average__gt=3.0,
+        )
+        .select_related('shop', 'category')
+        .prefetch_related('images')
+        .order_by('-shop__rating_average', '-published_at')
+    )
+
+    paginator = Paginator(promoted_listings, 24)
+    page = paginator.get_page(request.GET.get('page') or 1)
+
+    return render(
+        request,
+        'listings/ziuza_picks.html',
+        {
+            'listings_page': page,
+            'page_title': 'Ziuza Maridadis | Admin Approved Promoted Artisans',
+        },
+    )
+
+
+def zawadi_index(request):
+    """Zawadi — Exclusive Gift Section featuring curated gift categories and approved gift sellers."""
+    from apps.marketplace.categories.models import Category
+    from apps.marketplace.listings.models import Listing, ListingStatus
+    from apps.marketplace.shops.models import ShopGiftApprovalStatus
+
+    gift_parent = Category.objects.filter(slug='gifts').first()
+    gift_categories = (
+        Category.objects.filter(parent=gift_parent, is_visible=True).order_by('position', 'name')
+        if gift_parent
+        else Category.objects.filter(slug__icontains='gift', is_visible=True).order_by('position', 'name')
+    )
+
+    approved_gift_listings = (
+        Listing.objects.filter(
+            status=ListingStatus.ACTIVE,
+            shop__is_active=True,
+            shop__vacation_mode=False,
+            shop__gift_approval_status=ShopGiftApprovalStatus.APPROVED,
+        )
+        .select_related('shop', 'category')
+        .prefetch_related('images')
+        .order_by('-published_at')
+    )
+
+    paginator = Paginator(approved_gift_listings, 24)
+    page = paginator.get_page(request.GET.get('page') or 1)
+
+    return render(
+        request,
+        'categories/zawadi.html',
+        {
+            'gift_categories': gift_categories,
+            'selected_category': None,
+            'listings_page': page,
+            'page_title': 'Zawadi — Exclusive Gift Section',
+        },
+    )
+
+
+def zawadi_category_detail(request, slug: str):
+    """Specific gift sub-category page in Zawadi Exclusive Gift Section."""
+    from apps.marketplace.categories.models import Category
+    from apps.marketplace.listings.models import Listing, ListingStatus
+
+    try:
+        category = Category.objects.get(slug=slug, is_visible=True)
+    except Category.DoesNotExist as exc:
+        raise Http404('Gift category not found.') from exc
+
+    gift_parent = Category.objects.filter(slug='gifts').first()
+    gift_categories = (
+        Category.objects.filter(parent=gift_parent, is_visible=True).order_by('position', 'name')
+        if gift_parent
+        else Category.objects.filter(slug__icontains='gift', is_visible=True).order_by('position', 'name')
+    )
+
+    listings_qs = (
+        Listing.objects.filter(
+            status=ListingStatus.ACTIVE,
+            category=category,
+            shop__is_active=True,
+            shop__vacation_mode=False,
+        )
+        .select_related('shop', 'category')
+        .prefetch_related('images')
+        .order_by('-published_at')
+    )
+
+    paginator = Paginator(listings_qs, 24)
+    page = paginator.get_page(request.GET.get('page') or 1)
+
+    return render(
+        request,
+        'categories/zawadi.html',
+        {
+            'gift_categories': gift_categories,
+            'selected_category': category,
+            'listings_page': page,
+            'page_title': f'Zawadi — {category.name}',
+        },
+    )

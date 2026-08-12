@@ -19,6 +19,14 @@ def live_hero_slides(*, now=None, limit: int = 5):
     return [slide for slide in slides if slide.is_live(now=now)][:limit]
 
 
+def live_hero_promo_card(*, now=None):
+    from apps.marketplace.content.models import HeroPromoCard
+    now = now or timezone.now()
+    cards = HeroPromoCard.objects.order_by('priority', '-updated_at')
+    live_cards = [card for card in cards if card.is_live(now=now)]
+    return live_cards[0] if live_cards else None
+
+
 def live_collections(*, now=None, limit: int = 8):
     now = now or timezone.now()
     collections = Collection.objects.prefetch_related('listings').order_by('name')

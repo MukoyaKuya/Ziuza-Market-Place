@@ -1,5 +1,9 @@
 import pytest
+from types import SimpleNamespace
+from uuid import uuid4
+from django.contrib.auth.models import AnonymousUser
 from django.template.loader import render_to_string
+from django.test import RequestFactory
 from django.test import override_settings
 from django.urls import reverse
 
@@ -67,7 +71,7 @@ def test_home_page_renders_hero_and_mockup_sections(client):
     response = client.get(url)
     assert response.status_code == 200
     assert b'Made in' in response.content
-    assert b'Ziuza Picks' in response.content
+    assert b'Ziuza Maridadis' in response.content
     assert b'Shop by category' in response.content
     assert b'data-marketplace-search' in response.content
     assert b'Search products, shops, and Kenyan makers' in response.content
@@ -109,6 +113,19 @@ def test_listing_card_omits_favorite_without_listing():
     })
     assert 'favorites:toggle' not in card
     assert 'Add favorite' not in card
+
+
+def test_guest_favorite_button_shows_signin_hint_and_link():
+    request = RequestFactory().get('/search/?q=art')
+    request.user = AnonymousUser()
+    html = render_to_string(
+        'favorites/partials/button.html',
+        {'listing': SimpleNamespace(id=uuid4()), 'is_favorited': False},
+        request=request,
+    )
+    assert 'title="Sign in to save to Favorites"' in html
+    assert f'href="{reverse("accounts:login")}?next=/search/%3Fq%3Dart&intent=favorite"' in html
+    assert 'hx-post=' not in html
 
 
 def test_base_layout_includes_skip_link():

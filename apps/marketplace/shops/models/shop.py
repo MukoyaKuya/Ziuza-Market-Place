@@ -14,6 +14,13 @@ class ShopVerificationStatus(models.TextChoices):
     SUSPENDED = 'suspended', _('Suspended')
 
 
+class ShopGiftApprovalStatus(models.TextChoices):
+    UNREQUESTED = 'unrequested', _('Unrequested')
+    PENDING = 'pending', _('Pending')
+    APPROVED = 'approved', _('Approved')
+    REJECTED = 'rejected', _('Rejected')
+
+
 class Shop(models.Model):
     """Seller shop — marketplace presence for a creator/merchant."""
 
@@ -41,6 +48,13 @@ class Shop(models.Model):
         choices=ShopVerificationStatus.choices,
         default=ShopVerificationStatus.UNVERIFIED,
     )
+    is_promoted = models.BooleanField(_('promoted shop'), default=False)
+    gift_approval_status = models.CharField(
+        max_length=20,
+        choices=ShopGiftApprovalStatus.choices,
+        default=ShopGiftApprovalStatus.UNREQUESTED,
+    )
+    gift_request_notes = models.TextField(_('gift request notes'), blank=True)
     rating_average = models.DecimalField(
         _('rating average'),
         max_digits=3,

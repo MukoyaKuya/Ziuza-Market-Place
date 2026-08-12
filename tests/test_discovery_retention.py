@@ -140,6 +140,19 @@ def test_saved_following_page_and_shop_follow_button(client, discovery_setup):
 
 
 @pytest.mark.django_db
+def test_guest_hx_favorite_click_redirects_to_login(client, discovery_setup):
+    *_, listing = discovery_setup
+    response = client.post(
+        reverse('favorites:toggle', kwargs={'listing_id': listing.id}),
+        HTTP_HX_REQUEST='true',
+        HTTP_REFERER=reverse('core:home'),
+    )
+    assert response.status_code == 204
+    assert reverse('accounts:login') in response['HX-Redirect']
+    assert 'next=' in response['HX-Redirect']
+
+
+@pytest.mark.django_db
 def test_seller_analytics_include_follow_save_and_returning_viewer_signals(discovery_setup):
     _, buyer, _, _, shop, listing = discovery_setup
     toggle_shop_follow(actor=buyer, shop=shop)

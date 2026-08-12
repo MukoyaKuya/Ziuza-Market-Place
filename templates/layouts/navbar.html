@@ -126,11 +126,11 @@
     <div class="border-t border-gray-100 bg-white hidden md:block">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <nav class="flex items-center gap-8 py-2 overflow-x-auto text-sm font-semibold text-gray-700 scrollbar-none" aria-label="Popular categories">
-                <a href="{% url 'listings:category_index' %}" class="relative inline-flex items-center gap-1.5 text-kenya-red font-bold transition-colors whitespace-nowrap py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-kenya-red after:rounded-full">
+                <a href="{% url 'listings:zawadi_index' %}" class="relative inline-flex items-center gap-1.5 text-kenya-red font-bold transition-colors whitespace-nowrap py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-kenya-red after:rounded-full">
                     {% include 'components/icons/flat_icon.html' with name='gift' class='h-4 w-4 text-kenya-red' %}
                     <span>Zawadi</span>
                 </a>
-                <a href="{% url 'search:results' %}?q=school" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Back to School</a>
+                <a href="{% url 'listings:category_detail' 'back-to-school' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Back to School</a>
                 <a href="{% url 'listings:category_detail' 'home-living' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Home & Living</a>
                 <a href="{% url 'listings:category_detail' 'fashion' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Fashion</a>
                 <a href="{% url 'listings:category_detail' 'art-collectibles' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Art & Collectibles</a>

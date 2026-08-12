@@ -21,11 +21,14 @@ class ShopAdmin(ModelAdmin):
         'owner',
         'county',
         'verification_status',
-        'vacation_mode',
+        'is_promoted',
+        'gift_approval_status',
+        'rating_average',
         'is_active',
         'created_at',
     )
-    list_filter = ('verification_status', 'vacation_mode', 'is_active', 'county')
+    list_filter = ('is_promoted', 'gift_approval_status', 'verification_status', 'vacation_mode', 'is_active', 'county')
+    list_editable = ('is_promoted', 'gift_approval_status')
     search_fields = ('name', 'slug', 'owner__email', 'county')
     prepopulated_fields = {'slug': ('name',)}
     readonly_fields = ('verification_status', 'rating_average', 'rating_count', 'created_at', 'updated_at')

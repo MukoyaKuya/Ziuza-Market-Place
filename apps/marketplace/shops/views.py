@@ -431,3 +431,33 @@ def public_shop(request, slug: str):
             'shop_share_url': request.build_absolute_uri(reverse('shops:public_shop', kwargs={'slug': shop.slug})),
         },
     )
+
+
+@_with_shop
+@require_http_methods(['GET', 'POST'])
+def dashboard_gifts(request, shop: Shop):
+    """Seller Dashboard -> Gift Section (Zawadi) Approval Application."""
+    from apps.marketplace.shops.models import ShopGiftApprovalStatus
+
+    ctx = dashboard_context(shop=shop, section='gifts', actor=request.user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'request_approval':
+            notes = request.POST.get('notes', '').strip()
+            shop.gift_approval_status = ShopGiftApprovalStatus.PENDING
+            shop.gift_request_notes = notes
+            shop.save(update_fields=['gift_approval_status', 'gift_request_notes', 'updated_at'])
+            messages.success(
+                request,
+                'Your request to sell in the Zawadi Exclusive Gift Section has been submitted to Admin for review.',
+            )
+            return redirect('shops:dashboard_gifts')
+
+    ctx.update({
+        'shop': shop,
+        'gift_approval_status': shop.gift_approval_status,
+        'page_title': 'Gift Section (Zawadi) | Seller Dashboard',
+    })
+    return render(request, 'shops/dashboard_gifts.html', ctx)
+
