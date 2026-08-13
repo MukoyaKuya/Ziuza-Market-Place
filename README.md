@@ -37,20 +37,23 @@ npm run build:css
 python manage.py runserver
 ```
 
-Run `python manage.py expire_order_reservations` on a recurring schedule (at
-least once per minute) so abandoned checkouts promptly return stock to sale.
-Run `python manage.py notify_low_stock` daily so sellers receive one alert when
-an active listing reaches its configured stock threshold; restocking resets it.
-Run `python manage.py process_saved_search_alerts` and
-`python manage.py process_discovery_alerts` every 10–15 minutes to create buyer
-notifications for new search matches, followed-shop listings, price changes,
-and back-in-stock events. Run `python manage.py deliver_notifications` through
-a recurring worker to deliver queued notification emails.
-Run `python manage.py process_review_reminders` daily to invite buyers to leave
-a verified review three days after confirmed delivery.
-Run `python manage.py rollup_shop_analytics` daily (and optionally
-`python manage.py rollup_shop_analytics --backfill --days 30` after deploy)
-so seller analytics charts stay filled for shops with paid orders.
+Run Celery worker and Celery Beat for background queue processing and periodic jobs:
+
+```powershell
+# In a separate terminal: Run Celery Worker
+celery -A config worker -l info
+
+# In a separate terminal: Run Celery Beat Scheduler
+celery -A config beat -l info
+```
+
+Alternatively, tasks can still be run manually or via cron with Django management commands:
+- `python manage.py expire_order_reservations` (releases abandoned cart checkouts)
+- `python manage.py notify_low_stock` (daily low-stock alerts)
+- `python manage.py process_saved_search_alerts` & `python manage.py process_discovery_alerts` (discovery notifications)
+- `python manage.py deliver_notifications` (queued email delivery worker)
+- `python manage.py process_review_reminders` (verified buyer review invitations)
+- `python manage.py rollup_shop_analytics` (daily seller metrics rollup)
 
 Demo logins after `seed_demo`:
 
@@ -92,6 +95,7 @@ npm run watch:css
 | `ALLOWED_HOSTS` | Comma-separated hosts |
 | `DATABASE_URL` | PostgreSQL URL; if unset in local, uses SQLite |
 | `REDIS_URL` | Optional; LocMem cache used when unset |
+| `CELERY_BROKER_URL` | Redis URL for Celery message broker (`redis://127.0.0.1:6379/0` by default) |
 | `PAYMENT_PROVIDER` | `fake` (default) or `mpesa` (Daraja scaffold) |
 | `MPESA_*` | Daraja credentials, public callback URL, and callback secret |
 | `SENTRY_DSN` | Optional; enables Sentry in production when `sentry-sdk` is installed |

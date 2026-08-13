@@ -67,3 +67,4 @@ private_media/
 .env.*
 !.env.example
 secrets/
+.deslop/

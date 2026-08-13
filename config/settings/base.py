@@ -184,6 +184,51 @@ TRUST_X_FORWARDED_FOR = env.bool('TRUST_X_FORWARDED_FOR', default=False)
 # Optional Sentry (install sentry-sdk[django] in prod extras when enabling)
 SENTRY_DSN = env('SENTRY_DSN', default='')
 
+# Celery Task Queue & Beat Configuration
+CELERY_BROKER_URL = env('CELERY_BROKER_URL', default='redis://127.0.0.1:6379/0')
+CELERY_RESULT_BACKEND = env('CELERY_RESULT_BACKEND', default=None)
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+
+# Celery Beat Scheduled Periodic Tasks
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'expire-order-reservations-every-minute': {
+        'task': 'apps.marketplace.orders.tasks.expire_order_reservations_task',
+        'schedule': 60.0,
+    },
+    'deliver-notifications-every-minute': {
+        'task': 'apps.marketplace.notifications.tasks.deliver_notifications_task',
+        'schedule': 60.0,
+        'kwargs': {'limit': 500},
+    },
+    'process-saved-search-alerts-every-15-mins': {
+        'task': 'apps.marketplace.search.tasks.process_saved_search_alerts_task',
+        'schedule': crontab(minute='*/15'),
+    },
+    'process-discovery-alerts-every-15-mins': {
+        'task': 'apps.marketplace.favorites.tasks.process_discovery_alerts_task',
+        'schedule': crontab(minute='*/15'),
+    },
+    'notify-low-stock-daily': {
+        'task': 'apps.marketplace.listings.tasks.notify_low_stock_task',
+        'schedule': crontab(hour=6, minute=0),
+    },
+    'process-review-reminders-daily': {
+        'task': 'apps.marketplace.reviews.tasks.process_review_reminders_task',
+        'schedule': crontab(hour=7, minute=0),
+    },
+    'rollup-shop-analytics-daily': {
+        'task': 'apps.marketplace.analytics.tasks.rollup_shop_analytics_task',
+        'schedule': crontab(hour=1, minute=0),
+        'kwargs': {'days': 1},
+    },
+}
+
 
 # Structured Logging Foundation
 LOGGING = {

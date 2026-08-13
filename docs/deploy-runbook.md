@@ -79,9 +79,23 @@ gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 2
 
 Tune `--workers` and `--timeout` for your host. Put Gunicorn behind a reverse proxy that terminates TLS and forwards `X-Forwarded-Proto` when `DJANGO_BEHIND_PROXY=True`.
 
-## 6. Scheduled management commands
+## 6. Background workers & scheduled periodic tasks
 
-Configure cron, systemd timers, or your platform's scheduler. All commands assume the project venv is activated and `DJANGO_SETTINGS_MODULE=config.settings.production`.
+You can run scheduled jobs using **Celery & Celery Beat** (recommended) or cron-driven management commands.
+
+### Option A: Celery Worker + Celery Beat (Recommended)
+
+Run a Celery worker and Celery Beat daemon:
+
+```bash
+# Celery worker process
+celery -A config worker --loglevel=info --concurrency=2
+
+# Celery beat scheduler process
+celery -A config beat --loglevel=info
+```
+
+### Option B: Crontab fallback using management commands
 
 | Schedule | Command | Purpose |
 |----------|---------|---------|
@@ -104,8 +118,6 @@ Example crontab entries (adjust paths):
 0 9 * * * cd /srv/ziuza && .venv/bin/python manage.py process_review_reminders
 30 2 * * * cd /srv/ziuza && .venv/bin/python manage.py rollup_shop_analytics
 ```
-
-Celery/workers are not required today; these commands run as one-off cron jobs.
 
 ## 7. Health checks
 
