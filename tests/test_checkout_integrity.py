@@ -83,7 +83,12 @@ def _cart_with_item(client, buyer, listing):
     return get_or_create_cart(request=request)
 
 
-@pytest.mark.django_db(transaction=True)
+# Not transaction=True: TransactionTestCase flushes the whole DB afterwards,
+# wiping migration-seeded rows (e.g. ShippingMethod) from the reused file DB and
+# breaking later runs. This test is single-connection, so plain TestCase
+# semantics are equivalent; real-transaction coverage lives in the concurrent
+# test below.
+@pytest.mark.django_db
 def test_sequential_double_checkout_second_fails_empty_cart(client, buyer, listing, address):
     cart = _cart_with_item(client, buyer, listing)
     create_checkout_order(

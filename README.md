@@ -152,6 +152,10 @@ so a `DJANGO_SETTINGS_MODULE` env var cannot override it) and are hermetic — t
 inherit values from your local `.env` (e.g. `PUBLIC_SITE_URL`), which keeps them fast
 (fast password hashing) and deterministic on any machine.
 
+The suite uses a file-based SQLite test DB (`var/test_ziuza.sqlite3`, gitignored) with
+`--reuse-db`, so the one-time migration setup (~25s) is skipped on later runs. After a
+schema change, recreate the DB with `pytest --create-db`.
+
 ## Production notes
 
 See [docs/deploy-runbook.md](docs/deploy-runbook.md) for the full host-agnostic checklist (env vars, CSS build, cron, health probes). Summary:
