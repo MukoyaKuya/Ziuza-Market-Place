@@ -147,6 +147,11 @@ Deploy runbook: [docs/deploy-runbook.md](docs/deploy-runbook.md)
 pytest
 ```
 
+Tests always run against `config.settings.test` (pinned via `addopts` in `pyproject.toml`,
+so a `DJANGO_SETTINGS_MODULE` env var cannot override it) and are hermetic — they never
+inherit values from your local `.env` (e.g. `PUBLIC_SITE_URL`), which keeps them fast
+(fast password hashing) and deterministic on any machine.
+
 ## Production notes
 
 See [docs/deploy-runbook.md](docs/deploy-runbook.md) for the full host-agnostic checklist (env vars, CSS build, cron, health probes). Summary:

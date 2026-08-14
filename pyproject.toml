@@ -35,7 +35,7 @@ prod = [
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["tests"]
-addopts = "--strict-markers -v"
+addopts = "--strict-markers -v --ds=config.settings.test"
 
 [tool.setuptools.packages.find]
 include = ["apps*", "config*"]

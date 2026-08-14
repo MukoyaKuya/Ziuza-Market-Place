@@ -3,6 +3,10 @@ from .base import *
 DEBUG = False
 SECRET_KEY = 'test-secret-key-for-ziuza-marketplace-testing'
 
+# Tests must be hermetic — never inherit PUBLIC_SITE_URL (or other env)
+# from a developer's .env file.
+PUBLIC_SITE_URL = 'http://localhost:8000'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
