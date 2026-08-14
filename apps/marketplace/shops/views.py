@@ -10,19 +10,32 @@ from apps.marketplace.listings.models import ListingStatus
 from apps.marketplace.listings.selectors import public_listings_for_shop, seller_listings_for_shop
 from apps.marketplace.shops.dashboard_context import dashboard_context
 from apps.marketplace.shops.forms import CreateShopForm, ShopMarketingForm, ShopSectionForm, ShopSettingsForm
-from apps.marketplace.shops.models import Shop, ShopSection, ShopVerificationStatus
+from apps.marketplace.shops.models import Shop, ShopVerificationStatus
 from apps.marketplace.shops.marketing import delete_shop_section, save_shop_section, update_shop_marketing
 from apps.marketplace.shops.selectors import (
+    dashboard_listing_stats,
     get_public_shop_by_slug,
     get_shop_for_owner,
     get_shop_for_user,
+    get_shop_membership,
+    get_shop_section,
     public_shop_banner_url,
+    public_shop_section,
+    public_shop_sections,
+    shop_active_listing_count,
+    shop_dashboard_reviews,
+    shop_follower_count,
+    shop_pending_team_invitations,
+    shop_recent_audit_events,
     shop_review_context,
     shop_sales_count,
+    shop_team_memberships,
+    shop_verification_applications,
+    storefront_sections,
 )
 from apps.marketplace.shops.services import create_shop, update_shop_settings
 from apps.marketplace.shops.models import ReportReason
-from apps.marketplace.shops.models import ShopInvitation, ShopMembership, ShopTeamRole
+from apps.marketplace.shops.models import ShopTeamRole
 from apps.marketplace.shops.permissions import MANAGE_STOREFRONT, ensure_shop_owner, ensure_shop_permission
 from apps.marketplace.shops.team_services import (
     accept_team_invitation, change_team_role, invitation_for_token, invite_team_member, revoke_team_member,
@@ -92,15 +105,7 @@ def shop_onboarding(request):
 def dashboard_overview(request, shop):
     from apps.marketplace.analytics.selectors import shop_analytics_summary
 
-    listings = list(seller_listings_for_shop(shop=shop)[:50])
-    active_count = sum(1 for item in listings if item.status == ListingStatus.ACTIVE)
-    draft_count = sum(1 for item in listings if item.status == ListingStatus.DRAFT)
-    low_stock = 0
-    for item in listings:
-        base = item.base_inventory[0] if getattr(item, 'base_inventory', None) else None
-        if base and base.available_to_sell <= base.low_stock_threshold:
-            low_stock += 1
-
+    stats = dashboard_listing_stats(shop=shop)
     summary = shop_analytics_summary(shop=shop)
     return render(
         request,
@@ -110,10 +115,10 @@ def dashboard_overview(request, shop):
             section='overview',
             verification_label=shop.get_verification_status_display(),
             is_verified=shop.verification_status == ShopVerificationStatus.VERIFIED,
-            active_listings_count=active_count,
-            draft_listings_count=draft_count,
-            low_stock_count=low_stock,
-            total_listings_count=len(listings),
+            active_listings_count=stats['active_count'],
+            draft_listings_count=stats['draft_count'],
+            low_stock_count=stats['low_stock_count'],
+            total_listings_count=stats['total_count'],
             paid_orders_count=summary['lifetime_order_count'],
             gross_sales=summary['lifetime_revenue'],
             units_sold=summary['lifetime_units_sold'],
@@ -161,7 +166,7 @@ def storefront_marketing(request, shop):
             section = None
             section_id = request.POST.get('section_id')
             if section_id:
-                section = ShopSection.objects.filter(id=section_id, shop=shop).first()
+                section = get_shop_section(shop=shop, section_id=section_id)
                 if section is None:
                     raise Http404('Section not found.')
             section_form = ShopSectionForm(request.POST, shop=shop)
@@ -174,14 +179,14 @@ def storefront_marketing(request, shop):
                     messages.success(request, 'Shop section saved.')
                     return redirect('shops:storefront')
         elif action == 'delete_section':
-            section = ShopSection.objects.filter(id=request.POST.get('section_id'), shop=shop).first()
+            section = get_shop_section(shop=shop, section_id=request.POST.get('section_id'))
             if section is None:
                 raise Http404('Section not found.')
             delete_shop_section(actor=request.user, shop=shop, section=section)
             messages.success(request, 'Shop section removed.')
             return redirect('shops:storefront')
 
-    sections = shop.sections.prefetch_related('listings').all()
+    sections = storefront_sections(shop=shop)
     return render(request, 'shops/dashboard/storefront.html', dashboard_context(actor=request.user,
         shop=shop,
         section='storefront',
@@ -207,14 +212,8 @@ def _placeholder(request, shop, *, section: str, title: str, message: str):
 
 @_with_shop
 def dashboard_reviews(request, shop):
-    from apps.marketplace.reviews.models import Review
     from apps.marketplace.shops.permissions import MANAGE_SUPPORT, user_has_shop_permission
 
-    reviews = list(
-        Review.objects.filter(shop=shop)
-        .select_related('buyer', 'listing', 'seller_responded_by')
-        .prefetch_related('media')[:50]
-    )
     return render(
         request,
         'shops/dashboard/reviews.html',
@@ -222,7 +221,7 @@ def dashboard_reviews(request, shop):
             actor=request.user,
             shop=shop,
             section='reviews',
-            reviews=reviews,
+            reviews=shop_dashboard_reviews(shop=shop),
             can_respond_to_reviews=user_has_shop_permission(
                 actor=request.user, shop=shop, permission=MANAGE_SUPPORT
             ),
@@ -251,7 +250,7 @@ def verification(request, shop):
         else:
             messages.success(request, 'Verification application submitted for review.')
             return redirect('shops:verification')
-    applications = shop.verification_applications.select_related('reviewed_by')[:10]
+    applications = shop_verification_applications(shop=shop)
     from apps.marketplace.shops.models import VerificationApplication
     return render(request, 'shops/dashboard/verification.html', dashboard_context(actor=request.user,
         shop=shop,
@@ -279,7 +278,7 @@ def team_management(request, shop):
                 )
                 messages.success(request, 'Team invitation sent through Ziuza notifications and email queue.')
             elif action in {'change_role', 'revoke'}:
-                membership = ShopMembership.objects.filter(id=request.POST.get('membership_id'), shop=shop).select_related('user').first()
+                membership = get_shop_membership(shop=shop, membership_id=request.POST.get('membership_id'))
                 if membership is None:
                     raise Http404('Team member not found.')
                 if action == 'change_role':
@@ -297,9 +296,9 @@ def team_management(request, shop):
         shop=shop,
         section='team',
         is_team_owner=is_owner,
-        memberships=shop.memberships.select_related('user', 'invited_by'),
-        invitations=shop.team_invitations.filter(accepted_at__isnull=True, revoked_at__isnull=True).select_related('invited_by')[:20],
-        audit_events=shop.audit_events.select_related('actor')[:50] if is_owner else [],
+        memberships=shop_team_memberships(shop=shop),
+        invitations=shop_pending_team_invitations(shop=shop),
+        audit_events=shop_recent_audit_events(shop=shop) if is_owner else [],
         team_roles=ShopTeamRole.choices,
     ))
 
@@ -346,10 +345,10 @@ def public_shop(request, slug: str):
     if shop.verification_status == ShopVerificationStatus.SUSPENDED:
         raise Http404('Shop not found.')
 
-    sections = shop.sections.filter(is_visible=True)
+    sections = public_shop_sections(shop=shop)
     selected_section = None
     if request.GET.get('section'):
-        selected_section = sections.filter(slug=request.GET['section']).first()
+        selected_section = public_shop_section(shop=shop, slug=request.GET['section'])
         if selected_section is None:
             raise Http404('Shop section not found.')
     shop_query = (request.GET.get('q') or '').strip()[:100]
@@ -382,7 +381,7 @@ def public_shop(request, slug: str):
         'listings': listings,
         'hero_listings': listings[:3],
         'shop_banner_url': public_shop_banner_url(shop=shop),
-        'listing_count': shop.listings.filter(status=ListingStatus.ACTIVE).count(),
+        'listing_count': shop_active_listing_count(shop=shop),
         'has_more_listings': has_more_listings,
         'next_listing_limit': min(shop_limit + 8, 48),
         'sales_count': shop_sales_count(shop=shop),
@@ -392,7 +391,7 @@ def public_shop(request, slug: str):
         'is_owner': request.user.is_authenticated and shop.owner_id == request.user.id,
         'is_shop_staff': is_shop_staff,
         'is_following': is_following,
-        'follower_count': shop.followers.count(),
+        'follower_count': shop_follower_count(shop=shop),
         'shop_reviews': review_context['recent_reviews'],
         'shop_review_summary': review_context['summary'],
         'review_breakdown': review_context['breakdown'],

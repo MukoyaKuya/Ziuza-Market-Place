@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Count, Sum
+from django.db.models import Avg, Count, F, Sum
 
-from apps.marketplace.shops.models import Shop, ShopMembershipStatus, ShopVerificationStatus
+from apps.marketplace.shops.models import Shop, ShopMembership, ShopMembershipStatus, ShopSection, ShopVerificationStatus
 
 User = get_user_model()
 
@@ -80,3 +80,103 @@ def public_shop_banner_url(*, shop: Shop) -> str | None:
     except (FileNotFoundError, OSError, ValueError):
         pass
     return None
+
+
+def dashboard_listing_stats(*, shop: Shop) -> dict:
+    """Active/draft/low-stock/total listing counts for the seller dashboard overview."""
+    from apps.marketplace.listings.models import Inventory, Listing, ListingStatus
+
+    status_counts = (
+        Listing.objects.filter(shop=shop)
+        .values('status')
+        .annotate(count=Count('id'))
+    )
+    by_status = {row['status']: row['count'] for row in status_counts}
+    total = sum(by_status.values())
+    low_stock = (
+        Inventory.objects.filter(
+            listing__shop=shop,
+            variant__isnull=True,
+        )
+        .filter(quantity_available__lte=F('low_stock_threshold') + F('quantity_reserved'))
+        .values('listing_id')
+        .distinct()
+        .count()
+    )
+    return {
+        'active_count': by_status.get(ListingStatus.ACTIVE, 0),
+        'draft_count': by_status.get(ListingStatus.DRAFT, 0),
+        'low_stock_count': low_stock,
+        'total_count': total,
+    }
+
+
+def shop_dashboard_reviews(*, shop: Shop):
+    """Recent reviews for the seller dashboard reviews page."""
+    from apps.marketplace.reviews.models import Review
+
+    return list(
+        Review.objects.filter(shop=shop)
+        .select_related('buyer', 'listing', 'seller_responded_by')
+        .prefetch_related('media')[:50]
+    )
+
+
+def public_shop_sections(*, shop: Shop):
+    """Visible sections for the public shop page."""
+    return shop.sections.filter(is_visible=True)
+
+
+def public_shop_section(*, shop: Shop, slug: str):
+    """A visible section by slug, or None."""
+    return public_shop_sections(shop=shop).filter(slug=slug).first()
+
+
+def shop_active_listing_count(*, shop: Shop) -> int:
+    """Active listing count shown on the public shop page."""
+    from apps.marketplace.listings.models import ListingStatus
+
+    return shop.listings.filter(status=ListingStatus.ACTIVE).count()
+
+
+def shop_follower_count(*, shop: Shop) -> int:
+    """Follower count shown on the public shop page."""
+    return shop.followers.count()
+
+
+def storefront_sections(*, shop: Shop):
+    """All sections with their listings, for the storefront marketing dashboard."""
+    return shop.sections.prefetch_related('listings').all()
+
+
+def get_shop_section(*, shop: Shop, section_id):
+    """A section owned by the shop, or None."""
+    return ShopSection.objects.filter(id=section_id, shop=shop).first()
+
+
+def get_shop_membership(*, shop: Shop, membership_id):
+    """A membership of the shop (with user loaded), or None."""
+    return ShopMembership.objects.filter(id=membership_id, shop=shop).select_related('user').first()
+
+
+def shop_verification_applications(*, shop: Shop, limit: int = 10):
+    """Recent verification applications for the seller dashboard."""
+    return shop.verification_applications.select_related('reviewed_by')[:limit]
+
+
+def shop_team_memberships(*, shop: Shop):
+    """Team memberships with user and inviter loaded."""
+    return shop.memberships.select_related('user', 'invited_by')
+
+
+def shop_pending_team_invitations(*, shop: Shop, limit: int = 20):
+    """Team invitations still awaiting acceptance."""
+    return (
+        shop.team_invitations.filter(accepted_at__isnull=True, revoked_at__isnull=True)
+        .select_related('invited_by')[:limit]
+    )
+
+
+def shop_recent_audit_events(*, shop: Shop, limit: int = 50):
+    """Recent audit events with actor loaded."""
+    return shop.audit_events.select_related('actor')[:limit]
