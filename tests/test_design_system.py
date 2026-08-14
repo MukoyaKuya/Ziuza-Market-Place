@@ -142,3 +142,14 @@ def test_login_password_field_defaults_to_password_type():
     })()})
     assert 'type="password"' in html
     assert 'id="id_password"' in html
+
+
+def test_layouts_include_favicon():
+    base_html = render_to_string('layouts/base.html', {'csrf_token': 'test'})
+    assert 'rel="icon" type="image/svg+xml" href="/static/brand/ziuza-logo.svg"' in base_html
+    assert 'rel="apple-touch-icon" href="/static/brand/ziuza-logo.svg"' in base_html
+
+    auth_html = render_to_string('layouts/auth.html', {'csrf_token': 'test'})
+    assert 'rel="icon" type="image/svg+xml" href="/static/brand/ziuza-logo.svg"' in auth_html
+    assert 'rel="apple-touch-icon" href="/static/brand/ziuza-logo.svg"' in auth_html
+

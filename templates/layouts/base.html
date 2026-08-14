@@ -10,6 +10,11 @@
     <link rel="canonical" href="{% if canonical_url %}{{ canonical_url }}{% else %}{{ request.build_absolute_uri }}{% endif %}">
     {% endblock %}
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'brand/ziuza-logo.svg' %}">
+    <link rel="alternate icon" href="{% static 'brand/ziuza-logo.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'brand/ziuza-logo.svg' %}">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

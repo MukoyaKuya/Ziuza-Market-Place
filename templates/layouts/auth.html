@@ -7,6 +7,11 @@
     <title>{% block title %}{{ page_title|default:"Ziuza Marketplace" }}{% endblock %}</title>
     <meta name="description" content="{% block meta_description %}Authentic Kenyan marketplace for handmade crafts, fashion, beadwork, and vintage treasures.{% endblock %}">
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'brand/ziuza-logo.svg' %}">
+    <link rel="alternate icon" href="{% static 'brand/ziuza-logo.svg' %}">
+    <link rel="apple-touch-icon" href="{% static 'brand/ziuza-logo.svg' %}">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
