@@ -12,7 +12,14 @@ from apps.marketplace.shops.dashboard_context import dashboard_context
 from apps.marketplace.shops.forms import CreateShopForm, ShopMarketingForm, ShopSectionForm, ShopSettingsForm
 from apps.marketplace.shops.models import Shop, ShopSection, ShopVerificationStatus
 from apps.marketplace.shops.marketing import delete_shop_section, save_shop_section, update_shop_marketing
-from apps.marketplace.shops.selectors import get_public_shop_by_slug, get_shop_for_owner, get_shop_for_user
+from apps.marketplace.shops.selectors import (
+    get_public_shop_by_slug,
+    get_shop_for_owner,
+    get_shop_for_user,
+    public_shop_banner_url,
+    shop_review_context,
+    shop_sales_count,
+)
 from apps.marketplace.shops.services import create_shop, update_shop_settings
 from apps.marketplace.shops.models import ReportReason
 from apps.marketplace.shops.models import ShopInvitation, ShopMembership, ShopTeamRole
@@ -359,59 +366,26 @@ def public_shop(request, slug: str):
     ))
     has_more_listings = len(listing_results) > shop_limit
     listings = listing_results[:shop_limit]
-    from apps.marketplace.favorites.models import Favorite, ShopFollow
+    from apps.marketplace.favorites.selectors import favorited_listing_ids, follows_shop
     from apps.marketplace.shops.permissions import user_is_shop_staff
-    is_following = request.user.is_authenticated and ShopFollow.objects.filter(user=request.user, shop=shop).exists()
+    is_following = follows_shop(user=request.user, shop=shop)
     is_shop_staff = request.user.is_authenticated and user_is_shop_staff(actor=request.user, shop=shop)
-    favorite_listing_ids = set()
-    if request.user.is_authenticated:
-        favorite_listing_ids = set(Favorite.objects.filter(
-            user=request.user, listing_id__in=[listing.id for listing in listings],
-        ).values_list('listing_id', flat=True))
+    favorite_listing_ids = favorited_listing_ids(
+        user=request.user, listing_ids=[listing.id for listing in listings],
+    )
     for listing in listings:
         listing.is_favorited_by_viewer = listing.id in favorite_listing_ids
 
-    from django.db.models import Avg, Count, Sum
-    from apps.marketplace.orders.models import OrderItem, PaymentStatus
-    from apps.marketplace.reviews.models import Review
-    shop_review_queryset = Review.objects.filter(shop=shop, is_visible=True).select_related('buyer', 'listing')
-    shop_review_summary = shop_review_queryset.aggregate(
-        count=Count('id'), overall=Avg('rating'), quality=Avg('quality_rating'),
-        shipping=Avg('shipping_rating'), service=Avg('service_rating'),
-    )
-    rating_counts = {
-        row['rating']: row['count']
-        for row in shop_review_queryset.values('rating').annotate(count=Count('id'))
-    }
-    review_total = shop_review_summary['count'] or 0
-    review_breakdown = [
-        {
-            'rating': rating,
-            'count': rating_counts.get(rating, 0),
-            'percentage': round(rating_counts.get(rating, 0) * 100 / review_total) if review_total else 0,
-        }
-        for rating in range(5, 0, -1)
-    ]
-    sales_count = OrderItem.objects.filter(
-        shop=shop,
-        order__payment_status__in=[PaymentStatus.PAID, PaymentStatus.PARTIALLY_REFUNDED],
-    ).aggregate(total=Sum('quantity'))['total'] or 0
-    shop_banner_url = None
-    if shop.banner:
-        try:
-            if shop.banner.width >= shop.banner.height * 1.8:
-                shop_banner_url = shop.banner.url
-        except (FileNotFoundError, OSError, ValueError):
-            shop_banner_url = None
+    review_context = shop_review_context(shop=shop)
     context = {
         'shop': shop,
         'listings': listings,
         'hero_listings': listings[:3],
-        'shop_banner_url': shop_banner_url,
+        'shop_banner_url': public_shop_banner_url(shop=shop),
         'listing_count': shop.listings.filter(status=ListingStatus.ACTIVE).count(),
         'has_more_listings': has_more_listings,
         'next_listing_limit': min(shop_limit + 8, 48),
-        'sales_count': sales_count,
+        'sales_count': shop_sales_count(shop=shop),
         'shop_query': shop_query,
         'shop_sort': shop_sort,
         'page_title': shop.name,
@@ -419,9 +393,9 @@ def public_shop(request, slug: str):
         'is_shop_staff': is_shop_staff,
         'is_following': is_following,
         'follower_count': shop.followers.count(),
-        'shop_reviews': shop_review_queryset[:3],
-        'shop_review_summary': shop_review_summary,
-        'review_breakdown': review_breakdown,
+        'shop_reviews': review_context['recent_reviews'],
+        'shop_review_summary': review_context['summary'],
+        'review_breakdown': review_context['breakdown'],
         'report_reasons': ReportReason.choices,
         'sections': sections,
         'selected_section': selected_section,

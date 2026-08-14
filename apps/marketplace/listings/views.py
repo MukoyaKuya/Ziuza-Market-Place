@@ -473,14 +473,14 @@ def listing_detail(request, slug: str):
         row.available_to_sell > 0 and (row.variant_id is None or row.variant.is_active)
         for row in listing.inventory_rows.all()
     )
-    is_favorited = False
+    from apps.marketplace.favorites.selectors import is_listing_favorited
+
+    is_favorited = is_listing_favorited(user=request.user, listing=listing)
     listing_alert_active = False
     if request.user.is_authenticated:
-        from apps.marketplace.favorites.models import Favorite
         from apps.marketplace.favorites.models import ListingAlert
         from apps.marketplace.search.saved import record_recent_view
 
-        is_favorited = Favorite.objects.filter(user=request.user, listing=listing).exists()
         listing_alert_active = ListingAlert.objects.filter(user=request.user, listing=listing).exists()
         if listing.shop.owner_id != request.user.id:
             record_recent_view(actor=request.user, listing=listing)
