@@ -1,8 +1,8 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import Http404
+from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.marketplace.orders.models import SellerOrder
@@ -10,8 +10,8 @@ from apps.marketplace.shipping.forms import ShippingProfileForm
 from apps.marketplace.shipping.models import ShippingProfile, update_seller_fulfillment
 from apps.marketplace.shipping.services import delete_shipping_profile, save_shipping_profile
 from apps.marketplace.shops.dashboard_context import dashboard_context
-from apps.marketplace.shops.selectors import get_shop_for_user
 from apps.marketplace.shops.permissions import MANAGE_ORDERS, MANAGE_SHIPPING, ensure_shop_permission
+from apps.marketplace.shops.selectors import get_shop_for_user
 
 
 @login_required

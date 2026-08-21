@@ -8,14 +8,21 @@ from django.utils import timezone
 
 from apps.marketplace.notifications.services import notify
 from apps.marketplace.orders.models import (
-    CaseResolutionOutcome, FulfillmentStatus, HelpRequest, HelpRequestReason,
-    HelpRequestStatus, PaymentStatus, ProtectionCaseEvent,
-    ProtectionCaseEvidence, ProtectionCaseMessage, ProtectionCaseType,
-    RequestedOutcome, SellerOrder,
+    CaseResolutionOutcome,
+    FulfillmentStatus,
+    HelpRequest,
+    HelpRequestReason,
+    HelpRequestStatus,
+    PaymentStatus,
+    ProtectionCaseEvent,
+    ProtectionCaseEvidence,
+    ProtectionCaseMessage,
+    ProtectionCaseType,
+    RequestedOutcome,
+    SellerOrder,
 )
 from apps.marketplace.shops.models import ShopMembershipStatus, ShopTeamRole
 from apps.marketplace.shops.permissions import MANAGE_SUPPORT, ensure_shop_permission, user_has_shop_permission
-
 
 ACTIVE_STATUSES = {HelpRequestStatus.OPEN, HelpRequestStatus.SELLER_RESPONDED, HelpRequestStatus.ESCALATED}
 RETURN_WINDOW_DAYS = 14
@@ -129,9 +136,17 @@ def add_case_message(*, actor, case: HelpRequest, body: str, internal=False):
         case.seller_response = body
         case.status = HelpRequestStatus.SELLER_RESPONDED
         case.save(update_fields=['first_seller_response_at', 'seller_response', 'status', 'updated_at'])
-        notify(recipient=case.buyer, type='help_request_response', title=f'{case.seller_order.shop.name} responded to your case', target_url=f'/account/help/{case.id}/')
+        notify(
+            recipient=case.buyer, type='help_request_response',
+            title=f'{case.seller_order.shop.name} responded to your case',
+            target_url=f'/account/help/{case.id}/',
+        )
     elif not internal:
-        _notify_shop_support(shop=case.seller_order.shop, type='help_request_message', title=f'Buyer updated case {case.order.public_number}', target_url=f'/seller/orders/{case.seller_order_id}/')
+        _notify_shop_support(
+            shop=case.seller_order.shop, type='help_request_message',
+            title=f'Buyer updated case {case.order.public_number}',
+            target_url=f'/seller/orders/{case.seller_order_id}/',
+        )
     _event(case=case, actor=actor, action='case.message_added', is_internal=internal)
     return message
 
@@ -175,7 +190,11 @@ def escalate_help_request(*, actor, case: HelpRequest):
     case.escalated_at = timezone.now()
     case.save(update_fields=['status', 'escalated_at', 'updated_at'])
     _event(case=case, actor=actor, action='case.escalated', note='Escalated to Ziuza moderation.')
-    _notify_shop_support(shop=case.seller_order.shop, type='help_request_escalated', title=f'Case {case.order.public_number} was escalated', target_url=f'/seller/orders/{case.seller_order_id}/')
+    _notify_shop_support(
+        shop=case.seller_order.shop, type='help_request_escalated',
+        title=f'Case {case.order.public_number} was escalated',
+        target_url=f'/seller/orders/{case.seller_order_id}/',
+    )
     return case
 
 
@@ -204,8 +223,19 @@ def resolve_protection_case(*, actor, case: HelpRequest, outcome: str, notes: st
     case.moderator = actor
     case.resolved_at = now
     case.closed_at = now
-    case.save(update_fields=['status', 'resolution_outcome', 'resolution_notes', 'refund_recommendation', 'moderator', 'resolved_at', 'closed_at', 'updated_at'])
+    case.save(update_fields=[
+        'status', 'resolution_outcome', 'resolution_notes', 'refund_recommendation',
+        'moderator', 'resolved_at', 'closed_at', 'updated_at',
+    ])
     _event(case=case, actor=actor, action='case.resolved', note=case.get_resolution_outcome_display(), metadata={'refund_recommendation': str(amount)})
-    notify(recipient=case.buyer, type='help_request_resolved', title=f'Ziuza resolved your case for {case.order.public_number}', target_url=f'/account/help/{case.id}/')
-    _notify_shop_support(shop=case.seller_order.shop, type='help_request_resolved', title=f'Ziuza resolved case {case.order.public_number}', target_url=f'/seller/orders/{case.seller_order_id}/')
+    notify(
+        recipient=case.buyer, type='help_request_resolved',
+        title=f'Ziuza resolved your case for {case.order.public_number}',
+        target_url=f'/account/help/{case.id}/',
+    )
+    _notify_shop_support(
+        shop=case.seller_order.shop, type='help_request_resolved',
+        title=f'Ziuza resolved case {case.order.public_number}',
+        target_url=f'/seller/orders/{case.seller_order_id}/',
+    )
     return case

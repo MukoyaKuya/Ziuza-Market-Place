@@ -152,7 +152,7 @@ def test_fake_callback_cannot_confirm_mpesa_payment(commerce_order_with_mpesa_pe
 @pytest.mark.django_db
 @override_settings(DEBUG=False)
 def test_fake_callback_404_when_not_debug(commerce_order_with_fake_pending):
-    order, payment = commerce_order_with_fake_pending
+    _order, payment = commerce_order_with_fake_pending
     client = Client()
     resp = client.post(
         '/payments/callback/fake/',
@@ -199,7 +199,7 @@ def test_fake_payment_reference_includes_unique_nonce(client, buyer, listing, ad
 @override_settings(DEBUG=True)
 def test_fake_callback_without_amount_fails_payment(commerce_order_with_fake_pending):
     """A callback omitting the amount must never confirm — no silent defaulting."""
-    order, payment = commerce_order_with_fake_pending
+    _order, payment = commerce_order_with_fake_pending
     resp = Client().post(
         '/payments/callback/fake/',
         data={
@@ -216,7 +216,7 @@ def test_fake_callback_without_amount_fails_payment(commerce_order_with_fake_pen
 @pytest.mark.django_db
 def test_mpesa_callback_without_amount_fails_payment(commerce_order_with_mpesa_pending):
     """M-Pesa callback with no Amount item must fail the payment, not confirm it."""
-    order, payment = commerce_order_with_mpesa_pending
+    _order, payment = commerce_order_with_mpesa_pending
     provider = get_provider('mpesa')
     result = provider.process_callback(
         payload={
@@ -233,7 +233,7 @@ def test_mpesa_callback_without_amount_fails_payment(commerce_order_with_mpesa_p
 @pytest.mark.django_db
 def test_malformed_amount_value_rejected(commerce_order_with_fake_pending):
     """Non-numeric amount is rejected without a 500."""
-    order, payment = commerce_order_with_fake_pending
+    _order, payment = commerce_order_with_fake_pending
     provider = get_provider('fake')
     with pytest.raises(InvalidOperation):
         provider.process_callback(

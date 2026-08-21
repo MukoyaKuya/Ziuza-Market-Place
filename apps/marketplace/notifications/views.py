@@ -1,14 +1,12 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from django.views.decorators.http import require_POST
-from django.views.decorators.http import require_http_methods
-from django.contrib import messages
+from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.accounts.utils import safe_next_url
-from apps.marketplace.notifications.models import Notification
-from apps.marketplace.notifications.models import NotificationPreference
-from apps.marketplace.notifications.forms import NotificationPreferenceForm
 from apps.marketplace.notifications.delivery import apply_preference_to_pending
+from apps.marketplace.notifications.forms import NotificationPreferenceForm
+from apps.marketplace.notifications.models import Notification, NotificationPreference
 from apps.marketplace.notifications.services import mark_notification_read
 
 

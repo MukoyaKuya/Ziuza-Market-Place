@@ -1,6 +1,8 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
+
 from apps.marketplace.promotions.models import Promotion, PromotionRedemption
+
 
 @admin.register(Promotion)
 class PromotionAdmin(ModelAdmin):

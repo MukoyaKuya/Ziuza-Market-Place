@@ -1,36 +1,49 @@
-from decimal import Decimal
 import logging
+from decimal import Decimal
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import FileResponse, Http404, HttpResponse
 from django.db.models import F
-from django.utils import timezone
-from pathlib import Path
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.accounts.models import Address
 from apps.accounts.selectors import list_addresses_for_user
 from apps.marketplace.cart.services import annotate_cart_totals, get_or_create_cart
 from apps.marketplace.orders.models import (
-    DownloadGrant, HelpRequest, HelpRequestReason, Order, ProtectionCaseEvidence,
-    ProtectionCaseType, RequestedOutcome, SellerOrder,
+    DownloadGrant,
+    HelpRequest,
+    HelpRequestReason,
+    Order,
+    ProtectionCaseEvidence,
+    ProtectionCaseType,
+    RequestedOutcome,
+    SellerOrder,
 )
 from apps.marketplace.orders.services import cancel_order, create_checkout_order
 from apps.marketplace.orders.support import (
-    add_case_evidence, add_case_message, can_access_case, escalate_help_request,
-    open_help_request, seller_respond_to_help_request,
-)
-from apps.marketplace.shops.dashboard_context import dashboard_context
-from apps.marketplace.shops.selectors import get_shop_for_user
-from apps.marketplace.shops.permissions import (
-    MANAGE_ORDERS, MANAGE_SUPPORT, VIEW_ORDERS, ensure_shop_permission,
-    user_has_shop_permission,
+    add_case_evidence,
+    add_case_message,
+    can_access_case,
+    escalate_help_request,
+    open_help_request,
+    seller_respond_to_help_request,
 )
 from apps.marketplace.shipping.services import calculate_shipping_quotes
+from apps.marketplace.shops.dashboard_context import dashboard_context
+from apps.marketplace.shops.permissions import (
+    MANAGE_ORDERS,
+    MANAGE_SUPPORT,
+    VIEW_ORDERS,
+    ensure_shop_permission,
+    user_has_shop_permission,
+)
+from apps.marketplace.shops.selectors import get_shop_for_user
 
 
 @login_required
@@ -49,10 +62,11 @@ def checkout(request):
                 lines=totals['lines'], county=address.county if address else ''
             ) if requires_shipping else []
             method = next((item for item in methods if item.code == method_code), None) if requires_shipping else None
-            if requires_shipping and method is None:
-                raise ValidationError('Selected shipping method is not available for this address.')
-            if requires_shipping and not method.is_pickup and address is None:
-                raise ValidationError('Choose a shipping address for delivery.')
+            if requires_shipping:
+                if method is None:
+                    raise ValidationError('Selected shipping method is not available for this address.')
+                if not method.is_pickup and address is None:
+                    raise ValidationError('Choose a shipping address for delivery.')
             order = create_checkout_order(
                 actor=request.user,
                 cart=cart,
@@ -81,7 +95,7 @@ def checkout(request):
                 )
             return redirect('payments:initiate', public_number=order.public_number)
         except (Address.DoesNotExist, ValidationError) as exc:
-            messages.error(request, str(exc) if str(exc) else 'Checkout failed.')
+            messages.error(request, str(exc) or 'Checkout failed.')
 
     quote_address = addresses.filter(is_default_shipping=True).first() or addresses.first()
     shipping_quotes = calculate_shipping_quotes(
@@ -125,8 +139,13 @@ def buyer_order_detail(request, public_number):
         from apps.marketplace.listings.models import DigitalAsset
         grants = {grant.order_item_id: grant for grant in DownloadGrant.objects.filter(order_item__order=order, buyer=request.user)}
         for item in order.items.all():
-            item.secure_download_grant = grants.get(item.id)
-            item.download_assets = list(DigitalAsset.objects.filter(listing_id=item.listing_id, is_active=True)) if item.secure_download_grant else []
+            grant = grants.get(item.id)
+            item.secure_download_grant = grant
+            item.download_assets = (
+                list(DigitalAsset.objects.filter(listing_id=item.listing_id, is_active=True))
+                if grant and item.listing_id
+                else []
+            )
     return render(request, 'orders/buyer_detail.html', {'order': order, 'page_title': order.public_number})
 
 
@@ -328,18 +347,24 @@ def download_digital_asset(request, grant_id, asset_id):
         grant = DownloadGrant.objects.select_related('order_item__order').get(
             id=grant_id, buyer=request.user, is_active=True, order_item__order__payment_status='paid'
         )
-        asset = DigitalAsset.objects.get(id=asset_id, listing_id=grant.order_item.listing_id, is_active=True)
+        order_item = grant.order_item
+        if not order_item.listing_id:
+            raise Http404
+        asset = DigitalAsset.objects.get(id=asset_id, listing_id=order_item.listing_id, is_active=True)
     except (DownloadGrant.DoesNotExist, DigitalAsset.DoesNotExist) as exc:
         raise Http404 from exc
+    file_name = asset.file.name
+    if not file_name:
+        raise Http404
     DownloadGrant.objects.filter(pk=grant.pk).update(
         download_count=F('download_count') + 1,
         last_downloaded_at=timezone.now(),
     )
-    filename = Path(asset.file.name).name
+    filename = Path(file_name).name
     if getattr(settings, 'USE_X_ACCEL_REDIRECT', False):
         prefix = getattr(settings, 'X_ACCEL_REDIRECT_PREFIX', '/protected_media/').rstrip('/')
         response = HttpResponse(content_type='application/octet-stream')
-        response['X-Accel-Redirect'] = f'{prefix}/{asset.file.name}'
+        response['X-Accel-Redirect'] = f'{prefix}/{file_name}'
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 

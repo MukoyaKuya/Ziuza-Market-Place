@@ -1,8 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
 from apps.marketplace.payments import views
-from apps.marketplace.payments.models import Payment
 
 app_name = 'payments'
 

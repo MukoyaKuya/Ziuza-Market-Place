@@ -12,11 +12,10 @@ from apps.marketplace.cart.services import annotate_cart_totals
 from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.forms import ListingForm
 from apps.marketplace.listings.services import create_listing, publish_listing
-from apps.marketplace.orders.services import create_checkout_order
 from apps.marketplace.orders.models import Order
+from apps.marketplace.orders.services import create_checkout_order
 from apps.marketplace.shipping.services import calculate_shipping_quotes, save_shipping_profile
 from apps.marketplace.shops.services import create_shop
-
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'
@@ -104,8 +103,8 @@ def test_listing_cannot_use_another_shops_shipping_profile(shipping_market):
 @pytest.mark.django_db
 def test_quote_aggregates_multi_seller_and_additional_item_fees(shipping_market):
     seller, second_seller, _buyer, category, shop, second_shop = shipping_market
-    first_profile = profile_for(seller=seller, shop=shop, base_fee=Decimal('200'), additional_item_fee=Decimal('40'))
-    second_profile = profile_for(seller=second_seller, shop=second_shop, base_fee=Decimal('300'), additional_item_fee=Decimal('25'))
+    first_profile = profile_for(seller=seller, shop=shop, base_fee=Decimal(200), additional_item_fee=Decimal(40))
+    second_profile = profile_for(seller=second_seller, shop=second_shop, base_fee=Decimal(300), additional_item_fee=Decimal(25))
     first = listing_for(seller=seller, shop=shop, category=category, title='First parcel', profile=first_profile)
     second = listing_for(seller=second_seller, shop=second_shop, category=category, title='Second parcel', profile=second_profile)
 
@@ -180,7 +179,7 @@ def test_checkout_stores_profile_fee_breakdown(shipping_market):
 
 @pytest.mark.django_db
 def test_listing_form_and_profile_edit_are_scoped_to_owned_shop(client, shipping_market):
-    seller, second_seller, _buyer, category, shop, second_shop = shipping_market
+    seller, second_seller, _buyer, _category, shop, second_shop = shipping_market
     own = profile_for(seller=seller, shop=shop, name='Own shipping')
     foreign = profile_for(seller=second_seller, shop=second_shop, name='Foreign shipping')
     form = ListingForm(shop=shop)

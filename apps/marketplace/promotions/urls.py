@@ -1,4 +1,5 @@
 from django.urls import path
+
 from apps.marketplace.promotions import views
 
 app_name = 'promotions'

@@ -1,5 +1,5 @@
-from django.utils import timezone
 from django.db.models import Count, Prefetch, Q
+from django.utils import timezone
 
 from apps.marketplace.categories.models import Category
 from apps.marketplace.content.models import Collection, HeroSlide, HomepageSection

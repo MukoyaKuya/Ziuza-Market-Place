@@ -1,6 +1,6 @@
-from decimal import Decimal
 import csv
 import io
+from decimal import Decimal
 
 import pytest
 from django.contrib.auth import get_user_model

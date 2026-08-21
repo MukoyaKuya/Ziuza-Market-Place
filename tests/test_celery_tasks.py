@@ -1,17 +1,18 @@
 import pytest
 from django.conf import settings
 
-from config.celery import app as celery_app, debug_task
-from apps.marketplace.orders.tasks import expire_order_reservations_task
+from apps.marketplace.analytics.tasks import rollup_shop_analytics_task
+from apps.marketplace.favorites.tasks import process_discovery_alerts_task
+from apps.marketplace.listings.tasks import notify_low_stock_task
 from apps.marketplace.notifications.tasks import (
     deliver_notifications_task,
     trigger_async_notification_delivery,
 )
-from apps.marketplace.search.tasks import process_saved_search_alerts_task
-from apps.marketplace.favorites.tasks import process_discovery_alerts_task
-from apps.marketplace.listings.tasks import notify_low_stock_task
+from apps.marketplace.orders.tasks import expire_order_reservations_task
 from apps.marketplace.reviews.tasks import process_review_reminders_task
-from apps.marketplace.analytics.tasks import rollup_shop_analytics_task
+from apps.marketplace.search.tasks import process_saved_search_alerts_task
+from config.celery import app as celery_app
+from config.celery import debug_task
 
 
 def test_celery_app_is_configured():

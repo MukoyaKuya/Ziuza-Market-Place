@@ -1,5 +1,7 @@
 import logging
+
 from celery import shared_task
+
 from apps.marketplace.orders.services import expire_stale_orders
 
 logger = logging.getLogger(__name__)

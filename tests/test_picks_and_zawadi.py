@@ -1,11 +1,12 @@
 from decimal import Decimal
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.models import Listing, ListingStatus
-from apps.marketplace.shops.models import Shop, ShopGiftApprovalStatus
+from apps.marketplace.shops.models import ShopGiftApprovalStatus
 from apps.marketplace.shops.services import create_shop
 
 User = get_user_model()
@@ -45,7 +46,7 @@ def test_ziuza_picks_view_renders(client, shop, category):
     shop.rating_average = Decimal('4.5')
     shop.save()
 
-    listing = Listing.objects.create(
+    Listing.objects.create(
         shop=shop,
         category=category,
         title='Promoted Artisanal Bowl',
@@ -67,7 +68,7 @@ def test_zawadi_exclusive_gift_section_renders(client, shop, category):
 
     kids_gift_cat = Category.objects.create(name='Kids Gifts', slug='kids-gifts', is_visible=True)
 
-    listing = Listing.objects.create(
+    Listing.objects.create(
         shop=shop,
         category=kids_gift_cat,
         title='Handcrafted Kids Toy Set',

@@ -1,21 +1,29 @@
+from urllib.parse import urlencode
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
-from urllib.parse import urlencode
 
 from apps.accounts.utils import safe_next_url
 from apps.core.htmx import with_toast
 from apps.marketplace.favorites.models import (
-    CollectionItem, Favorite, ListingAlert, ListingCollection, ShopFollow,
+    CollectionItem,
+    Favorite,
+    ListingAlert,
+    ListingCollection,
+    ShopFollow,
 )
 from apps.marketplace.favorites.services import (
-    add_to_collection, create_collection, remove_from_collection,
-    toggle_favorite, toggle_listing_alert, toggle_shop_follow,
+    add_to_collection,
+    create_collection,
+    remove_from_collection,
+    toggle_favorite,
+    toggle_listing_alert,
+    toggle_shop_follow,
     update_follow_alerts,
 )
 from apps.marketplace.listings.models import Listing

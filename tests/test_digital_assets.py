@@ -111,7 +111,8 @@ def test_digital_asset_accepts_allowed_types(digital_listing, seller):
 @pytest.mark.django_db
 def test_digital_asset_download_and_x_accel_redirect(client, digital_listing, seller, settings):
     from django.urls import reverse
-    from apps.marketplace.orders.models import Order, OrderItem, DownloadGrant, SellerOrder
+
+    from apps.marketplace.orders.models import DownloadGrant, Order, OrderItem, SellerOrder
     from apps.marketplace.orders.services import _public_number
 
     buyer = User.objects.create_user(email='buyer-download@ziuza.co.ke', password=PASSWORD)

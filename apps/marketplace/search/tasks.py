@@ -1,5 +1,7 @@
 import logging
+
 from celery import shared_task
+
 from apps.marketplace.search.saved import process_saved_search_alerts
 
 logger = logging.getLogger(__name__)

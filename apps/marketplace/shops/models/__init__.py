@@ -1,7 +1,11 @@
-from apps.marketplace.shops.models.shop import LocalDeliveryScope, Shop, ShopGiftApprovalStatus, ShopVerificationStatus
 from apps.marketplace.shops.models.marketing import ShopSection, ShopSectionItem
+from apps.marketplace.shops.models.shop import LocalDeliveryScope, Shop, ShopGiftApprovalStatus, ShopVerificationStatus
 from apps.marketplace.shops.models.team import (
-    ShopAuditEvent, ShopInvitation, ShopMembership, ShopMembershipStatus, ShopTeamRole,
+    ShopAuditEvent,
+    ShopInvitation,
+    ShopMembership,
+    ShopMembershipStatus,
+    ShopTeamRole,
 )
 from apps.marketplace.shops.models.trust import (
     MarketplaceReport,
@@ -13,8 +17,21 @@ from apps.marketplace.shops.models.trust import (
 )
 
 __all__ = [
-    'Shop', 'LocalDeliveryScope', 'ShopGiftApprovalStatus', 'ShopVerificationStatus', 'ShopSection', 'ShopSectionItem', 'ShopAuditEvent',
-    'ShopInvitation', 'ShopMembership', 'ShopMembershipStatus', 'ShopTeamRole',
-    'MarketplaceReport', 'ModerationAction',
-    'ReportReason', 'ReportStatus', 'VerificationApplication', 'VerificationApplicationStatus',
+    'LocalDeliveryScope',
+    'MarketplaceReport',
+    'ModerationAction',
+    'ReportReason',
+    'ReportStatus',
+    'Shop',
+    'ShopAuditEvent',
+    'ShopGiftApprovalStatus',
+    'ShopInvitation',
+    'ShopMembership',
+    'ShopMembershipStatus',
+    'ShopSection',
+    'ShopSectionItem',
+    'ShopTeamRole',
+    'ShopVerificationStatus',
+    'VerificationApplication',
+    'VerificationApplicationStatus',
 ]

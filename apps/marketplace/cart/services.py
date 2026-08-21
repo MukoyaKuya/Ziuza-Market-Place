@@ -1,8 +1,9 @@
+import hashlib
+import json
+
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils.translation import gettext_lazy as _
-import hashlib
-import json
 
 from apps.marketplace.cart.models import Cart, CartItem
 from apps.marketplace.listings.models import Inventory, Listing, ListingStatus, ListingVariant
@@ -51,7 +52,8 @@ def _available_qty(listing: Listing, variant: ListingVariant | None) -> int:
 
 
 @transaction.atomic
-def add_to_cart(*, request, listing: Listing, quantity: int = 1, variant: ListingVariant | None = None, personalization_text: str = '', personalization_data: dict | None = None) -> CartItem:
+def add_to_cart(*, request, listing: Listing, quantity: int = 1, variant: ListingVariant | None = None,
+                 personalization_text: str = '', personalization_data: dict | None = None) -> CartItem:
     if listing.status != ListingStatus.ACTIVE or not listing.shop.is_publicly_visible:
         raise ValidationError(_('This listing is not available for purchase.'))
     if variant and variant.listing_id != listing.id:
@@ -125,7 +127,9 @@ def cart_line_unit_price(item: CartItem):
 
 def annotate_cart_totals(cart: Cart) -> dict:
     items = list(
-        cart.items.select_related('listing', 'listing__shop', 'listing__shipping_profile', 'variant').prefetch_related('listing__images', 'listing__personalization_fields')
+        cart.items.select_related(
+            'listing', 'listing__shop', 'listing__shipping_profile', 'variant',
+        ).prefetch_related('listing__images', 'listing__personalization_fields')
     )
     lines = []
     subtotal = 0
@@ -149,6 +153,7 @@ def annotate_cart_totals(cart: Cart) -> dict:
 def purge_inactive_anonymous_carts(*, days: int = 30) -> int:
     """Purge anonymous carts that have not been modified for more than `days` days."""
     from datetime import timedelta
+
     from django.utils import timezone
 
     cutoff = timezone.now() - timedelta(days=days)

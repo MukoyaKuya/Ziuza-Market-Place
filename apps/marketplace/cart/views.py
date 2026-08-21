@@ -45,8 +45,8 @@ def cart_add(request):
             personalization_text=personalization_text, personalization_data=personalization_data,
         )
         messages.success(request, toast_message)
-    except (Listing.DoesNotExist, ListingVariant.DoesNotExist):
-        raise Http404
+    except (Listing.DoesNotExist, ListingVariant.DoesNotExist) as exc:
+        raise Http404 from exc
     except (ValidationError, ValueError) as exc:
         toast_message = str(exc)
         toast_type = 'error'

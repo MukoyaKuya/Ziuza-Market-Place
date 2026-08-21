@@ -1,8 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
 from apps.marketplace.notifications import views
-from apps.marketplace.notifications.models import Notification
 
 app_name = 'notifications'
 

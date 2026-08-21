@@ -1,8 +1,8 @@
 import logging
 
-from .base import *
-
 from django.core.exceptions import ImproperlyConfigured
+
+from .base import *
 
 DEBUG = False
 

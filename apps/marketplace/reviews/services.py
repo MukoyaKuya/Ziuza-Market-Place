@@ -9,11 +9,16 @@ from django.utils import timezone
 from apps.marketplace.notifications.services import notify
 from apps.marketplace.orders.models import FulfillmentStatus, OrderItem, PaymentStatus
 from apps.marketplace.reviews.models import (
-    Review, ReviewHelpfulVote, ReviewMedia, ReviewModerationStatus, ReviewReminder,
-    ReviewReport, ReviewReportReason, ReviewReportStatus,
+    Review,
+    ReviewHelpfulVote,
+    ReviewMedia,
+    ReviewModerationStatus,
+    ReviewReminder,
+    ReviewReport,
+    ReviewReportReason,
+    ReviewReportStatus,
 )
 from apps.marketplace.shops.permissions import MANAGE_SUPPORT, ensure_shop_permission, user_is_shop_staff
-
 
 EDIT_WINDOW_DAYS = 30
 MAX_REVIEW_MEDIA = 4
@@ -40,16 +45,17 @@ def _optimize_and_validate_image(upload):
     header = upload.read(12)
     upload.seek(0)
     signature_ok = (
-        content_type == 'image/jpeg' and header.startswith(b'\xff\xd8\xff')
-        or content_type == 'image/png' and header.startswith(b'\x89PNG\r\n\x1a\n')
-        or content_type == 'image/webp' and header.startswith(b'RIFF') and header[8:12] == b'WEBP'
+        (content_type == 'image/jpeg' and header.startswith(b'\xff\xd8\xff'))
+        or (content_type == 'image/png' and header.startswith(b'\x89PNG\r\n\x1a\n'))
+        or (content_type == 'image/webp' and header.startswith(b'RIFF') and header[8:12] == b'WEBP')
     )
     if not signature_ok:
         raise ValidationError('Review photo contents do not match the selected file type.')
     try:
         import io
-        from PIL import Image, ImageOps
+
         from django.core.files.uploadedfile import InMemoryUploadedFile
+        from PIL import Image, ImageOps
 
         image = Image.open(upload)
         image = ImageOps.exif_transpose(image)

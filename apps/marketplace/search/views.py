@@ -4,11 +4,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-from django.views.decorators.http import require_GET, require_POST
 from django.utils import timezone
+from django.views.decorators.http import require_GET, require_POST
 
 from apps.marketplace.listings.selectors import visible_root_categories
-from apps.marketplace.search.services import PRODUCT_TYPES, SORT_OPTIONS, search_with_fallback, suggest_discovery
 from apps.marketplace.search.models import RecentlyViewedListing, SavedSearch
 from apps.marketplace.search.saved import (
     recent_listings_for_user,
@@ -16,6 +15,7 @@ from apps.marketplace.search.saved import (
     save_search,
     saved_search_url,
 )
+from apps.marketplace.search.services import PRODUCT_TYPES, SORT_OPTIONS, search_with_fallback, suggest_discovery
 from apps.marketplace.shops.models import Shop, ShopVerificationStatus
 
 
@@ -112,7 +112,7 @@ def search_suggestions(request):
 @login_required
 @require_POST
 def save_current_search(request):
-    saved, created = save_search(
+    _saved, created = save_search(
         actor=request.user,
         data=request.POST,
         name=request.POST.get('name') or '',

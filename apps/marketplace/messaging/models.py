@@ -1,9 +1,11 @@
+import logging
 import uuid
 
 from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import models, transaction
 from django.utils import timezone
+
 from apps.marketplace.shops.permissions import MANAGE_MESSAGES, ensure_shop_permission, user_has_shop_permission, user_is_shop_staff
 
 
@@ -99,7 +101,8 @@ def send_message(*, actor, conversation: Conversation, body: str) -> Message:
             target_url=f'/account/messages/{conversation.id}/',
         )
     except Exception:
-        pass
+        # Best-effort notification — message delivery must not fail on notify errors.
+        logging.getLogger(__name__).exception('Message notification failed for conversation %s', conversation.id)
     if is_seller:
         from apps.marketplace.shops.team_services import audit_shop_action
         audit_shop_action(
@@ -134,7 +137,11 @@ def respond_to_custom_order(*, actor, custom_request, response, status):
     custom_request.status = status
     custom_request.save(update_fields=['seller_response', 'status', 'updated_at'])
     from apps.marketplace.notifications.services import notify
-    notify(recipient=custom_request.buyer, type='custom_order_response', title=f'{custom_request.shop.name} responded to your request', body=response[:120], target_url='/account/custom-orders/')
+    notify(
+        recipient=custom_request.buyer, type='custom_order_response',
+        title=f'{custom_request.shop.name} responded to your request',
+        body=response[:120], target_url='/account/custom-orders/',
+    )
     from apps.marketplace.shops.team_services import audit_shop_action
     audit_shop_action(
         shop=custom_request.shop, actor=actor, action='custom_order.responded', target=custom_request,

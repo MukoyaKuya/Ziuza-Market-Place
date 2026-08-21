@@ -1,8 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
 from apps.marketplace.messaging import views
-from apps.marketplace.messaging.models import Conversation, Message
 
 app_name = 'messaging'
 

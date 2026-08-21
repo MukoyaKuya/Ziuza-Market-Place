@@ -26,7 +26,10 @@ class NotificationDeliveryAdmin(ModelAdmin):
     list_filter = ('channel', 'mode', 'status')
     search_fields = ('recipient__email', 'notification__title', 'last_error')
     raw_id_fields = ('notification', 'recipient')
-    readonly_fields = ('notification', 'recipient', 'channel', 'mode', 'status', 'available_at', 'attempts', 'last_error', 'sent_at', 'created_at', 'updated_at')
+    readonly_fields = (
+        'notification', 'recipient', 'channel', 'mode', 'status', 'available_at',
+        'attempts', 'last_error', 'sent_at', 'created_at', 'updated_at',
+    )
 
     def has_add_permission(self, request):
         return False

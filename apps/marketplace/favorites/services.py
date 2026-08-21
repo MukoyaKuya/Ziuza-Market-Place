@@ -4,7 +4,11 @@ from django.utils import timezone
 
 from apps.accounts.permissions import ensure_authenticated
 from apps.marketplace.favorites.models import (
-    CollectionItem, Favorite, ListingAlert, ListingCollection, ShopFollow,
+    CollectionItem,
+    Favorite,
+    ListingAlert,
+    ListingCollection,
+    ShopFollow,
 )
 from apps.marketplace.listings.models import Listing, ListingStatus, ProductType
 from apps.marketplace.notifications.services import notify

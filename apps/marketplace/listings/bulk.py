@@ -3,7 +3,6 @@ import io
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 
-from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Prefetch
 
@@ -19,7 +18,6 @@ from apps.marketplace.listings.models import (
 )
 from apps.marketplace.listings.services import create_listing, set_inventory_quantity, update_listing
 from apps.marketplace.shops.permissions import MANAGE_LISTINGS, ensure_shop_permission
-
 
 MAX_IMPORT_BYTES = 2 * 1024 * 1024
 MAX_IMPORT_ROWS = 500
@@ -221,7 +219,11 @@ def _prepare_rows(*, shop, raw_rows: list[dict]) -> tuple[list[PreparedRow], lis
         if slug:
             listing = by_slug.get(slug)
             if listing is None:
-                message = 'This slug belongs to another shop and cannot be changed.' if slug in foreign_slugs else 'Unknown slug. Leave slug blank to create a new listing.'
+                message = (
+                    'This slug belongs to another shop and cannot be changed.'
+                    if slug in foreign_slugs
+                    else 'Unknown slug. Leave slug blank to create a new listing.'
+                )
                 errors.append(_error(row_number, message))
         elif sku:
             matches = by_sku.get(sku.casefold(), [])

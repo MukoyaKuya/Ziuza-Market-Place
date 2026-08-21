@@ -1,9 +1,9 @@
 import uuid
 from decimal import Decimal
 
-from django.db import models, transaction
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+from django.db import models, transaction
 from django.utils import timezone
 
 from apps.marketplace.orders.models import FulfillmentStatus, SellerOrder

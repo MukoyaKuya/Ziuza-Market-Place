@@ -14,7 +14,6 @@ from apps.marketplace.notifications.models import (
     NotificationPreference,
 )
 
-
 TYPE_CATEGORIES = {
     'order_placed': 'order_updates',
     'shipment_update': 'shipping_updates',

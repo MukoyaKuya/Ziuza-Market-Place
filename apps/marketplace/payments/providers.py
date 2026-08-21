@@ -6,20 +6,20 @@ import secrets
 from decimal import Decimal
 
 from django.conf import settings
-from django.db import transaction
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.utils import timezone
 
 from apps.marketplace.orders.models import Order, PaymentStatus
 from apps.marketplace.orders.services import mark_order_paid, release_order_inventory
-from apps.marketplace.payments.models import Payment, PaymentStatusChoice
 from apps.marketplace.payments.daraja import DarajaClient, DarajaConfig
+from apps.marketplace.payments.models import Payment, PaymentStatusChoice
 
 
 class PaymentProvider:
     code = 'base'
 
-    def initiate_payment(self, *, order: Order) -> Payment:
+    def initiate_payment(self, *, order: Order, phone: str = '') -> Payment:
         raise NotImplementedError
 
     def process_callback(self, *, payload: dict) -> Payment:
@@ -58,7 +58,7 @@ class FakePaymentProvider(PaymentProvider):
     code = 'fake'
 
     @transaction.atomic
-    def initiate_payment(self, *, order: Order) -> Payment:
+    def initiate_payment(self, *, order: Order, phone: str = '') -> Payment:
         _ensure_payable_order(order=order)
         existing = (
             Payment.objects.filter(order=order, provider=self.code, status=PaymentStatusChoice.PENDING)

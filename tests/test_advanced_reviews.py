@@ -1,7 +1,7 @@
+import uuid
 from datetime import timedelta
 from decimal import Decimal
 from io import BytesIO
-import uuid
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -15,16 +15,23 @@ from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.orders.models import FulfillmentStatus, Order, OrderItem, PaymentStatus, SellerOrder
 from apps.marketplace.reviews.models import (
-    Review, ReviewMedia, ReviewModerationStatus, ReviewReportReason,
+    Review,
+    ReviewMedia,
+    ReviewModerationStatus,
+    ReviewReportReason,
     ReviewReportStatus,
 )
 from apps.marketplace.reviews.services import (
-    create_review, moderate_review_report, process_review_reminders,
-    report_review, respond_to_review, toggle_helpful_vote, update_review,
+    create_review,
+    moderate_review_report,
+    process_review_reminders,
+    report_review,
+    respond_to_review,
+    toggle_helpful_vote,
+    update_review,
 )
 from apps.marketplace.shops.models import ShopMembership, ShopTeamRole
 from apps.marketplace.shops.services import create_shop
-
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'
@@ -119,7 +126,10 @@ def test_photo_content_spoofing_and_limit_are_rejected(review_setup):
 def test_review_edit_window_and_rating_recalculation(review_setup):
     _, buyer, _, _, shop, _, _, _, item = review_setup
     review = make_review(buyer, item, rating=5)
-    update_review(actor=buyer, review=review, rating=2, quality_rating=2, shipping_rating=2, service_rating=3, title='Updated', body='My updated experience.', photos=[])
+    update_review(
+        actor=buyer, review=review, rating=2, quality_rating=2, shipping_rating=2,
+        service_rating=3, title='Updated', body='My updated experience.', photos=[],
+    )
     shop.refresh_from_db()
     assert shop.rating_average == Decimal('2.00')
     Review.objects.filter(pk=review.pk).update(created_at=timezone.now() - timedelta(days=31))

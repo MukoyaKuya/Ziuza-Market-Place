@@ -79,7 +79,7 @@ def calculate_shipping_quotes(*, lines, county: str = '') -> list[ShippingQuote]
 
     grouped = {}
     shops = set()
-    for line, profile in zip(physical, profiles):
+    for line, profile in zip(physical, profiles, strict=False):
         shops.add(line['item'].listing.shop_id)
         group = grouped.setdefault(profile.id, {
             'profile': profile,

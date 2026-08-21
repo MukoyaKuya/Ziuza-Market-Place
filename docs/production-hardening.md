@@ -39,7 +39,7 @@ Use before production release. High-debt seller dashboard pages and analytics ch
 ## Ops
 - [ ] Backups for Postgres + media
 - [ ] `collectstatic` (media object storage is wired: set `MEDIA_STORAGE_BACKEND` / `PRIVATE_MEDIA_STORAGE_BACKEND` + JSON options from `.env.example`, requires `django-storages[s3]` from `[prod]`; private downloads still route through authorized views)
-- [x] CI: pytest + migrate check (`.github/workflows/ci.yml`)
+- [x] CI: ruff lint + mypy (orders/payments) + pip-audit + pytest with 75% coverage gate + migrate check (`.github/workflows/ci.yml`)
 - [x] Host-agnostic deploy runbook (`docs/deploy-runbook.md`) — includes CSS build step (`styles.css` is gitignored)
 - [ ] Docker/container image (not required; runbook is host-agnostic)
 - [ ] Celery/worker for email & image jobs when introduced

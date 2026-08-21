@@ -16,7 +16,6 @@ from apps.marketplace.orders.models import Order
 from apps.marketplace.payments.models import Payment
 from apps.marketplace.payments.providers import get_provider
 
-
 CALLBACK_ERRORS = (ValidationError, ValueError, Payment.DoesNotExist, InvalidOperation)
 
 
@@ -59,7 +58,7 @@ def initiate_payment(request, public_number):
                 'page_title': 'Pay for order',
             },
         )
-    payment = provider.initiate_payment(order=order)
+    payment = provider.initiate_payment(order=order, phone='')
     template = 'payments/mpesa_initiate.html' if provider.code == 'mpesa' else 'payments/initiate.html'
     return render(
         request,

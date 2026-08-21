@@ -1,5 +1,7 @@
 import logging
+
 from celery import shared_task
+
 from apps.marketplace.reviews.services import process_review_reminders
 
 logger = logging.getLogger(__name__)

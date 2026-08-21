@@ -1,5 +1,5 @@
-from django.core.exceptions import PermissionDenied
 from django.contrib.auth.models import AbstractBaseUser
+from django.core.exceptions import PermissionDenied
 
 
 def ensure_authenticated(*, actor: AbstractBaseUser | None) -> AbstractBaseUser:

@@ -5,11 +5,12 @@ from __future__ import annotations
 import base64
 import json
 from dataclasses import dataclass
-from datetime import datetime
 from decimal import Decimal
 from urllib.error import HTTPError, URLError
-from urllib.request import Request, urlopen
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.request import Request, urlopen
+
+from django.utils import timezone
 
 
 class DarajaError(RuntimeError):
@@ -84,7 +85,7 @@ class DarajaClient:
         phone = normalize_phone(phone)
         if amount != amount.to_integral_value():
             raise ValueError('M-Pesa STK Push amount must be a whole number of Kenyan shillings.')
-        timestamp = datetime.now().strftime('%Y%m%d%H%M%S')
+        timestamp = timezone.localtime(timezone.now()).strftime('%Y%m%d%H%M%S')  # Daraja expects EAT wall time
         password = base64.b64encode(
             f'{self.config.shortcode}{self.config.passkey}{timestamp}'.encode()
         ).decode()

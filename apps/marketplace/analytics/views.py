@@ -1,13 +1,13 @@
+from datetime import timedelta
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 
 from apps.marketplace.analytics.selectors import ALLOWED_ANALYTICS_DAYS, shop_analytics_summary
 from apps.marketplace.analytics.services import ensure_shop_metrics, nairobi_today
-from datetime import timedelta
-
 from apps.marketplace.shops.dashboard_context import dashboard_context
-from apps.marketplace.shops.selectors import get_shop_for_user
 from apps.marketplace.shops.permissions import VIEW_ANALYTICS, ensure_shop_permission
+from apps.marketplace.shops.selectors import get_shop_for_user
 
 
 @login_required

@@ -7,11 +7,16 @@ from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.marketplace.orders.models import OrderItem
 from apps.marketplace.reviews.models import (
-    Review, ReviewMedia, ReviewReportReason,
+    Review,
+    ReviewMedia,
 )
 from apps.marketplace.reviews.services import (
-    create_review, delete_review_media, report_review, respond_to_review,
-    toggle_helpful_vote, update_review,
+    create_review,
+    delete_review_media,
+    report_review,
+    respond_to_review,
+    toggle_helpful_vote,
+    update_review,
 )
 from apps.marketplace.shops.selectors import get_shop_for_user
 

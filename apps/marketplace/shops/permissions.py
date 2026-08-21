@@ -4,7 +4,6 @@ from django.core.exceptions import PermissionDenied
 from apps.accounts.permissions import ensure_authenticated
 from apps.marketplace.shops.models import Shop, ShopMembershipStatus, ShopTeamRole
 
-
 MANAGE_LISTINGS = 'manage_listings'
 MANAGE_ORDERS = 'manage_orders'
 VIEW_ORDERS = 'view_orders'

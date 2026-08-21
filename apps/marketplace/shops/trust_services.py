@@ -5,14 +5,21 @@ from django.utils import timezone
 from apps.marketplace.listings.models import Listing, ListingStatus
 from apps.marketplace.notifications.services import notify
 from apps.marketplace.shops.models import (
-    MarketplaceReport, ModerationAction, ReportReason, ReportStatus, Shop,
-    ShopVerificationStatus, VerificationApplication, VerificationApplicationStatus,
+    MarketplaceReport,
+    ModerationAction,
+    ReportReason,
+    ReportStatus,
+    Shop,
+    ShopVerificationStatus,
+    VerificationApplication,
+    VerificationApplicationStatus,
 )
 from apps.marketplace.shops.permissions import ensure_shop_owner
 
 
 @transaction.atomic
-def submit_verification(*, actor, shop: Shop, legal_name: str, identity_type: str, identity_last4: str, contact_phone: str, business_registration_number: str = '', consent_confirmed: bool = False):
+def submit_verification(*, actor, shop: Shop, legal_name: str, identity_type: str, identity_last4: str,
+                         contact_phone: str, business_registration_number: str = '', consent_confirmed: bool = False):
     ensure_shop_owner(actor=actor, shop=shop)
     if VerificationApplication.objects.filter(shop=shop, status=VerificationApplicationStatus.PENDING).exists():
         raise ValidationError('A verification application is already under review.')

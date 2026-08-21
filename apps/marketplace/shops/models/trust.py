@@ -26,7 +26,10 @@ class VerificationApplication(models.Model):
     consent_confirmed = models.BooleanField(default=False)
     status = models.CharField(max_length=20, choices=VerificationApplicationStatus.choices, default=VerificationApplicationStatus.PENDING, db_index=True)
     reviewer_notes = models.TextField(blank=True)
-    reviewed_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name='reviewed_verification_applications')
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
+        related_name='reviewed_verification_applications',
+    )
     submitted_at = models.DateTimeField(auto_now_add=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
 

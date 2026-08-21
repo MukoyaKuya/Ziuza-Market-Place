@@ -1,10 +1,10 @@
-import pytest
 from types import SimpleNamespace
 from uuid import uuid4
+
+import pytest
 from django.contrib.auth.models import AnonymousUser
 from django.template.loader import render_to_string
-from django.test import RequestFactory
-from django.test import override_settings
+from django.test import RequestFactory, override_settings
 from django.urls import reverse
 
 from apps.accounts.models import User

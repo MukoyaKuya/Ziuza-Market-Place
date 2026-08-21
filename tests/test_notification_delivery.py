@@ -16,7 +16,6 @@ from apps.marketplace.notifications.models import (
     notify,
 )
 
-
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'
 

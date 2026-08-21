@@ -1,13 +1,10 @@
-from decimal import Decimal, ROUND_DOWN
+from decimal import ROUND_DOWN, Decimal
 
 from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.db.models import Q
 from django.utils import timezone
 
 from apps.marketplace.promotions.models import DiscountType, Promotion, PromotionRedemption, RedemptionStatus
 from apps.marketplace.shops.permissions import MANAGE_PROMOTIONS, ensure_shop_permission
-
 
 ACTIVE_REDEMPTIONS = [RedemptionStatus.RESERVED, RedemptionStatus.REDEEMED]
 
@@ -20,7 +17,7 @@ def calculate_discount(*, promotion, eligible_subtotal):
     if promotion.discount_type == DiscountType.PERCENTAGE:
         if promotion.value > 100:
             raise ValidationError('Percentage discount cannot exceed 100%.')
-        discount = (eligible_subtotal * promotion.value / Decimal('100')).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
+        discount = (eligible_subtotal * promotion.value / Decimal(100)).quantize(Decimal('0.01'), rounding=ROUND_DOWN)
     else:
         discount = promotion.value
     return min(discount, eligible_subtotal)

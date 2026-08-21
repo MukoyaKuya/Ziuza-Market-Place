@@ -5,12 +5,10 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from apps.marketplace.categories.models import Category
-from apps.marketplace.listings.models import ListingStatus
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.search.services import search_listings, search_with_fallback
 from apps.marketplace.shops.models import ShopVerificationStatus
 from apps.marketplace.shops.services import create_shop
-
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'

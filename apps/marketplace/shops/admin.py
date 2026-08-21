@@ -7,8 +7,15 @@ from django.utils.html import format_html
 from unfold.admin import ModelAdmin
 
 from apps.marketplace.shops.models import (
-    MarketplaceReport, ModerationAction, Shop, ShopAuditEvent, ShopInvitation,
-    ShopMembership, ShopSection, ShopSectionItem, VerificationApplication,
+    MarketplaceReport,
+    ModerationAction,
+    Shop,
+    ShopAuditEvent,
+    ShopInvitation,
+    ShopMembership,
+    ShopSection,
+    ShopSectionItem,
+    VerificationApplication,
     VerificationApplicationStatus,
 )
 from apps.marketplace.shops.trust_services import moderate_report, review_verification

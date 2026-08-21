@@ -1,6 +1,7 @@
-import os
 from pathlib import Path
+
 import environ
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -219,8 +220,6 @@ CELERY_TIMEZONE = TIME_ZONE
 CELERY_ENABLE_UTC = True
 
 # Celery Beat Scheduled Periodic Tasks
-from celery.schedules import crontab
-
 CELERY_BEAT_SCHEDULE = {
     'expire-order-reservations-every-minute': {
         'task': 'apps.marketplace.orders.tasks.expire_order_reservations_task',

@@ -2,7 +2,11 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 
 from apps.marketplace.favorites.models import (
-    CollectionItem, Favorite, ListingAlert, ListingCollection, ShopFollow,
+    CollectionItem,
+    Favorite,
+    ListingAlert,
+    ListingCollection,
+    ShopFollow,
 )
 
 

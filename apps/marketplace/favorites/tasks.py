@@ -1,5 +1,7 @@
 import logging
+
 from celery import shared_task
+
 from apps.marketplace.favorites.services import process_discovery_alerts
 
 logger = logging.getLogger(__name__)

@@ -1,8 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
 from apps.marketplace.shipping import views
-from apps.marketplace.shipping.models import Shipment, ShippingMethod
 
 app_name = 'shipping'
 

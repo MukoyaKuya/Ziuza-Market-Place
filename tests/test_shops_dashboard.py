@@ -274,6 +274,7 @@ def test_non_owner_cannot_submit_shop_verification(user, other_user, shop):
 @pytest.mark.django_db
 def test_report_can_hide_listing_and_records_moderator_action(user, other_user, shop):
     from decimal import Decimal
+
     from apps.marketplace.categories.models import Category
     from apps.marketplace.listings.models import ListingStatus
     from apps.marketplace.listings.services import create_listing, publish_listing

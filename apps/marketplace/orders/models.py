@@ -1,5 +1,6 @@
 import uuid
 from decimal import Decimal
+from typing import Any
 
 from django.conf import settings
 from django.db import models
@@ -123,6 +124,10 @@ class OrderItem(models.Model):
     personalization_text = models.TextField(blank=True, default='')
     personalization_data = models.JSONField(default=dict, blank=True)
     product_type_snapshot = models.CharField(max_length=20, default='physical')
+
+    # View-context attachments for the buyer order page; never persisted.
+    secure_download_grant: 'DownloadGrant | None' = None
+    download_assets: 'list[Any]' = []
 
 
 class DownloadGrant(models.Model):

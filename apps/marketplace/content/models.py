@@ -159,7 +159,8 @@ class PromoBannerAd(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(_('banner title / campaign'), max_length=160)
-    image = models.ImageField(_('banner image / GIF'), upload_to='cms/banners/', blank=True, help_text=_('Upload animated GIF, PNG, or WebP banner (e.g. 1200x120px)'))
+    image = models.ImageField(_('banner image / GIF'), upload_to='cms/banners/', blank=True,
+                              help_text=_('Upload animated GIF, PNG, or WebP banner (e.g. 1200x120px)'))
     target_url = models.CharField(_('target URL'), max_length=255, default='/local/', help_text=_('Destination URL when banner is clicked'))
     alt_text = models.CharField(_('alt text'), max_length=200, blank=True, help_text=_('Accessibility description for the banner'))
     is_active = models.BooleanField(_('is active'), default=True)

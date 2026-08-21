@@ -1,7 +1,13 @@
 from apps.marketplace.shops.models import Shop
 from apps.marketplace.shops.permissions import (
-    MANAGE_LISTINGS, MANAGE_MESSAGES, MANAGE_PROMOTIONS, MANAGE_SHIPPING,
-    MANAGE_STOREFRONT, VIEW_ANALYTICS, VIEW_ORDERS, user_has_shop_permission,
+    MANAGE_LISTINGS,
+    MANAGE_MESSAGES,
+    MANAGE_PROMOTIONS,
+    MANAGE_SHIPPING,
+    MANAGE_STOREFRONT,
+    VIEW_ANALYTICS,
+    VIEW_ORDERS,
+    user_has_shop_permission,
 )
 
 DASHBOARD_NAV = [

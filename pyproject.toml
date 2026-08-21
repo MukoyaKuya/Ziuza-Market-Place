@@ -24,6 +24,9 @@ dev = [
     "pytest>=8.0.0",
     "pytest-django>=4.8.0",
     "pytest-cov>=4.1.0",
+    "ruff>=0.16",
+    "mypy>=1.11",
+    "django-stubs>=5.0",
 ]
 prod = [
     "redis>=5.0.0",
@@ -37,6 +40,59 @@ DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["test_*.py", "*_test.py"]
 testpaths = ["tests"]
 addopts = "--strict-markers -v --ds=config.settings.test --reuse-db"
+
+[tool.coverage.run]
+source = ["apps"]
+omit = ["*/migrations/*", "*/management/*"]
+
+[tool.coverage.report]
+show_missing = false
+
+[tool.ruff]
+line-length = 160
+target-version = "py312"
+extend-exclude = ["node_modules", "static", "media", "var", "docs", "*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "DTZ", "RUF", "C4", "PIE", "FLY", "FURB"]
+# RUF012: Django Meta/widgets dict class attributes are idiomatic.
+# SIM117: nested `with` is sometimes clearer than one-liner combining.
+# SIM103: early-return visibility windows read better than inverted conditions.
+# SIM108: multi-line if/else reads better than a 160-char ternary.
+# RUF001: UI copy intentionally uses typographic quotes (“ ”).
+ignore = ["RUF012", "SIM117", "SIM103", "SIM108", "RUF001"]
+
+[tool.mypy]
+python_version = "3.12"
+plugins = ["mypy_django_plugin.main"]
+# Typed-surface gate for the money paths only; the rest of the codebase is
+# deliberately untyped for now. Widen `files` as typing matures.
+files = ["apps/marketplace/orders", "apps/marketplace/payments"]
+exclude = ["migrations"]
+follow_imports = "silent"
+check_untyped_defs = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["celery", "celery.*", "unfold", "unfold.*", "storages.*"]
+ignore_missing_imports = true
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+[tool.ruff.lint.per-file-ignores]
+# Deliberate fail-open / best-effort paths: these must never break a page
+# render, a health probe, or a fallback search path.
+"apps/core/views/health.py" = ["BLE001"]
+"apps/marketplace/*/context_processors.py" = ["BLE001"]
+"apps/marketplace/messaging/models.py" = ["BLE001"]
+"apps/marketplace/notifications/delivery.py" = ["BLE001"]
+"apps/marketplace/payments/views.py" = ["BLE001"]
+"apps/marketplace/search/services.py" = ["BLE001"]
+# Split settings modules re-export everything from base.
+"config/settings/*.py" = ["F403", "F405"]
+# Kenyan county data literals are tabular, not code.
+"apps/core/locations.py" = ["E501"]
 
 [tool.setuptools.packages.find]
 include = ["apps*", "config*"]

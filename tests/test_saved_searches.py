@@ -15,7 +15,6 @@ from apps.marketplace.search.models import RecentlyViewedListing, SavedSearch
 from apps.marketplace.search.saved import recommendations_for_user, save_search
 from apps.marketplace.shops.services import create_shop
 
-
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'
 

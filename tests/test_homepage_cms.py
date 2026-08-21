@@ -237,7 +237,7 @@ def test_promo_banner_ad_cms_scheduling_and_display(client):
 
     # Admin switches OFF the banner completely via HomepageSection
     from apps.marketplace.content.models import HomepageSection, HomepageSectionType
-    sec_hero = HomepageSection.objects.create(section_type=HomepageSectionType.HERO, is_visible=True, position=0)
+    HomepageSection.objects.create(section_type=HomepageSectionType.HERO, is_visible=True, position=0)
     sec_banner = HomepageSection.objects.create(section_type=HomepageSectionType.PROMO_BANNER, is_visible=False, position=1)
 
     response = client.get(reverse('core:home'))

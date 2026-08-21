@@ -23,7 +23,6 @@ from apps.marketplace.listings.selectors import (
 from apps.marketplace.shops.models import ReportReason
 from apps.marketplace.shops.trust_services import create_report
 
-
 LISTING_FALLBACK_IMAGES = {
     'art-collectibles': 'images/categories/art.png',
     'craft-supplies': 'images/categories/craft_supplies.png',

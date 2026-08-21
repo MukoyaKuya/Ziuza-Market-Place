@@ -3,6 +3,7 @@ from decimal import Decimal
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.db import IntegrityError
 from django.test import RequestFactory
 from django.urls import reverse
 
@@ -127,7 +128,7 @@ def test_rollup_shop_day_is_idempotent(client, buyer, seller, listing, address, 
 def test_shop_daily_metric_unique_constraint(shop):
     today = nairobi_today()
     ShopDailyMetric.objects.create(shop=shop, date=today, orders=1, revenue=Decimal('10.00'))
-    with pytest.raises(Exception):
+    with pytest.raises(IntegrityError):
         ShopDailyMetric.objects.create(shop=shop, date=today, orders=2, revenue=Decimal('20.00'))
 
 

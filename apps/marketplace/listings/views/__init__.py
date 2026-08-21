@@ -32,9 +32,6 @@ __all__ = [
     'category_index',
     'listing_detail',
     'report_listing',
-    'zawadi_category_detail',
-    'zawadi_index',
-    'ziuza_picks',
     'seller_bulk_export',
     'seller_bulk_tools',
     'seller_inventory_overview',
@@ -52,4 +49,7 @@ __all__ = [
     'seller_listing_list',
     'seller_listing_pause',
     'seller_listing_publish',
+    'zawadi_category_detail',
+    'zawadi_index',
+    'ziuza_picks',
 ]

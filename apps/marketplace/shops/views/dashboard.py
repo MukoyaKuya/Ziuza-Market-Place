@@ -16,7 +16,7 @@ from apps.marketplace.shops.forms import (
     ShopSettingsForm,
 )
 from apps.marketplace.shops.marketing import delete_shop_section, save_shop_section, update_shop_marketing
-from apps.marketplace.shops.models import Shop, ShopVerificationStatus, ShopTeamRole
+from apps.marketplace.shops.models import Shop, ShopTeamRole, ShopVerificationStatus
 from apps.marketplace.shops.permissions import (
     MANAGE_STOREFRONT,
     ensure_shop_owner,

@@ -1,5 +1,7 @@
 import logging
+
 from celery import shared_task
+
 from apps.marketplace.notifications.delivery import deliver_pending_notifications
 
 logger = logging.getLogger(__name__)

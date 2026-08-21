@@ -8,17 +8,21 @@ from django.urls import reverse
 from apps.marketplace.analytics.selectors import shop_analytics_summary
 from apps.marketplace.categories.models import Category
 from apps.marketplace.favorites.models import (
-    CollectionItem, Favorite, ListingAlert, ListingCollection, ShopFollow,
+    CollectionItem,
+    Favorite,
 )
 from apps.marketplace.favorites.services import (
-    add_to_collection, create_collection, process_discovery_alerts,
-    toggle_favorite, toggle_listing_alert, toggle_shop_follow,
+    add_to_collection,
+    create_collection,
+    process_discovery_alerts,
+    toggle_favorite,
+    toggle_listing_alert,
+    toggle_shop_follow,
 )
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.search.saved import recommendations_for_user
 from apps.marketplace.shops.models import ShopMembership, ShopTeamRole
 from apps.marketplace.shops.services import create_shop
-
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'

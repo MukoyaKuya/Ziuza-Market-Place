@@ -9,10 +9,13 @@ from django.utils import timezone
 
 from apps.marketplace.notifications.services import notify
 from apps.marketplace.shops.models import (
-    ShopAuditEvent, ShopInvitation, ShopMembership, ShopMembershipStatus, ShopTeamRole,
+    ShopAuditEvent,
+    ShopInvitation,
+    ShopMembership,
+    ShopMembershipStatus,
+    ShopTeamRole,
 )
 from apps.marketplace.shops.permissions import ensure_shop_owner
-
 
 User = get_user_model()
 

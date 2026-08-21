@@ -3,9 +3,8 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from apps.core.locations import get_counties, get_sub_counties, get_wards
-from apps.marketplace.listings.models import Listing, ListingStatus
-from apps.marketplace.shops.models import LocalDeliveryScope, Shop, ShopVerificationStatus
-from apps.marketplace.shops.services import create_shop, update_shop_settings
+from apps.marketplace.shops.models import LocalDeliveryScope, Shop
+from apps.marketplace.shops.services import create_shop
 
 User = get_user_model()
 

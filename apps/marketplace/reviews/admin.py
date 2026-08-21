@@ -2,7 +2,11 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
 from apps.marketplace.reviews.models import (
-    Review, ReviewHelpfulVote, ReviewMedia, ReviewReminder, ReviewReport,
+    Review,
+    ReviewHelpfulVote,
+    ReviewMedia,
+    ReviewReminder,
+    ReviewReport,
 )
 from apps.marketplace.reviews.services import moderate_review_report
 

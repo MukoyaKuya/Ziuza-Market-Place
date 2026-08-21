@@ -6,13 +6,13 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 
 from apps.accounts.models import Address
+from apps.marketplace.cart.models import Cart
+from apps.marketplace.cart.services import add_to_cart
 from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.models import Listing, ListingStatus
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.orders.models import FulfillmentStatus
 from apps.marketplace.orders.services import create_checkout_order, mark_order_paid
-from apps.marketplace.cart.models import Cart
-from apps.marketplace.cart.services import add_to_cart
 from apps.marketplace.shops.models import Shop, ShopVerificationStatus
 from apps.marketplace.shops.services import create_shop
 

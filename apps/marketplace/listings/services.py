@@ -1,21 +1,21 @@
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import ensure_authenticated
 from apps.marketplace.listings.models import (
+    DigitalAsset,
     Inventory,
     Listing,
     ListingAttribute,
     ListingImage,
-    ListingStatus,
-    ListingVariant,
     ListingOption,
     ListingOptionValue,
+    ListingStatus,
+    ListingVariant,
     PersonalizationField,
     PersonalizationFieldType,
-    DigitalAsset,
     ProductType,
 )
 from apps.marketplace.shops.models import Shop
@@ -39,7 +39,7 @@ def _digital_asset_signature_matches(uploaded_file, content_type):
         'image/png': header.startswith(b'\x89PNG\r\n\x1a\n'),
         'image/webp': header.startswith(b'RIFF') and header[8:12] == b'WEBP',
         'application/pdf': header.startswith(b'%PDF-'),
-        'application/zip': header.startswith(b'PK\x03\x04') or header.startswith(b'PK\x05\x06') or header.startswith(b'PK\x07\x08'),
+        'application/zip': header.startswith((b'PK\x03\x04', b'PK\x05\x06', b'PK\x07\x08')),
     }.get(content_type, False)
 
 
@@ -57,7 +57,7 @@ def ensure_actor_can_manage_listing(*, actor, listing: Listing) -> Listing:
 
 
 def _ensure_base_inventory(listing: Listing) -> Inventory:
-    inventory, _ = Inventory.objects.get_or_create(
+    inventory, _created = Inventory.objects.get_or_create(
         listing=listing,
         variant=None,
         defaults={'quantity_available': 0, 'quantity_reserved': 0},
@@ -219,7 +219,7 @@ def set_inventory_quantity(
     if variant is not None:
         if variant.listing_id != listing.id:
             raise ValidationError(_('Variant does not belong to this listing.'))
-        inventory, _ = Inventory.objects.select_for_update().get_or_create(
+        inventory, _created = Inventory.objects.select_for_update().get_or_create(
             listing=listing,
             variant=variant,
             defaults={'quantity_available': 0},
@@ -347,7 +347,8 @@ def add_listing_option(*, actor, listing, name: str, values: str):
 
 
 @transaction.atomic
-def add_personalization_field(*, actor, listing, label: str, instructions: str = '', field_type: str = 'text', options: str = '', is_required: bool = False, max_length: int = 120):
+def add_personalization_field(*, actor, listing, label: str, instructions: str = '', field_type: str = 'text',
+                                options: str = '', is_required: bool = False, max_length: int = 120):
     ensure_actor_can_manage_listing(actor=actor, listing=listing)
     choices = list(dict.fromkeys(value.strip() for value in options.split(',') if value.strip()))
     if field_type == PersonalizationFieldType.SELECT and not choices:
@@ -370,7 +371,7 @@ def set_listing_attribute(*, actor, listing: Listing, name: str, value: str, pos
     value = (value or '').strip()
     if not name or not value:
         raise ValidationError(_('Attribute name and value are required.'))
-    attr, _ = ListingAttribute.objects.update_or_create(
+    attr, _created = ListingAttribute.objects.update_or_create(
         listing=listing,
         name=name,
         defaults={'value': value, 'position': position},

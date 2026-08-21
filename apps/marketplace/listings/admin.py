@@ -2,16 +2,16 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
 from apps.marketplace.listings.models import (
+    BulkOperation,
+    DigitalAsset,
     Inventory,
     Listing,
     ListingAttribute,
     ListingImage,
-    ListingVariant,
     ListingOption,
     ListingOptionValue,
+    ListingVariant,
     PersonalizationField,
-    DigitalAsset,
-    BulkOperation,
 )
 
 

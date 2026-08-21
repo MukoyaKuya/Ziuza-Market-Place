@@ -14,7 +14,6 @@ from apps.marketplace.search.models import RecentlyViewedListing, SavedSearch
 from apps.marketplace.search.services import PRODUCT_TYPES, SORT_OPTIONS, normalize_query, search_listings
 from apps.marketplace.shops.models import ShopVerificationStatus
 
-
 BOOLEAN_FILTERS = ('verified_only', 'personalizable_only', 'in_stock_only')
 TEXT_FILTERS = ('category_slug', 'shop_slug', 'product_type', 'county', 'sort')
 

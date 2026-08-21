@@ -1,8 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
 from apps.marketplace.cart import views
-from apps.marketplace.cart.models import Cart, CartItem
 
 app_name = 'cart'
 

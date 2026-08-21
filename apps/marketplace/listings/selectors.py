@@ -23,7 +23,10 @@ def seller_listings_for_shop(*, shop):
 def get_listing_for_management(*, shop, listing_id) -> Listing:
     return (
         Listing.objects.select_related('shop', 'category')
-        .prefetch_related('images', 'variants__selected_values__option', 'inventory_rows', 'attributes', 'option_groups__values', 'personalization_fields', 'digital_assets')
+        .prefetch_related(
+            'images', 'variants__selected_values__option', 'inventory_rows', 'attributes',
+            'option_groups__values', 'personalization_fields', 'digital_assets',
+        )
         .get(id=listing_id, shop=shop)
     )
 

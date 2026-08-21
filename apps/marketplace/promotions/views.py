@@ -5,15 +5,15 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import Http404
 from django.shortcuts import redirect, render
-from django.utils.dateparse import parse_datetime
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.marketplace.promotions.models import DiscountType, Promotion
 from apps.marketplace.promotions.services import create_promotion, set_promotion_active
 from apps.marketplace.shops.dashboard_context import dashboard_context
-from apps.marketplace.shops.selectors import get_shop_for_user
 from apps.marketplace.shops.permissions import MANAGE_PROMOTIONS, ensure_shop_permission
+from apps.marketplace.shops.selectors import get_shop_for_user
 
 
 @login_required
@@ -44,7 +44,10 @@ def seller_promotions(request):
         else:
             messages.success(request, 'Promotion created.')
             return redirect('promotions:seller_list')
-    return render(request, 'promotions/seller_list.html', dashboard_context(actor=request.user, shop=shop, section='promotions', promotions=shop.promotions.all(), discount_types=DiscountType.choices))
+    return render(request, 'promotions/seller_list.html', dashboard_context(
+        actor=request.user, shop=shop, section='promotions',
+        promotions=shop.promotions.all(), discount_types=DiscountType.choices,
+    ))
 
 
 @login_required

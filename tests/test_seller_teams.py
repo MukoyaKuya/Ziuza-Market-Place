@@ -2,22 +2,32 @@ from datetime import timedelta
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.exceptions import ValidationError
 from django.urls import reverse
 from django.utils import timezone
 
 from apps.marketplace.shops.models import (
-    ShopAuditEvent, ShopMembership, ShopMembershipStatus, ShopTeamRole,
+    ShopAuditEvent,
+    ShopMembership,
+    ShopMembershipStatus,
+    ShopTeamRole,
 )
 from apps.marketplace.shops.permissions import (
-    MANAGE_LISTINGS, MANAGE_MESSAGES, MANAGE_ORDERS, MANAGE_SHIPPING,
-    MANAGE_STOREFRONT, VIEW_ANALYTICS, VIEW_ORDERS, user_has_shop_permission,
+    MANAGE_LISTINGS,
+    MANAGE_MESSAGES,
+    MANAGE_ORDERS,
+    MANAGE_SHIPPING,
+    MANAGE_STOREFRONT,
+    VIEW_ANALYTICS,
+    VIEW_ORDERS,
+    user_has_shop_permission,
 )
 from apps.marketplace.shops.services import create_shop
 from apps.marketplace.shops.team_services import (
-    accept_team_invitation, invite_team_member, revoke_team_member,
+    accept_team_invitation,
+    invite_team_member,
+    revoke_team_member,
 )
-
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'

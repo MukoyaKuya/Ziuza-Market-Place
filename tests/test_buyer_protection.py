@@ -1,6 +1,6 @@
+import uuid
 from datetime import timedelta
 from decimal import Decimal
-import uuid
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -11,17 +11,26 @@ from django.utils import timezone
 
 from apps.marketplace.analytics.selectors import shop_analytics_summary
 from apps.marketplace.orders.models import (
-    CaseResolutionOutcome, FulfillmentStatus, HelpRequestReason, HelpRequestStatus,
-    Order, OrderItem, PaymentStatus, ProtectionCaseType, RequestedOutcome,
+    CaseResolutionOutcome,
+    FulfillmentStatus,
+    HelpRequestReason,
+    HelpRequestStatus,
+    Order,
+    OrderItem,
+    PaymentStatus,
+    ProtectionCaseType,
+    RequestedOutcome,
     SellerOrder,
 )
 from apps.marketplace.orders.support import (
-    add_case_evidence, add_case_message, open_help_request,
-    resolve_protection_case, seller_respond_to_help_request,
+    add_case_evidence,
+    add_case_message,
+    open_help_request,
+    resolve_protection_case,
+    seller_respond_to_help_request,
 )
 from apps.marketplace.shops.models import ShopMembership, ShopTeamRole
 from apps.marketplace.shops.services import create_shop
-
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'

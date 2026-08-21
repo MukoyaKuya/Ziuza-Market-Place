@@ -1,14 +1,15 @@
+import logging
 import re
 from dataclasses import dataclass
 from decimal import Decimal
 from difflib import SequenceMatcher
 
+from django.db import connection
 from django.db.models import Case, F, IntegerField, Prefetch, Q, Value, When
 
 from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.models import Inventory, Listing, ListingStatus, ProductType
 from apps.marketplace.shops.models import Shop, ShopVerificationStatus
-
 
 SORT_OPTIONS = {'relevance', 'newest', 'price_asc', 'price_desc', 'rating'}
 PRODUCT_TYPES = set(ProductType.values)
@@ -203,9 +204,6 @@ def _word_similarity(query_terms: list[str], text: str) -> float:
     return sum(per_term) / len(per_term)
 
 
-from django.db import connection
-
-
 def _postgres_trigram_fallback(**filters) -> SearchResult:
     from django.contrib.postgres.search import TrigramSimilarity
 
@@ -259,7 +257,8 @@ def search_with_fallback(**filters) -> SearchResult:
         try:
             return _postgres_trigram_fallback(**filters)
         except Exception:
-            pass
+            # Fall back to the Python path below (e.g. missing pg_trgm extension).
+            logging.getLogger(__name__).debug('Trigram search fallback engaged', exc_info=True)
 
     # Python memory fallback for SQLite / testing environments
     base_filters = dict(filters)
@@ -268,7 +267,7 @@ def search_with_fallback(**filters) -> SearchResult:
     query_terms = _terms(query)
     scored = []
     for listing in candidates:
-        searchable = ' '.join((listing.title, listing.category.name, listing.shop.name))
+        searchable = f'{listing.title} {listing.category.name} {listing.shop.name}'
         similarity = _word_similarity(query_terms, searchable)
         if similarity:
             scored.append((similarity, listing.pk))

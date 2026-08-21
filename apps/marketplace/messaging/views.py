@@ -1,20 +1,25 @@
+from decimal import Decimal, InvalidOperation
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Q
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.dateparse import parse_date
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.marketplace.listings.models import Listing
-from apps.marketplace.messaging.models import Conversation, send_message, start_or_get_conversation
-from apps.marketplace.messaging.models import CustomOrderRequest, create_custom_order_request, respond_to_custom_order
-from decimal import Decimal, InvalidOperation
-from django.utils.dateparse import parse_date
+from apps.marketplace.messaging.models import (
+    Conversation,
+    CustomOrderRequest,
+    create_custom_order_request,
+    respond_to_custom_order,
+    send_message,
+    start_or_get_conversation,
+)
 from apps.marketplace.shops.dashboard_context import dashboard_context
-from apps.marketplace.shops.models import Shop
-from apps.marketplace.shops.selectors import get_shop_for_user
 from apps.marketplace.shops.permissions import MANAGE_MESSAGES, ensure_shop_permission, user_has_shop_permission
+from apps.marketplace.shops.selectors import get_shop_for_user
 
 
 @login_required
@@ -112,7 +117,7 @@ def request_custom_order(request, listing_id):
     listing = get_object_or_404(Listing.objects.select_related('shop'), id=listing_id)
     try:
         budget = Decimal(request.POST['budget']) if request.POST.get('budget') else None
-        custom_request = create_custom_order_request(
+        create_custom_order_request(
             actor=request.user, shop=listing.shop, listing=listing,
             description=request.POST.get('description') or '', budget=budget,
             needed_by=parse_date(request.POST.get('needed_by') or ''),
@@ -130,7 +135,10 @@ def seller_custom_orders(request):
         return redirect('shops:onboarding')
     ensure_shop_permission(actor=request.user, shop=shop, permission=MANAGE_MESSAGES)
     requests = shop.custom_order_requests.select_related('buyer', 'listing')
-    return render(request, 'messaging/custom_orders.html', dashboard_context(actor=request.user, shop=shop, section='custom_orders', custom_requests=requests, statuses=CustomOrderRequest.Status.choices))
+    return render(request, 'messaging/custom_orders.html', dashboard_context(
+        actor=request.user, shop=shop, section='custom_orders',
+        custom_requests=requests, statuses=CustomOrderRequest.Status.choices,
+    ))
 
 
 @login_required
@@ -148,7 +156,10 @@ def seller_custom_order_respond(request, request_id):
     ensure_shop_permission(actor=request.user, shop=shop, permission=MANAGE_MESSAGES)
     custom_request = get_object_or_404(CustomOrderRequest.objects.select_related('shop', 'buyer'), id=request_id, shop=shop)
     try:
-        respond_to_custom_order(actor=request.user, custom_request=custom_request, response=request.POST.get('response') or '', status=request.POST.get('status') or '')
+        respond_to_custom_order(
+            actor=request.user, custom_request=custom_request,
+            response=request.POST.get('response') or '', status=request.POST.get('status') or '',
+        )
         messages.success(request, 'Response sent.')
     except (ValidationError, PermissionDenied) as exc:
         messages.error(request, str(exc))

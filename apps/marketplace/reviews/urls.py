@@ -1,8 +1,6 @@
-from django.contrib import admin
 from django.urls import path
 
 from apps.marketplace.reviews import views
-from apps.marketplace.reviews.models import Review
 
 app_name = 'reviews'
 

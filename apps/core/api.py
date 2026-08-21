@@ -1,5 +1,6 @@
-from typing import List, Optional
+
 from ninja import NinjaAPI, Schema
+
 from apps.core.locations import get_counties, get_sub_counties, get_wards
 
 api = NinjaAPI(
@@ -12,12 +13,12 @@ api = NinjaAPI(
 
 class LocationOptionSchema(Schema):
     name: str
-    code: Optional[str] = None
+    code: str | None = None
 
 
 class LocationResponseSchema(Schema):
     count: int
-    items: List[str]
+    items: list[str]
 
 
 @api.get("/locations/counties", response=LocationResponseSchema, tags=["Locations"])

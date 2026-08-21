@@ -6,6 +6,39 @@ on:
   pull_request:
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          pip install mypy django-stubs
+      - name: Ruff lint
+        run: ruff check apps config tests
+      - name: Mypy (money paths: orders, payments)
+        run: mypy
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Dependency audit (pip-audit)
+        run: |
+          pip install pip-audit
+          pip-audit --skip-editable
+
   test:
     runs-on: ubuntu-latest
     steps:
@@ -31,7 +64,7 @@ jobs:
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --run-syncdb
           python manage.py check
-      - name: Pytest
+      - name: Pytest with coverage gate
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test
-        run: pytest -q
+        run: pytest -q --cov=apps --cov-fail-under=75

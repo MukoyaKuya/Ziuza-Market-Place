@@ -2,12 +2,11 @@ import secrets
 from datetime import timedelta
 from decimal import Decimal
 
-from django.core.exceptions import ValidationError
-from django.db import transaction
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.utils import timezone
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.db import models, transaction
+from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import ensure_authenticated
 from apps.marketplace.cart.models import Cart
@@ -42,7 +41,8 @@ def _address_snapshot(address) -> dict:
 
 
 @transaction.atomic
-def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_method_code: str = 'standard', shipping_fee: Decimal = Decimal('300.00'), shipping_breakdown=None, coupon_code: str = '') -> Order:
+def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_method_code: str = 'standard',
+                           shipping_fee: Decimal = Decimal('300.00'), shipping_breakdown=None, coupon_code: str = '') -> Order:
     ensure_authenticated(actor=actor)
     if shipping_address is not None and shipping_address.user_id != actor.id:
         raise ValidationError(_('Invalid shipping address.'))

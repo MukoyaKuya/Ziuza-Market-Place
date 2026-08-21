@@ -1,8 +1,8 @@
+import logging
+
+from django.db import connection
 from django.http import JsonResponse
 from django.views import View
-from django.db import connection
-from django.conf import settings
-import logging
 
 logger = logging.getLogger(__name__)
 

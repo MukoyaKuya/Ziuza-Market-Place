@@ -7,7 +7,6 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
 
-from apps.accounts.utils import safe_next_url
 from apps.accounts.forms import AddressForm, LoginForm, ProfileForm, RegistrationForm
 from apps.accounts.models import Address
 from apps.accounts.selectors import get_address_for_user, list_addresses_for_user
@@ -18,6 +17,7 @@ from apps.accounts.services import (
     update_address,
     update_user_profile,
 )
+from apps.accounts.utils import safe_next_url
 
 
 def register_view(request):
@@ -194,8 +194,8 @@ def address_edit(request, address_id):
     if request.method == 'POST' and form.is_valid():
         try:
             update_address(actor=request.user, address_id=address.id, **form.cleaned_data)
-        except PermissionDenied:
-            raise Http404('Address not found.')
+        except PermissionDenied as exc:
+            raise Http404('Address not found.') from exc
         messages.success(request, 'Address updated.')
         return redirect('accounts:address_list')
 
@@ -217,7 +217,7 @@ def address_edit(request, address_id):
 def address_delete(request, address_id):
     try:
         delete_address(actor=request.user, address_id=address_id)
-    except PermissionDenied:
-        raise Http404('Address not found.')
+    except PermissionDenied as exc:
+        raise Http404('Address not found.') from exc
     messages.success(request, 'Address deleted.')
     return redirect('accounts:address_list')

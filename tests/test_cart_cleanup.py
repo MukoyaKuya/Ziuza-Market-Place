@@ -1,11 +1,12 @@
 from datetime import timedelta
-import pytest
-from django.utils import timezone
-from django.core.management import call_command
 
+import pytest
+from django.core.management import call_command
+from django.utils import timezone
+
+from apps.accounts.models import User
 from apps.marketplace.cart.models import Cart
 from apps.marketplace.cart.services import purge_inactive_anonymous_carts
-from apps.accounts.models import User
 
 
 @pytest.mark.django_db
@@ -15,7 +16,7 @@ def test_purge_inactive_anonymous_carts():
 
     # Active anonymous cart (recent)
     recent_anon = Cart.objects.create(session_key='recent-session')
-    
+
     # Stale anonymous cart (old)
     stale_anon = Cart.objects.create(session_key='stale-session')
     Cart.objects.filter(pk=stale_anon.pk).update(updated_at=now - timedelta(days=45))

@@ -1,11 +1,15 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
 
-from django.utils import timezone
-
 from apps.marketplace.orders.models import (
-    CaseResolutionOutcome, DownloadGrant, HelpRequest, HelpRequestStatus, Order,
-    OrderItem, ProtectionCaseEvent, ProtectionCaseEvidence, ProtectionCaseMessage,
+    CaseResolutionOutcome,
+    DownloadGrant,
+    HelpRequest,
+    Order,
+    OrderItem,
+    ProtectionCaseEvent,
+    ProtectionCaseEvidence,
+    ProtectionCaseMessage,
     SellerOrder,
 )
 from apps.marketplace.orders.support import resolve_protection_case

@@ -1,11 +1,12 @@
-from decimal import Decimal
 import json
+from decimal import Decimal
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.test import RequestFactory, override_settings
-from django.utils import timezone
 from django.urls import reverse
+from django.utils import timezone
 
 from apps.accounts.models import Address
 from apps.marketplace.cart.services import add_to_cart, get_or_create_cart
@@ -13,8 +14,11 @@ from apps.marketplace.categories.models import Category
 from apps.marketplace.favorites.services import toggle_favorite
 from apps.marketplace.listings.models import Inventory
 from apps.marketplace.listings.services import (
-    add_listing_option, add_listing_variant, add_personalization_field,
-    create_listing, publish_listing,
+    add_listing_option,
+    add_listing_variant,
+    add_personalization_field,
+    create_listing,
+    publish_listing,
 )
 from apps.marketplace.orders.models import FulfillmentStatus, HelpRequestStatus, Order, PaymentStatus
 from apps.marketplace.orders.services import create_checkout_order, expire_stale_orders, release_order_inventory
@@ -23,8 +27,8 @@ from apps.marketplace.payments.models import PaymentStatusChoice
 from apps.marketplace.payments.providers import get_provider
 from apps.marketplace.promotions.models import DiscountType, Promotion, RedemptionStatus
 from apps.marketplace.reviews.models import Review, create_review
-from apps.marketplace.shops.services import create_shop
 from apps.marketplace.shipping.models import ShipmentEvent, update_seller_fulfillment
+from apps.marketplace.shops.services import create_shop
 
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'
@@ -396,7 +400,7 @@ def test_buyer_help_request_and_seller_response_are_scoped_and_notified(client, 
     assert case.status == HelpRequestStatus.SELLER_RESPONDED
     assert buyer.notifications.filter(type='help_request_response').exists()
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValidationError):
         open_help_request(
             actor=buyer,
             seller_order=seller_order,
@@ -518,6 +522,7 @@ def test_structured_variant_and_required_personalization_flow_to_order(client, b
 @pytest.mark.django_db
 def test_paid_digital_product_gets_private_download_grant(client, buyer, seller, shop, category):
     from django.core.files.uploadedfile import SimpleUploadedFile
+
     from apps.marketplace.listings.services import add_digital_asset
 
     digital = create_listing(
@@ -536,9 +541,15 @@ def test_paid_digital_product_gets_private_download_grant(client, buyer, seller,
         request.session = client.session
         request.session.save()
         add_to_cart(request=request, listing=digital, quantity=1)
-        order = create_checkout_order(actor=buyer, cart=get_or_create_cart(request=request), shipping_address=None, shipping_method_code='digital', shipping_fee=Decimal('0'))
+        order = create_checkout_order(
+            actor=buyer, cart=get_or_create_cart(request=request),
+            shipping_address=None, shipping_method_code='digital', shipping_fee=Decimal(0),
+        )
         payment = get_provider('fake').initiate_payment(order=order)
-        get_provider('fake').process_callback(payload={'provider_reference': payment.provider_reference, 'amount': str(payment.amount), 'currency': payment.currency})
+        get_provider('fake').process_callback(payload={
+            'provider_reference': payment.provider_reference,
+            'amount': str(payment.amount), 'currency': payment.currency,
+        })
         order.refresh_from_db()
         grant = order.items.get().download_grant
         assert order.fulfillment_status == FulfillmentStatus.DELIVERED

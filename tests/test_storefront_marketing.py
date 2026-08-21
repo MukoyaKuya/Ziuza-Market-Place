@@ -11,7 +11,6 @@ from apps.marketplace.shops.marketing import save_shop_section
 from apps.marketplace.shops.models import ShopSection, ShopSectionItem
 from apps.marketplace.shops.services import create_shop
 
-
 User = get_user_model()
 PASSWORD = 'SecurePassword123!'
 

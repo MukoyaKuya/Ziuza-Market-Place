@@ -28,7 +28,7 @@ signals.request_started.disconnect(_original_close_old_connections)
 signals.request_finished.disconnect(_original_close_old_connections)
 
 
-def _keep_connections(**kwargs):  # noqa: ARG001 - signal receiver signature
+def _keep_connections(**kwargs):
     """Never recycle connections during tests."""
 
 

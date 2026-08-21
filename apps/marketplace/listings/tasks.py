@@ -1,5 +1,7 @@
 import logging
+
 from celery import shared_task
+
 from apps.marketplace.listings.models import Inventory, ListingStatus
 from apps.marketplace.notifications.services import notify
 
