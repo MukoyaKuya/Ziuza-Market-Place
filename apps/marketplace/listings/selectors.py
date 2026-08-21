@@ -101,3 +101,28 @@ def get_visible_category(*, slug: str):
     from apps.marketplace.categories.models import Category
 
     return Category.objects.prefetch_related('children').get(slug=slug, is_visible=True)
+
+
+def listing_reviews(*, listing):
+    """Visible reviews with summary aggregates for the public listing page."""
+    from apps.marketplace.reviews.models import Review
+
+    queryset = Review.objects.filter(listing=listing, is_visible=True).select_related('buyer').prefetch_related('media')
+    summary = queryset.aggregate(
+        count=Count('id'), overall=Avg('rating'), quality=Avg('quality_rating'),
+        shipping=Avg('shipping_rating'), service=Avg('service_rating'),
+    )
+    return queryset[:20], summary
+
+
+def related_listings(*, listing):
+    """Same-category picks from other shops plus more from this shop."""
+    related_base = (
+        Listing.objects.filter(status=ListingStatus.ACTIVE, shop__is_active=True)
+        .exclude(id=listing.id)
+        .select_related('shop')
+        .prefetch_related('images')
+    )
+    similar = related_base.filter(category=listing.category).exclude(shop=listing.shop)[:4]
+    more_from_shop = related_base.filter(shop=listing.shop)[:4]
+    return similar, more_from_shop

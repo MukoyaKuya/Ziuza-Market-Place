@@ -20,7 +20,7 @@ Use before production release. High-debt seller dashboard pages and analytics ch
 - [ ] PostgreSQL in production; run migrations
 - [x] Checkout locks cart row; unique cart per user/session; cart-item and inventory reserved constraints
 - [ ] Query audit on search, category, cart, checkout
-- [x] Cache LocMem by default; Redis optional in production
+- [x] Cache LocMem by default; Redis optional in production (`REDIS_URL`; also unifies rate-limit counters across app servers — set it before scaling past one instance)
 - [x] Paginate search/category list endpoints
 
 ## Observability
@@ -38,7 +38,7 @@ Use before production release. High-debt seller dashboard pages and analytics ch
 
 ## Ops
 - [ ] Backups for Postgres + media
-- [ ] `collectstatic` + CDN/object storage for media
+- [ ] `collectstatic` (media object storage is wired: set `MEDIA_STORAGE_BACKEND` / `PRIVATE_MEDIA_STORAGE_BACKEND` + JSON options from `.env.example`, requires `django-storages[s3]` from `[prod]`; private downloads still route through authorized views)
 - [x] CI: pytest + migrate check (`.github/workflows/ci.yml`)
 - [x] Host-agnostic deploy runbook (`docs/deploy-runbook.md`) — includes CSS build step (`styles.css` is gitignored)
 - [ ] Docker/container image (not required; runbook is host-agnostic)

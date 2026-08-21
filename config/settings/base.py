@@ -153,6 +153,25 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
 
+# Object storage for shared media across multiple app servers.
+# Empty = local disk (single-host). Set to e.g.
+# MEDIA_STORAGE_BACKEND=storages.backends.s3.S3Storage with JSON OPTIONS
+# (bucket_name, endpoint_url, ...) to switch — no code changes needed.
+MEDIA_STORAGE_BACKEND = env('MEDIA_STORAGE_BACKEND', default='')
+MEDIA_STORAGE_OPTIONS = env.json('MEDIA_STORAGE_OPTIONS', default={}) if MEDIA_STORAGE_BACKEND else {}
+PRIVATE_MEDIA_STORAGE_BACKEND = env('PRIVATE_MEDIA_STORAGE_BACKEND', default='')
+PRIVATE_MEDIA_STORAGE_OPTIONS = env.json('PRIVATE_MEDIA_STORAGE_OPTIONS', default={}) if PRIVATE_MEDIA_STORAGE_BACKEND else {}
+
+STORAGES = {
+    'default': {
+        'BACKEND': MEDIA_STORAGE_BACKEND or 'django.core.files.storage.FileSystemStorage',
+        'OPTIONS': MEDIA_STORAGE_OPTIONS or {'location': str(MEDIA_ROOT), 'base_url': MEDIA_URL},
+    },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
+}
+
 # Private media download acceleration (X-Accel-Redirect / X-Sendfile)
 USE_X_ACCEL_REDIRECT = env.bool('USE_X_ACCEL_REDIRECT', default=False)
 X_ACCEL_REDIRECT_PREFIX = env('X_ACCEL_REDIRECT_PREFIX', default='/protected_media/')

@@ -94,7 +94,7 @@ def local_index(request):
         'sub_counties': available_sub_counties,
         'wards': available_wards,
         'shops_page': shops_page,
-        'total_shops_count': shops_qs.count(),
+        'total_shops_count': shops_page.paginator.count,
         'listings_sample': listings_sample,
         'page_title': f'Ziuza Local · {ward or sub_county or county or "Kenya"} Local Makers & Artisans',
     }

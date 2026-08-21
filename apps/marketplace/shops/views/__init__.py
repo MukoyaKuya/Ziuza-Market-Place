@@ -1,5 +1,4 @@
 from apps.marketplace.shops.views.dashboard import (
-    _placeholder,
     _with_shop,
     dashboard_gifts,
     dashboard_overview,
@@ -23,7 +22,6 @@ from apps.marketplace.shops.views.onboarding import (
 from apps.marketplace.shops.views.public import public_shop, report_shop
 
 __all__ = [
-    '_placeholder',
     '_with_shop',
     'accept_team',
     'dashboard_gifts',

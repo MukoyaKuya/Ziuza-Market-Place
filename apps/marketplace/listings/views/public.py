@@ -14,8 +14,10 @@ from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.models import Listing, ListingStatus
 from apps.marketplace.listings.selectors import (
     get_visible_category,
+    listing_reviews,
     public_listing_detail,
     public_listings_for_category,
+    related_listings,
     visible_root_categories,
 )
 from apps.marketplace.shops.models import ReportReason
@@ -44,10 +46,11 @@ def listing_detail(request, slug: str):
         'images/hero_kiondo_basket.png',
     )
     featured_image_url = cover.image.url if cover else static(fallback_image_path)
-    base_inventory = next((row for row in listing.inventory_rows.all() if row.variant_id is None), None)
+    inventory_rows = list(listing.inventory_rows.all())
+    base_inventory = next((row for row in inventory_rows if row.variant_id is None), None)
     has_available_inventory = listing.product_type == 'digital' or any(
         row.available_to_sell > 0 and (row.variant_id is None or row.variant.is_active)
-        for row in listing.inventory_rows.all()
+        for row in inventory_rows
     )
     from apps.marketplace.favorites.selectors import is_listing_favorited
 
@@ -60,18 +63,10 @@ def listing_detail(request, slug: str):
         listing_alert_active = ListingAlert.objects.filter(user=request.user, listing=listing).exists()
         if listing.shop.owner_id != request.user.id:
             record_recent_view(actor=request.user, listing=listing)
-    from django.db.models import Avg, Count
-    from apps.marketplace.reviews.models import Review, ReviewReportReason
+    from apps.marketplace.reviews.models import ReviewReportReason
 
-    review_queryset = Review.objects.filter(listing=listing, is_visible=True).select_related('buyer').prefetch_related('media')
-    review_summary = review_queryset.aggregate(
-        count=Count('id'), overall=Avg('rating'), quality=Avg('quality_rating'),
-        shipping=Avg('shipping_rating'), service=Avg('service_rating'),
-    )
-    reviews = review_queryset[:20]
-    related_base = Listing.objects.filter(status=ListingStatus.ACTIVE, shop__is_active=True).exclude(id=listing.id).select_related('shop').prefetch_related('images')
-    similar_listings = related_base.filter(category=listing.category).exclude(shop=listing.shop)[:4]
-    more_from_shop = related_base.filter(shop=listing.shop)[:4]
+    reviews, review_summary = listing_reviews(listing=listing)
+    similar_listings, more_from_shop = related_listings(listing=listing)
     return render(
         request,
         'listings/public/detail.html',

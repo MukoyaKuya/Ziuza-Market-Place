@@ -151,19 +151,6 @@ def storefront_marketing(request, shop):
     ))
 
 
-def _placeholder(request, shop, *, section: str, title: str, message: str):
-    return render(
-        request,
-        'shops/dashboard/placeholder.html',
-        dashboard_context(actor=request.user,
-            shop=shop,
-            section=section,
-            placeholder_title=title,
-            placeholder_message=message,
-        ),
-    )
-
-
 @_with_shop
 def dashboard_reviews(request, shop):
     from apps.marketplace.shops.permissions import MANAGE_SUPPORT, user_has_shop_permission

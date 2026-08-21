@@ -1,9 +1,0 @@
-{% extends 'shops/dashboard/base.html' %}
-
-{% block title %}{{ placeholder_title }} · {{ shop.name }} | Ziuza{% endblock %}
-
-{% block dashboard_content %}
-<div class="bg-white rounded-2xl border border-brand-surface-border shadow-ziuza-sm">
-    {% include 'components/empty_state/empty_state.html' with title=placeholder_title message=placeholder_message %}
-</div>
-{% endblock %}
