@@ -87,7 +87,9 @@ class FakePaymentProvider(PaymentProvider):
             raise ValidationError('Payment provider mismatch.')
         if payment.status == PaymentStatusChoice.CONFIRMED:
             return payment
-        amount = Decimal(str(payload.get('amount', payment.amount)))
+        if payload.get('amount') is None:
+            return _fail_payment(payment=payment, reason='amount_missing', payload=payload)
+        amount = Decimal(str(payload['amount']))
         if amount != payment.amount or payload.get('currency', payment.currency) != payment.currency:
             return _fail_payment(payment=payment, reason='amount_mismatch', payload=payload)
         return _confirm_payment(payment=payment, payload=payload)
@@ -104,19 +106,22 @@ class MpesaPaymentProvider(PaymentProvider):
 
     code = 'mpesa'
 
-    @transaction.atomic
     def initiate_payment(self, *, order: Order, phone: str = '') -> Payment:
-        _ensure_payable_order(order=order)
-        existing = (
-            Payment.objects.filter(order=order, provider=self.code, status=PaymentStatusChoice.PENDING)
-            .order_by('-initiated_at')
-            .first()
-        )
-        if existing:
-            return existing
+        # Pre-flight: validate payable status and mark processing inside a brief atomic transaction
+        with transaction.atomic():
+            _ensure_payable_order(order=order)
+            existing = (
+                Payment.objects.filter(order=order, provider=self.code, status=PaymentStatusChoice.PENDING)
+                .order_by('-initiated_at')
+                .first()
+            )
+            if existing:
+                return existing
 
-        order.payment_status = PaymentStatus.PROCESSING
-        order.save(update_fields=['payment_status', 'updated_at'])
+            order.payment_status = PaymentStatus.PROCESSING
+            order.save(update_fields=['payment_status', 'updated_at'])
+
+        # Network phase: execute STK push outside the database transaction
         if getattr(settings, 'MPESA_DARAJA_ENABLED', False):
             stk = self._daraja_client().stk_push(
                 phone=phone,
@@ -127,21 +132,24 @@ class MpesaPaymentProvider(PaymentProvider):
         else:
             stk = self._simulate_stk_push(order=order, phone=phone)
         checkout_id = stk['CheckoutRequestID']
-        return Payment.objects.create(
-            order=order,
-            provider=self.code,
-            provider_reference=checkout_id,
-            amount=order.grand_total,
-            currency=order.currency,
-            status=PaymentStatusChoice.PENDING,
-            raw_metadata={
-                'channel': 'stk_push',
-                'phone': phone or '',
-                'merchant_request_id': stk.get('MerchantRequestID', ''),
-                'checkout_request_id': checkout_id,
-                'sandbox': not getattr(settings, 'MPESA_LIVE', False),
-            },
-        )
+
+        # Post-flight: persist the initiated Payment record inside an atomic transaction
+        with transaction.atomic():
+            return Payment.objects.create(
+                order=order,
+                provider=self.code,
+                provider_reference=checkout_id,
+                amount=order.grand_total,
+                currency=order.currency,
+                status=PaymentStatusChoice.PENDING,
+                raw_metadata={
+                    'channel': 'stk_push',
+                    'phone': phone or '',
+                    'merchant_request_id': stk.get('MerchantRequestID', ''),
+                    'checkout_request_id': checkout_id,
+                    'sandbox': not getattr(settings, 'MPESA_LIVE', False),
+                },
+            )
 
     def _daraja_client(self) -> DarajaClient:
         return DarajaClient(DarajaConfig(
@@ -184,7 +192,9 @@ class MpesaPaymentProvider(PaymentProvider):
         result_code = str(payload.get('ResultCode', payload.get('result_code', '0')))
         if result_code not in {'0', '00'}:
             return _fail_payment(payment=payment, reason=f'result_code_{result_code}', payload=payload)
-        amount = Decimal(str(payload.get('amount', payment.amount)))
+        if payload.get('amount') is None:
+            return _fail_payment(payment=payment, reason='amount_missing', payload=payload)
+        amount = Decimal(str(payload['amount']))
         if amount != payment.amount or payload.get('currency', payment.currency) != payment.currency:
             return _fail_payment(payment=payment, reason='amount_mismatch', payload=payload)
         return _confirm_payment(payment=payment, payload=payload)

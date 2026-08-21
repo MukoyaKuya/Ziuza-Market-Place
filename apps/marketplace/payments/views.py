@@ -1,17 +1,23 @@
 import json
 import logging
 import secrets
+from decimal import InvalidOperation
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 
 from apps.marketplace.orders.models import Order
+from apps.marketplace.payments.models import Payment
 from apps.marketplace.payments.providers import get_provider
+
+
+CALLBACK_ERRORS = (ValidationError, ValueError, Payment.DoesNotExist, InvalidOperation)
 
 
 def _callback_data(request):
@@ -82,7 +88,7 @@ def fake_callback(request):
     provider = get_provider('fake')
     try:
         payment = provider.process_callback(payload=payload)
-    except Exception:
+    except CALLBACK_ERRORS:
         logging.getLogger(__name__).exception('fake_callback failed')
         return JsonResponse({'ok': False, 'error': 'callback_rejected'}, status=400)
     return JsonResponse({'ok': True, 'status': payment.status, 'order': payment.order.public_number})
@@ -115,7 +121,7 @@ def mpesa_callback(request):
     provider = get_provider('mpesa')
     try:
         payment = provider.process_callback(payload=payload)
-    except Exception:
+    except CALLBACK_ERRORS:
         logging.getLogger(__name__).exception('mpesa_callback failed')
         return JsonResponse({'ok': False, 'error': 'callback_rejected'}, status=400)
     return JsonResponse({'ok': True, 'status': payment.status, 'order': payment.order.public_number})

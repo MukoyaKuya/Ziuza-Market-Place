@@ -1,7 +1,7 @@
 """Payment callback security — fake path must not confirm non-fake payments."""
 
 import json
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -193,3 +193,55 @@ def test_fake_payment_reference_includes_unique_nonce(client, buyer, listing, ad
     nonce = payment.provider_reference[len(prefix):]
     assert len(nonce) == 8
     assert all(c in '0123456789abcdef' for c in nonce)
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=True)
+def test_fake_callback_without_amount_fails_payment(commerce_order_with_fake_pending):
+    """A callback omitting the amount must never confirm — no silent defaulting."""
+    order, payment = commerce_order_with_fake_pending
+    resp = Client().post(
+        '/payments/callback/fake/',
+        data={
+            'provider_reference': payment.provider_reference,
+            'currency': payment.currency,
+        },
+    )
+    assert resp.status_code == 200
+    payment.refresh_from_db()
+    assert payment.status == PaymentStatusChoice.FAILED
+    assert payment.raw_metadata['error'] == 'amount_missing'
+
+
+@pytest.mark.django_db
+def test_mpesa_callback_without_amount_fails_payment(commerce_order_with_mpesa_pending):
+    """M-Pesa callback with no Amount item must fail the payment, not confirm it."""
+    order, payment = commerce_order_with_mpesa_pending
+    provider = get_provider('mpesa')
+    result = provider.process_callback(
+        payload={
+            'provider_reference': payment.provider_reference,
+            'CheckoutRequestID': payment.provider_reference,
+            'ResultCode': '0',
+            'currency': payment.currency,
+        }
+    )
+    assert result.status == PaymentStatusChoice.FAILED
+    assert result.raw_metadata['error'] == 'amount_missing'
+
+
+@pytest.mark.django_db
+def test_malformed_amount_value_rejected(commerce_order_with_fake_pending):
+    """Non-numeric amount is rejected without a 500."""
+    order, payment = commerce_order_with_fake_pending
+    provider = get_provider('fake')
+    with pytest.raises(InvalidOperation):
+        provider.process_callback(
+            payload={
+                'provider_reference': payment.provider_reference,
+                'amount': 'not-a-number',
+                'currency': payment.currency,
+            }
+        )
+    payment.refresh_from_db()
+    assert payment.status == PaymentStatusChoice.PENDING
