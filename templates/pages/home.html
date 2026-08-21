@@ -35,10 +35,6 @@
                         <span>{% if slide and slide.primary_cta_label %}{{ slide.primary_cta_label }}{% else %}Shop Now{% endif %}</span>
                         <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
                     </a>
-                    <a href="{% if slide and slide.secondary_cta_url %}{{ slide.secondary_cta_url }}{% else %}{% url 'listings:category_index' %}{% endif %}" class="inline-flex items-center gap-2 px-1 py-2 text-white/90 hover:text-white text-sm font-semibold transition-colors group/link">
-                        <span>{% if slide and slide.secondary_cta_label %}{{ slide.secondary_cta_label }}{% else %}Shop Kenyan Makers{% endif %}</span>
-                        <span aria-hidden="true" class="transition-transform group-hover/link:translate-x-0.5">→</span>
-                    </a>
                 </div>
             </div>
 
