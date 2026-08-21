@@ -1,4 +1,4 @@
-{% load static %}
+{% load static assets %}
 <!DOCTYPE html>
 <html lang="en" class="h-full bg-brand-surface-ground">
 <head>
@@ -21,7 +21,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- CSS -->
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v={% asset_version 'css/styles.css' %}">
 
     <!-- HTMX & Alpine.js -->
     <script src="{% static 'vendor/js/htmx.min.js' %}"></script>
