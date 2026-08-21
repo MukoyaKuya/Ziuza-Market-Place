@@ -11,7 +11,7 @@
                 {% include 'components/icons/flat_icon.html' with name='gift' class='h-4 w-4 text-white' %}
                 <span>Exclusive Gift Hub</span>
             </div>
-            <h1 class="text-3xl sm:text-4xl font-display font-bold">Zawadi Gifts</h1>
+            <h1 class="text-3xl sm:text-4xl font-display font-bold">Zawadi Hub</h1>
             <p class="text-red-100 text-sm sm:text-base leading-relaxed">
                 Discover unique, handcrafted gifts for every special person and occasion. Verified artisans curated for memories that last.
             </p>
@@ -29,7 +29,7 @@
         <div class="flex items-center gap-2 overflow-x-auto pb-3 scrollbar-none">
             <a href="{% url 'listings:zawadi_index' %}" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all shrink-0 {% if not selected_category %}bg-kenya-red text-white shadow-sm{% else %}bg-white text-gray-700 border border-gray-200 hover:border-kenya-red hover:text-kenya-red{% endif %}">
                 {% include 'components/icons/flat_icon.html' with name='gift' class='h-4 w-4' %}
-                <span>All Zawadi Gifts</span>
+                <span>All Zawadi Hub</span>
             </a>
             {% for cat in gift_categories %}
             <a href="{% url 'listings:zawadi_category_detail' cat.slug %}" class="inline-flex items-center px-4 py-2.5 rounded-full text-sm font-semibold transition-all shrink-0 {% if selected_category and selected_category.slug == cat.slug %}bg-kenya-red text-white shadow-sm{% else %}bg-white text-gray-700 border border-gray-200 hover:border-kenya-red hover:text-kenya-red{% endif %}">

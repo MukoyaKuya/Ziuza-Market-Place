@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.constants import KENYA_COUNTIES
 from apps.marketplace.listings.models import Listing, ListingStatus
-from apps.marketplace.shops.models import Shop
+from apps.marketplace.shops.models import LocalDeliveryScope, Shop
 
 
 class CreateShopForm(forms.Form):
@@ -30,13 +30,59 @@ class CreateShopForm(forms.Form):
         initial='Nairobi',
         widget=forms.Select(attrs={'class': 'field-select'}),
     )
+    sub_county = forms.CharField(
+        label=_('Sub-County'),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'field-input',
+            'placeholder': 'e.g. Westlands, Nyali, Mavoko',
+        }),
+    )
+    ward = forms.CharField(
+        label=_('Ward / Neighborhood'),
+        max_length=100,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'field-input',
+            'placeholder': 'e.g. Parklands, Karen, Central',
+        }),
+    )
     location_text = forms.CharField(
         label=_('Location details'),
         max_length=255,
         required=False,
         widget=forms.TextInput(attrs={
             'class': 'field-input',
-            'placeholder': 'Neighbourhood or town (optional)',
+            'placeholder': 'Street, landmark or village (optional)',
+        }),
+    )
+    is_local_seller = forms.BooleanField(
+        label=_('Enroll in Ziuza Local directory'),
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={'class': 'field-checkbox'}),
+    )
+    local_delivery_scope = forms.ChoiceField(
+        label=_('Local service reach'),
+        choices=LocalDeliveryScope.choices,
+        initial=LocalDeliveryScope.COUNTY,
+        required=False,
+        widget=forms.Select(attrs={'class': 'field-select'}),
+    )
+    local_pickup_available = forms.BooleanField(
+        label=_('Offer local pickup to nearby buyers'),
+        required=False,
+        initial=True,
+        widget=forms.CheckboxInput(attrs={'class': 'field-checkbox'}),
+    )
+    local_pickup_instructions = forms.CharField(
+        label=_('Local pickup point / instructions'),
+        max_length=255,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'field-input',
+            'placeholder': 'e.g. Workshop pickup at Biashara Plaza, Room 4',
         }),
     )
 
@@ -58,6 +104,9 @@ class ShopSettingsForm(forms.ModelForm):
             'name',
             'description',
             'county',
+            'sub_county',
+            'ward',
+            'village',
             'location_text',
             'policies',
             'shipping_policy',
@@ -70,6 +119,9 @@ class ShopSettingsForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'field-input'}),
             'description': forms.Textarea(attrs={'class': 'field-textarea', 'rows': 4}),
+            'sub_county': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Westlands'}),
+            'ward': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Parklands/Highridge'}),
+            'village': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Workshop 12, River Road'}),
             'location_text': forms.TextInput(attrs={'class': 'field-input'}),
             'policies': forms.Textarea(attrs={
                 'class': 'field-textarea',
@@ -103,6 +155,48 @@ class ShopSettingsForm(forms.ModelForm):
         if minimum is not None and maximum is not None and maximum < minimum:
             self.add_error('processing_days_max', _('Maximum processing time must be at least the minimum.'))
         return cleaned
+
+
+class ShopLocalSettingsForm(forms.ModelForm):
+    county = forms.ChoiceField(
+        label=_('Primary County'),
+        choices=KENYA_COUNTIES,
+        widget=forms.Select(attrs={'class': 'field-select', 'id': 'id_local_county'}),
+    )
+
+    class Meta:
+        model = Shop
+        fields = [
+            'is_local_seller',
+            'county',
+            'sub_county',
+            'ward',
+            'village',
+            'location_text',
+            'local_delivery_scope',
+            'local_pickup_available',
+            'local_pickup_instructions',
+        ]
+        widgets = {
+            'is_local_seller': forms.CheckboxInput(attrs={'class': 'field-checkbox'}),
+            'sub_county': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Westlands', 'id': 'id_local_sub_county'}),
+            'ward': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Parklands/Highridge', 'id': 'id_local_ward'}),
+            'village': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Street / Estate'}),
+            'location_text': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Near Sarit Centre'}),
+            'local_delivery_scope': forms.Select(attrs={'class': 'field-select'}),
+            'local_pickup_available': forms.CheckboxInput(attrs={'class': 'field-checkbox'}),
+            'local_pickup_instructions': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Pick up at shop desk, 9am - 5pm'}),
+        }
+        labels = {
+            'is_local_seller': _('Enable Ziuza Local program & badges for my shop'),
+            'sub_county': _('Sub-County'),
+            'ward': _('Ward / Neighborhood'),
+            'village': _('Estate / Street / Village'),
+            'location_text': _('Landmark / Location details'),
+            'local_delivery_scope': _('Where do you offer direct delivery or service?'),
+            'local_pickup_available': _('Allow local buyers to pick up orders in person'),
+            'local_pickup_instructions': _('Pickup instructions & address details'),
+        }
 
 
 class ShopMarketingForm(forms.ModelForm):

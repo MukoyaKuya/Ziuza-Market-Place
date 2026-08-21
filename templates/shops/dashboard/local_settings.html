@@ -1,0 +1,138 @@
+{% extends 'shops/dashboard/base.html' %}
+
+{% block title %}Ziuza Local Settings · {{ shop.name }} | Ziuza{% endblock %}
+
+{% block dashboard_content %}
+<div class="space-y-6">
+    <!-- Program Overview Banner -->
+    <div class="rounded-2xl bg-gradient-to-r from-emerald-800 to-emerald-900 text-white p-6 sm:p-8 shadow-ziuza-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+        <div class="space-y-2">
+            <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold backdrop-blur-sm">
+                {% include 'components/icons/flat_icon.html' with name='pin' class='h-3.5 w-3.5 text-emerald-300' %}
+                <span>Hyper-Local Selling Program</span>
+            </div>
+            <h2 class="text-2xl font-display font-bold">Ziuza Local Seller Profile</h2>
+            <p class="text-emerald-100 text-sm max-w-xl">
+                Configure your county, sub-county, and ward presence so customers nearby can find your workshop, arrange in-person pickup, and receive direct local orders.
+            </p>
+        </div>
+        <div class="shrink-0">
+            <a href="{% url 'shops:local' %}?county={{ shop.county }}&sub_county={{ shop.sub_county }}&ward={{ shop.ward }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white text-emerald-950 font-bold text-xs hover:bg-emerald-50 transition-colors shadow-sm">
+                <span>View local directory</span>
+                <span aria-hidden="true">↗</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Container -->
+    <div class="bg-white rounded-2xl border border-brand-surface-border shadow-ziuza-sm p-6 sm:p-8">
+        {% if form.non_field_errors %}
+        <div class="alert-error mb-4" role="alert">
+            {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6 max-w-2xl" novalidate>
+            {% csrf_token %}
+
+            <!-- Program Participation Toggle -->
+            <div class="p-4 rounded-xl bg-emerald-50/60 border border-emerald-200/70">
+                <div class="flex items-start gap-3">
+                    {{ form.is_local_seller }}
+                    <div>
+                        <label for="{{ form.is_local_seller.id_for_label }}" class="text-sm font-bold text-emerald-950">
+                            {{ form.is_local_seller.label }}
+                        </label>
+                        <p class="text-xs text-emerald-800/80 mt-0.5">
+                            Showcase your shop and products in the Ziuza Local directory and highlight local pickup on listings.
+                        </p>
+                    </div>
+                </div>
+                {% if form.is_local_seller.errors %}
+                <p class="field-error mt-2">{{ form.is_local_seller.errors|striptags }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Location Section -->
+            <div class="space-y-4 pt-2">
+                <h3 class="text-base font-display font-bold text-kenya-black">Your Workshop / Business Location</h3>
+                <p class="text-xs text-gray-500">Accurate location details help local buyers find you quickly.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.county.id_for_label }}" class="field-label">{{ form.county.label }} *</label>
+                        {{ form.county }}
+                        {% if form.county.errors %}<p class="field-error">{{ form.county.errors|striptags }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.sub_county.id_for_label }}" class="field-label">{{ form.sub_county.label }}</label>
+                        {{ form.sub_county }}
+                        {% if form.sub_county.errors %}<p class="field-error">{{ form.sub_county.errors|striptags }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.ward.id_for_label }}" class="field-label">{{ form.ward.label }}</label>
+                        {{ form.ward }}
+                        {% if form.ward.errors %}<p class="field-error">{{ form.ward.errors|striptags }}</p>{% endif %}
+                    </div>
+
+                    <div>
+                        <label for="{{ form.village.id_for_label }}" class="field-label">{{ form.village.label }}</label>
+                        {{ form.village }}
+                        {% if form.village.errors %}<p class="field-error">{{ form.village.errors|striptags }}</p>{% endif %}
+                    </div>
+                </div>
+
+                <div>
+                    <label for="{{ form.location_text.id_for_label }}" class="field-label">{{ form.location_text.label }}</label>
+                    {{ form.location_text }}
+                    {% if form.location_text.errors %}<p class="field-error">{{ form.location_text.errors|striptags }}</p>{% endif %}
+                </div>
+            </div>
+
+            <!-- Delivery & Local Pickup Options -->
+            <div class="space-y-4 pt-4 border-t border-gray-100">
+                <h3 class="text-base font-display font-bold text-kenya-black">Local Delivery & Pickup Services</h3>
+                
+                <div>
+                    <label for="{{ form.local_delivery_scope.id_for_label }}" class="field-label">{{ form.local_delivery_scope.label }}</label>
+                    {{ form.local_delivery_scope }}
+                    {% if form.local_delivery_scope.errors %}<p class="field-error">{{ form.local_delivery_scope.errors|striptags }}</p>{% endif %}
+                </div>
+
+                <div class="p-4 rounded-xl bg-gray-50 border border-gray-200/80 space-y-3">
+                    <div class="flex items-start gap-3">
+                        {{ form.local_pickup_available }}
+                        <div>
+                            <label for="{{ form.local_pickup_available.id_for_label }}" class="text-sm font-semibold text-kenya-black">
+                                {{ form.local_pickup_available.label }}
+                            </label>
+                            <p class="text-xs text-gray-500 mt-0.5">
+                                Buyers can choose to collect their orders directly at your workshop or storefront.
+                            </p>
+                        </div>
+                    </div>
+                    {% if form.local_pickup_available.errors %}
+                    <p class="field-error">{{ form.local_pickup_available.errors|striptags }}</p>
+                    {% endif %}
+
+                    <div>
+                        <label for="{{ form.local_pickup_instructions.id_for_label }}" class="field-label">{{ form.local_pickup_instructions.label }}</label>
+                        {{ form.local_pickup_instructions }}
+                        {% if form.local_pickup_instructions.errors %}<p class="field-error">{{ form.local_pickup_instructions.errors|striptags }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-4">
+                <button type="submit" class="btn-red px-6 py-2.5 font-bold shadow-sm">
+                    Save Ziuza Local Settings
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

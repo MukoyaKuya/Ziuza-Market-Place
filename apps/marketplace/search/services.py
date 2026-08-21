@@ -203,6 +203,50 @@ def _word_similarity(query_terms: list[str], text: str) -> float:
     return sum(per_term) / len(per_term)
 
 
+from django.db import connection
+
+
+def _postgres_trigram_fallback(**filters) -> SearchResult:
+    from django.contrib.postgres.search import TrigramSimilarity
+
+    query = filters.get('query', '')
+    base_qs = _base_listings(
+        category_slug=filters.get('category_slug'),
+        min_price=filters.get('min_price'),
+        max_price=filters.get('max_price'),
+        shop_slug=filters.get('shop_slug'),
+        product_type=filters.get('product_type'),
+        county=filters.get('county'),
+        verified_only=filters.get('verified_only', False),
+        personalizable_only=filters.get('personalizable_only', False),
+        in_stock_only=filters.get('in_stock_only', False),
+    )
+
+    fuzzy = (
+        base_qs.annotate(
+            similarity=(
+                TrigramSimilarity('title', query) * 2.0
+                + TrigramSimilarity('shop__name', query)
+                + TrigramSimilarity('category__name', query)
+            )
+        )
+        .filter(similarity__gt=0.15)
+        .order_by('-similarity')
+    )
+
+    sort = filters.get('sort', 'relevance')
+    if sort == 'price_asc':
+        fuzzy = fuzzy.order_by('base_price', '-similarity')
+    elif sort == 'price_desc':
+        fuzzy = fuzzy.order_by('-base_price', '-similarity')
+    elif sort == 'newest':
+        fuzzy = fuzzy.order_by('-published_at', '-created_at')
+    elif sort == 'rating':
+        fuzzy = fuzzy.order_by('-shop__rating_average', '-shop__rating_count', '-similarity')
+
+    return SearchResult(fuzzy, used_typo_fallback=True)
+
+
 def search_with_fallback(**filters) -> SearchResult:
     query = normalize_query(filters.get('query', ''))
     filters['query'] = query
@@ -210,6 +254,14 @@ def search_with_fallback(**filters) -> SearchResult:
     if not query or direct.exists():
         return SearchResult(direct)
 
+    # Use native PostgreSQL trigram similarity if running against Postgres
+    if connection.vendor == 'postgresql':
+        try:
+            return _postgres_trigram_fallback(**filters)
+        except Exception:
+            pass
+
+    # Python memory fallback for SQLite / testing environments
     base_filters = dict(filters)
     base_filters['query'] = ''
     candidates = search_listings(**base_filters)[:400]

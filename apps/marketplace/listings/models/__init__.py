@@ -106,6 +106,9 @@ class Listing(models.Model):
         indexes = [
             models.Index(fields=['status', 'category']),
             models.Index(fields=['shop', 'status']),
+            models.Index(fields=['status', 'base_price']),
+            models.Index(fields=['status', '-published_at']),
+            models.Index(fields=['status', 'category', '-published_at']),
         ]
 
     def __str__(self) -> str:

@@ -15,6 +15,7 @@ class VisibilityStatus(models.TextChoices):
 
 class HomepageSectionType(models.TextChoices):
     HERO = 'hero', _('Hero')
+    PROMO_BANNER = 'promo_banner', _('Promotional banner')
     FEATURED_LISTINGS = 'featured_listings', _('Featured listings')
     FEATURED_SHOPS = 'featured_shops', _('Featured shops')
     CATEGORIES = 'categories', _('Categories')
@@ -137,6 +138,56 @@ class HeroPromoCard(models.Model):
     def is_live(self, *, now=None) -> bool:
         now = now or timezone.now()
         if self.status == VisibilityStatus.UNPUBLISHED or self.status == VisibilityStatus.DRAFT:
+            return False
+        if self.status == VisibilityStatus.PUBLISHED:
+            if self.ends_at and now >= self.ends_at:
+                return False
+            if self.starts_at and now < self.starts_at:
+                return False
+            return True
+        if self.status == VisibilityStatus.SCHEDULED:
+            if self.starts_at and now < self.starts_at:
+                return False
+            if self.ends_at and now >= self.ends_at:
+                return False
+            return self.starts_at is not None and now >= self.starts_at
+        return False
+
+
+class PromoBannerAd(models.Model):
+    """Admin-managed promotional GIF/banner ads (e.g. homepage strip ad)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(_('banner title / campaign'), max_length=160)
+    image = models.ImageField(_('banner image / GIF'), upload_to='cms/banners/', blank=True, help_text=_('Upload animated GIF, PNG, or WebP banner (e.g. 1200x120px)'))
+    target_url = models.CharField(_('target URL'), max_length=255, default='/local/', help_text=_('Destination URL when banner is clicked'))
+    alt_text = models.CharField(_('alt text'), max_length=200, blank=True, help_text=_('Accessibility description for the banner'))
+    is_active = models.BooleanField(_('is active'), default=True)
+    priority = models.PositiveIntegerField(_('priority'), default=0)
+    status = models.CharField(
+        _('status'),
+        max_length=20,
+        choices=VisibilityStatus.choices,
+        default=VisibilityStatus.PUBLISHED,
+    )
+    starts_at = models.DateTimeField(_('starts at'), null=True, blank=True)
+    ends_at = models.DateTimeField(_('ends at'), null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = _('promotional banner ad')
+        verbose_name_plural = _('promotional banner ads')
+        ordering = ['priority', '-updated_at']
+
+    def __str__(self):
+        return self.title
+
+    def is_live(self, *, now=None) -> bool:
+        if not self.is_active:
+            return False
+        now = now or timezone.now()
+        if self.status in {VisibilityStatus.UNPUBLISHED, VisibilityStatus.DRAFT}:
             return False
         if self.status == VisibilityStatus.PUBLISHED:
             if self.ends_at and now >= self.ends_at:

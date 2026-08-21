@@ -29,6 +29,8 @@ if PAYMENT_PROVIDER == 'mpesa':
         raise ImproperlyConfigured(f'Missing M-Pesa settings: {", ".join(_missing_mpesa)}')
 if EMAIL_USE_TLS and EMAIL_USE_SSL:
     raise ImproperlyConfigured('EMAIL_USE_TLS and EMAIL_USE_SSL cannot both be enabled.')
+if not PUBLIC_SITE_URL or 'localhost' in PUBLIC_SITE_URL or '127.0.0.1' in PUBLIC_SITE_URL:
+    raise ImproperlyConfigured('Production requires an explicit non-local PUBLIC_SITE_URL (e.g. https://ziuza.co.ke).')
 
 # Production requires explicit DATABASE_URL
 DATABASES = {

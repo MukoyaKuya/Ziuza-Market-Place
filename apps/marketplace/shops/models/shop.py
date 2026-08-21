@@ -21,6 +21,13 @@ class ShopGiftApprovalStatus(models.TextChoices):
     REJECTED = 'rejected', _('Rejected')
 
 
+class LocalDeliveryScope(models.TextChoices):
+    WARD = 'ward', _('Ward only')
+    SUB_COUNTY = 'sub_county', _('Sub-County')
+    COUNTY = 'county', _('Entire County')
+    NATIONWIDE = 'nationwide', _('Nationwide with local pickup')
+
+
 class Shop(models.Model):
     """Seller shop — marketplace presence for a creator/merchant."""
 
@@ -43,6 +50,15 @@ class Shop(models.Model):
     ward = models.CharField(_('ward'), max_length=100, blank=True)
     village = models.CharField(_('village / street'), max_length=150, blank=True)
     location_text = models.CharField(_('location'), max_length=255, blank=True)
+    is_local_seller = models.BooleanField(_('Ziuza Local seller'), default=True)
+    local_delivery_scope = models.CharField(
+        _('local delivery scope'),
+        max_length=20,
+        choices=LocalDeliveryScope.choices,
+        default=LocalDeliveryScope.COUNTY,
+    )
+    local_pickup_available = models.BooleanField(_('offers local pickup'), default=True)
+    local_pickup_instructions = models.CharField(_('local pickup details / landmark'), max_length=255, blank=True)
     verification_status = models.CharField(
         max_length=20,
         choices=ShopVerificationStatus.choices,

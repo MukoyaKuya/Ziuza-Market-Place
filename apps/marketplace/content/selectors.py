@@ -27,6 +27,14 @@ def live_hero_promo_card(*, now=None):
     return live_cards[0] if live_cards else None
 
 
+def live_promo_banner_ad(*, now=None):
+    from apps.marketplace.content.models import PromoBannerAd
+    now = now or timezone.now()
+    ads = PromoBannerAd.objects.filter(is_active=True).order_by('priority', '-updated_at')
+    live_ads = [ad for ad in ads if ad.is_live(now=now)]
+    return live_ads[0] if live_ads else None
+
+
 def live_collections(*, now=None, limit: int = 8):
     now = now or timezone.now()
     collections = Collection.objects.prefetch_related('listings').order_by('name')

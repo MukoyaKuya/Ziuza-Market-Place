@@ -78,7 +78,7 @@ def test_zawadi_exclusive_gift_section_renders(client, shop, category):
     url = reverse('listings:zawadi_index')
     response = client.get(url)
     assert response.status_code == 200
-    assert b'Zawadi Gifts' in response.content
+    assert b'Zawadi Hub' in response.content
 
     detail_url = reverse('listings:zawadi_category_detail', kwargs={'slug': 'kids-gifts'})
     detail_resp = client.get(detail_url)

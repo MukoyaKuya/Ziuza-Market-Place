@@ -33,6 +33,16 @@ def test_readiness_health_endpoint(client):
 
 
 @pytest.mark.django_db
+def test_readiness_health_with_celery_param(client):
+    url = f"{reverse('health:ready')}?check_celery=1"
+    response = client.get(url)
+    assert response.status_code == 200
+    data = response.json()
+    assert data['status'] == 'ready'
+    assert 'celery' in data
+
+
+@pytest.mark.django_db
 def test_home_page_renders(client):
     url = reverse('core:home')
     response = client.get(url)

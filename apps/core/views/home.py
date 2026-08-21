@@ -8,6 +8,7 @@ from apps.marketplace.content.selectors import (
     live_hero_promo_card,
     live_hero_slides,
     live_homepage_sections,
+    live_promo_banner_ad,
 )
 from apps.marketplace.listings.selectors import visible_root_categories
 
@@ -27,20 +28,25 @@ class HomeView(TemplateView):
         )
         self.request.session['home_discovery_position'] = discovery_position + 1
         hero_slides = live_hero_slides()
+        show_section_types = {s.section_type for s in sections} or {
+            'hero',
+            'promo_banner',
+            'trust',
+            'categories',
+            'featured_listings',
+            'collections',
+        }
+        show_promo_banner = ('promo_banner' in show_section_types or 'trust' in show_section_types) if sections else True
         context.update(
             {
                 'page_title': 'Ziuza Marketplace | Celebrating Kenyan Crafts & Creators',
                 'homepage_sections': sections,
-                'show_section_types': {s.section_type for s in sections} or {
-                    'hero',
-                    'trust',
-                    'categories',
-                    'featured_listings',
-                    'collections',
-                },
+                'show_section_types': show_section_types,
+                'show_promo_banner': show_promo_banner,
                 'hero_slides': hero_slides,
                 'active_hero_slide': hero_slides[0] if hero_slides else None,
                 'active_hero_promo_card': live_hero_promo_card(),
+                'promo_banner_ad': live_promo_banner_ad(),
                 'featured_listings': discovery_listings or featured_listings(limit=4),
                 'featured_category': discovery_category,
                 'discovery_is_mixed': discovery_is_mixed,

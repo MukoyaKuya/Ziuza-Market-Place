@@ -6,6 +6,7 @@
         <img src="{% if image_url %}{{ image_url }}{% elif category_slug == 'art-collectibles' %}{% static 'images/categories/art.png' %}{% elif category_slug == 'craft-supplies' %}{% static 'images/categories/craft_supplies.png' %}{% elif category_slug == 'fashion' %}{% static 'images/categories/fashion.png' %}{% elif category_slug == 'home-living' %}{% static 'images/categories/home_living.png' %}{% elif category_slug == 'jewelry' %}{% static 'images/categories/jewelry.png' %}{% elif category_slug == 'vintage' %}{% static 'images/categories/vintage.png' %}{% else %}{% static 'images/hero_kiondo_basket.png' %}{% endif %}"
              alt="{{ title }}" 
              loading="lazy"
+             decoding="async"
              class="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500">
         
         {% if listing %}

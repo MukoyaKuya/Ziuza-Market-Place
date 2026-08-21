@@ -52,6 +52,7 @@ DJANGO_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
 ]
 
 THIRD_PARTY_APPS = []
@@ -152,6 +153,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 PRIVATE_MEDIA_ROOT = BASE_DIR / 'private_media'
 
+# Private media download acceleration (X-Accel-Redirect / X-Sendfile)
+USE_X_ACCEL_REDIRECT = env.bool('USE_X_ACCEL_REDIRECT', default=False)
+X_ACCEL_REDIRECT_PREFIX = env('X_ACCEL_REDIRECT_PREFIX', default='/protected_media/')
+
 # Cache (ADR-008). LocMem by default — correctness must not require Redis.
 # Production may override to Redis when REDIS_URL is set.
 CACHES = {
@@ -227,6 +232,11 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'apps.marketplace.analytics.tasks.rollup_shop_analytics_task',
         'schedule': crontab(hour=1, minute=0),
         'kwargs': {'days': 1},
+    },
+    'purge-inactive-anonymous-carts-weekly': {
+        'task': 'apps.marketplace.cart.tasks.purge_inactive_anonymous_carts_task',
+        'schedule': crontab(day_of_week=0, hour=3, minute=0),
+        'kwargs': {'days': 30},
     },
 }
 

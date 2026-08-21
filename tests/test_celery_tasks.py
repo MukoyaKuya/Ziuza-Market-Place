@@ -29,10 +29,19 @@ def test_celery_beat_schedule_is_registered():
         'notify-low-stock-daily': 'apps.marketplace.listings.tasks.notify_low_stock_task',
         'process-review-reminders-daily': 'apps.marketplace.reviews.tasks.process_review_reminders_task',
         'rollup-shop-analytics-daily': 'apps.marketplace.analytics.tasks.rollup_shop_analytics_task',
+        'purge-inactive-anonymous-carts-weekly': 'apps.marketplace.cart.tasks.purge_inactive_anonymous_carts_task',
     }
     for schedule_name, task_path in expected_tasks.items():
         assert schedule_name in schedule
         assert schedule[schedule_name]['task'] == task_path
+
+
+@pytest.mark.django_db
+def test_purge_inactive_anonymous_carts_task_runs_eagerly():
+    from apps.marketplace.cart.tasks import purge_inactive_anonymous_carts_task
+    result = purge_inactive_anonymous_carts_task.delay(days=30)
+    assert result.successful()
+    assert isinstance(result.result, int)
 
 
 @pytest.mark.django_db

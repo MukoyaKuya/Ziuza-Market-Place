@@ -144,3 +144,13 @@ def annotate_cart_totals(cart: Cart) -> dict:
             }
         )
     return {'cart': cart, 'lines': lines, 'subtotal': subtotal, 'item_count': sum(i.quantity for i in items)}
+
+
+def purge_inactive_anonymous_carts(*, days: int = 30) -> int:
+    """Purge anonymous carts that have not been modified for more than `days` days."""
+    from datetime import timedelta
+    from django.utils import timezone
+
+    cutoff = timezone.now() - timedelta(days=days)
+    deleted_count, _ = Cart.objects.filter(user__isnull=True, updated_at__lt=cutoff).delete()
+    return deleted_count

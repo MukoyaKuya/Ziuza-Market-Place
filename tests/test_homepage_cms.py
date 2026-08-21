@@ -206,3 +206,49 @@ def test_hero_promo_card_cms_scheduling(client):
     assert b'Jamhuri Day Specials' in response.content
     assert b'Shop Jamhuri Deals' in response.content
 
+
+@pytest.mark.django_db
+def test_promo_banner_ad_cms_scheduling_and_display(client):
+    from apps.marketplace.content.models import PromoBannerAd
+    from apps.marketplace.content.selectors import live_promo_banner_ad
+
+    # Default fallback when no custom ad is created
+    response = client.get(reverse('core:home'))
+    assert response.status_code == 200
+    assert b'Support Local Craftsmen' in response.content
+    assert b'ziuza_kenya_strip_banner.gif' in response.content
+
+    # Create an admin-managed promo banner
+    banner = PromoBannerAd.objects.create(
+        title='Madaraka Mega Artisan Sale',
+        target_url='/local/?county=Nairobi',
+        alt_text='Madaraka Artisan Sale Banner',
+        status=VisibilityStatus.PUBLISHED,
+        priority=0,
+    )
+
+    # Deactivate promo banner ad (falls back to default Kenyan flag strip)
+    banner.is_active = False
+    banner.save()
+    assert live_promo_banner_ad() is None
+    response = client.get(reverse('core:home'))
+    assert response.status_code == 200
+    assert b'ziuza_kenya_strip_banner.gif' in response.content
+
+    # Admin switches OFF the banner completely via HomepageSection
+    from apps.marketplace.content.models import HomepageSection, HomepageSectionType
+    sec_hero = HomepageSection.objects.create(section_type=HomepageSectionType.HERO, is_visible=True, position=0)
+    sec_banner = HomepageSection.objects.create(section_type=HomepageSectionType.PROMO_BANNER, is_visible=False, position=1)
+
+    response = client.get(reverse('core:home'))
+    assert response.status_code == 200
+    assert b'ziuza_kenya_strip_banner.gif' not in response.content
+
+    # Admin switches ON the banner section
+    sec_banner.is_visible = True
+    sec_banner.save()
+    response = client.get(reverse('core:home'))
+    assert response.status_code == 200
+    assert b'ziuza_kenya_strip_banner.gif' in response.content
+
+

@@ -4,7 +4,7 @@ from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import ensure_authenticated
-from apps.marketplace.shops.models import Shop, ShopVerificationStatus
+from apps.marketplace.shops.models import LocalDeliveryScope, Shop, ShopVerificationStatus
 from apps.marketplace.shops.permissions import ensure_shop_owner
 from apps.marketplace.shops.selectors import get_shop_for_user
 
@@ -18,7 +18,14 @@ def create_shop(
     name: str,
     description: str = '',
     county: str = 'Nairobi',
+    sub_county: str = '',
+    ward: str = '',
+    village: str = '',
     location_text: str = '',
+    is_local_seller: bool = True,
+    local_delivery_scope: str = LocalDeliveryScope.COUNTY,
+    local_pickup_available: bool = True,
+    local_pickup_instructions: str = '',
 ) -> Shop:
     """Onboard a seller by creating their shop. One shop per owner (MVP)."""
     ensure_authenticated(actor=actor)
@@ -34,7 +41,14 @@ def create_shop(
         name=name,
         description=description.strip(),
         county=county or 'Nairobi',
+        sub_county=(sub_county or '').strip(),
+        ward=(ward or '').strip(),
+        village=(village or '').strip(),
         location_text=location_text.strip(),
+        is_local_seller=bool(is_local_seller),
+        local_delivery_scope=local_delivery_scope or LocalDeliveryScope.COUNTY,
+        local_pickup_available=bool(local_pickup_available),
+        local_pickup_instructions=(local_pickup_instructions or '').strip(),
         verification_status=ShopVerificationStatus.UNVERIFIED,
     )
     shop.save()
@@ -50,7 +64,14 @@ def update_shop_settings(*, actor: User, shop: Shop, **fields) -> Shop:
         'name',
         'description',
         'county',
+        'sub_county',
+        'ward',
+        'village',
         'location_text',
+        'is_local_seller',
+        'local_delivery_scope',
+        'local_pickup_available',
+        'local_pickup_instructions',
         'policies',
         'shipping_policy',
         'return_policy',
@@ -64,8 +85,17 @@ def update_shop_settings(*, actor: User, shop: Shop, **fields) -> Shop:
             continue
         setattr(shop, key, value)
 
-    # Keep slug stable after creation unless name change needs a new unique slug and slug empty — leave slug as-is for URL stability.
+    # Keep slug stable after creation unless name change needs a new unique slug and slug empty
     shop.save()
+
+    from apps.marketplace.shops.team_services import audit_shop_action
+    audit_shop_action(
+        shop=shop,
+        actor=actor,
+        action='shop.settings_updated',
+        target=shop,
+        description='Updated shop profile and local settings.',
+    )
     return shop
 
 
@@ -74,4 +104,14 @@ def set_vacation_mode(*, actor: User, shop: Shop, enabled: bool) -> Shop:
     ensure_shop_owner(actor=actor, shop=shop)
     shop.vacation_mode = bool(enabled)
     shop.save(update_fields=['vacation_mode', 'updated_at'])
+
+    from apps.marketplace.shops.team_services import audit_shop_action
+    status_str = 'enabled' if enabled else 'disabled'
+    audit_shop_action(
+        shop=shop,
+        actor=actor,
+        action='shop.vacation_mode',
+        target=shop,
+        description=f'Vacation mode {status_str}.',
+    )
     return shop

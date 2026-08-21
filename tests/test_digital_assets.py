@@ -1,4 +1,5 @@
 from decimal import Decimal
+from pathlib import Path
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -105,3 +106,67 @@ def test_digital_asset_accepts_allowed_types(digital_listing, seller):
     finally:
         for asset in created:
             asset.file.delete(save=False)
+
+
+@pytest.mark.django_db
+def test_digital_asset_download_and_x_accel_redirect(client, digital_listing, seller, settings):
+    from django.urls import reverse
+    from apps.marketplace.orders.models import Order, OrderItem, DownloadGrant, SellerOrder
+    from apps.marketplace.orders.services import _public_number
+
+    buyer = User.objects.create_user(email='buyer-download@ziuza.co.ke', password=PASSWORD)
+    asset = add_digital_asset(
+        actor=seller,
+        listing=digital_listing,
+        title='Planner PDF',
+        file=SimpleUploadedFile('test_planner.pdf', PDF_BYTES, content_type='application/pdf'),
+    )
+    try:
+        order = Order.objects.create(
+            public_number=_public_number(),
+            buyer=buyer,
+            subtotal=Decimal('500.00'),
+            grand_total=Decimal('500.00'),
+            payment_status='paid',
+        )
+        seller_order = SellerOrder.objects.create(
+            order=order,
+            shop=digital_listing.shop,
+            subtotal=Decimal('500.00'),
+        )
+        item = OrderItem.objects.create(
+            order=order,
+            seller_order=seller_order,
+            shop=digital_listing.shop,
+            listing_id=digital_listing.id,
+            title_snapshot=digital_listing.title,
+            quantity=1,
+            unit_price=Decimal('500.00'),
+            line_total=Decimal('500.00'),
+            product_type_snapshot='digital',
+        )
+        grant = DownloadGrant.objects.create(order_item=item, buyer=buyer, is_active=True)
+
+        client.force_login(buyer)
+        url = reverse('orders:download_asset', kwargs={'grant_id': grant.id, 'asset_id': asset.id})
+
+        expected_name = Path(asset.file.name).name
+
+        # Default: FileResponse
+        settings.USE_X_ACCEL_REDIRECT = False
+        res = client.get(url)
+        assert res.status_code == 200
+        assert f'attachment; filename="{expected_name}"' in res['Content-Disposition']
+        res.close()
+
+        # Enabled X-Accel-Redirect
+        settings.USE_X_ACCEL_REDIRECT = True
+        settings.X_ACCEL_REDIRECT_PREFIX = '/protected_media/'
+        res2 = client.get(url)
+        assert res2.status_code == 200
+        assert 'X-Accel-Redirect' in res2
+        assert res2['X-Accel-Redirect'].startswith('/protected_media/')
+        assert f'attachment; filename="{expected_name}"' in res2['Content-Disposition']
+        res2.close()
+    finally:
+        asset.file.delete(save=False)

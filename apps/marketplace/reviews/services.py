@@ -31,7 +31,7 @@ def _rating(value, label):
     return value
 
 
-def _validate_image(upload):
+def _optimize_and_validate_image(upload):
     if upload.size > MAX_IMAGE_SIZE:
         raise ValidationError('Review photos must be 8 MB or smaller.')
     content_type = (getattr(upload, 'content_type', '') or '').lower()
@@ -47,14 +47,43 @@ def _validate_image(upload):
     if not signature_ok:
         raise ValidationError('Review photo contents do not match the selected file type.')
     try:
-        from PIL import Image
+        import io
+        from PIL import Image, ImageOps
+        from django.core.files.uploadedfile import InMemoryUploadedFile
+
         image = Image.open(upload)
-        image.verify()
-        upload.seek(0)
+        image = ImageOps.exif_transpose(image)
+        format_name = 'JPEG' if content_type == 'image/jpeg' else ('PNG' if content_type == 'image/png' else 'WEBP')
+
+        max_dim = 1600
+        if image.width > max_dim or image.height > max_dim:
+            image.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
+
+        output = io.BytesIO()
+        if format_name == 'JPEG':
+            if image.mode in ('RGBA', 'P'):
+                image = image.convert('RGB')
+            image.save(output, format='JPEG', quality=85, optimize=True)
+        elif format_name == 'PNG':
+            image.save(output, format='PNG', optimize=True)
+        else:
+            image.save(output, format='WEBP', quality=85)
+
+        output.seek(0)
+        optimized_file = InMemoryUploadedFile(
+            file=output,
+            field_name=getattr(upload, 'field_name', 'image'),
+            name=getattr(upload, 'name', 'review.jpg'),
+            content_type=content_type,
+            size=output.getbuffer().nbytes,
+            charset=getattr(upload, 'charset', None),
+        )
+        return optimized_file, content_type
+    except ValidationError:
+        raise
     except Exception as exc:
         upload.seek(0)
         raise ValidationError('The review photo is damaged or invalid.') from exc
-    return content_type
 
 
 def recalculate_shop_rating(shop):
@@ -64,16 +93,18 @@ def recalculate_shop_rating(shop):
     shop.rating_count = stats['count'] or 0
     shop.rating_average = stats['average'] or 0
     shop.save(update_fields=['rating_count', 'rating_average', 'updated_at'])
+
+
 def _add_media(*, review, uploads):
     uploads = list(uploads or [])
     remaining = MAX_REVIEW_MEDIA - review.media.count()
     if len(uploads) > remaining:
         raise ValidationError(f'A review can include up to {MAX_REVIEW_MEDIA} photos.')
-    validated = [(upload, _validate_image(upload)) for upload in uploads]
+    validated = [_optimize_and_validate_image(upload) for upload in uploads]
     return [ReviewMedia.objects.create(
-        review=review, image=upload, original_name=Path(upload.name).name[:255],
-        content_type=content_type, size=upload.size,
-    ) for upload, content_type in validated]
+        review=review, image=opt_upload, original_name=Path(opt_upload.name).name[:255],
+        content_type=content_type, size=opt_upload.size,
+    ) for opt_upload, content_type in validated]
 
 
 @transaction.atomic

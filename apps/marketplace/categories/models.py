@@ -71,6 +71,14 @@ class Category(models.Model):
             'bags-purses': 'cart',
             'wedding': 'gift',
             'back-to-school': 'book',
+            'branding-custom': 'shirt',
+            'custom-branding': 'shirt',
+            'custom-tshirts': 'shirt',
+            'lapel-pins-badges': 'badge',
+            'fabrications-metalwork': 'metalwork',
+            'fabrications': 'metalwork',
+            'metalwork-welding': 'metalwork',
+            'laser-cutting-cnc': 'scissors',
         }
         return icon_map.get(self.slug, 'grid')
 

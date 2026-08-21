@@ -1,0 +1,375 @@
+{% load static %}
+<div id="local-results-container" class="space-y-8">
+    <!-- Active location indicator & stats bar -->
+    <div class="flex items-center justify-between py-1 border-b border-gray-100">
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-bold uppercase tracking-wider border border-emerald-200/80">
+                <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+                <span>{{ ward|default:sub_county|default:county|default:"ALL KENYA" }}</span>
+            </span>
+            {% if county and sub_county %}
+            <span class="text-xs text-gray-500 font-medium">in {{ county }}</span>
+            {% endif %}
+            {% if pickup_only %}
+            <span class="inline-flex items-center gap-1 text-[10px] font-semibold text-gray-700 bg-gray-100 px-2 py-0.5 rounded-full">
+                Local Pickup Only
+            </span>
+            {% endif %}
+        </div>
+        <p class="text-xs text-gray-500 font-medium">
+            <strong class="font-bold text-gray-800">{{ total_shops_count }}</strong> local maker{{ total_shops_count|pluralize }} found
+        </p>
+    </div>
+
+    <!-- Local Makers & Workshops Section -->
+    <div class="space-y-5 rounded-lg border border-gray-200 bg-white p-5 sm:p-6 shadow-ziuza-sm">
+        <div class="flex flex-wrap items-end justify-between gap-4 border-b border-gray-100 pb-4">
+            <div>
+                <h2 class="text-lg sm:text-xl font-display font-extrabold text-gray-900 leading-tight">
+                    <span class="relative inline-block pb-1 border-b-2 border-[#BB1319]">Local</span> Makers & Workshops
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Kenyan artisans crafting and selling right in your neighborhood</p>
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800 border border-emerald-200/60">
+                <svg class="h-3.5 w-3.5 text-emerald-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+                {{ total_shops_count }} maker{{ total_shops_count|pluralize }} nearby
+            </span>
+        </div>
+
+        {% if shops_page.object_list %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+            {% for local_shop in shops_page %}
+            <article class="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-2xs hover:shadow-lg transition-all duration-300 group overflow-hidden h-full">
+                <!-- Shop Cover / Workshop Photo Header -->
+                <div class="relative h-44 w-full bg-emerald-950 overflow-hidden shrink-0">
+                    <img src="{% if local_shop.banner %}{{ local_shop.banner.url }}{% elif local_shop.logo %}{{ local_shop.logo.url }}{% else %}{% static 'images/local/mombasa_crafts.jpg' %}{% endif %}"
+                         alt="{{ local_shop.name }}"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    
+                    <!-- Gradient overlay for high text legibility -->
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none"></div>
+
+                    <!-- Top Bar Badges -->
+                    <div class="absolute top-3 inset-x-3 flex items-center justify-between gap-2 z-10">
+                        <!-- Location Pill -->
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/65 backdrop-blur-md text-white text-xs font-semibold border border-white/20 shadow-sm">
+                            <svg class="w-3.5 h-3.5 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/>
+                                <circle cx="12" cy="11" r="2.5"/>
+                            </svg>
+                            <span class="truncate max-w-[120px]">{{ local_shop.ward|default:local_shop.sub_county|default:local_shop.county }}</span>
+                        </span>
+
+                        <!-- Verified Badge -->
+                        {% if local_shop.is_verified %}
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-600/95 backdrop-blur-md text-white text-xs font-bold border border-white/20 shadow-sm">
+                            <svg class="w-3.5 h-3.5 text-white shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>Verified</span>
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Shop Card Body -->
+                <div class="p-4 sm:p-5 flex flex-col justify-between flex-1 space-y-4">
+                    <div class="space-y-3">
+                        <!-- Shop Identity -->
+                        <div class="flex items-center gap-3 min-w-0">
+                            {% if local_shop.logo %}
+                            <img src="{{ local_shop.logo.url }}" alt="{{ local_shop.name }}" class="h-10 w-10 rounded-xl border border-gray-100 object-cover shadow-2xs shrink-0">
+                            {% else %}
+                            <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-900 font-display text-sm font-bold text-white shadow-2xs shrink-0">
+                                {{ local_shop.name|slice:":1" }}
+                            </div>
+                            {% endif %}
+                            <div class="min-w-0 flex-1">
+                                <h3 class="font-display font-bold text-base text-gray-900 truncate group-hover:text-emerald-800 transition-colors leading-snug">
+                                    <a href="{% url 'shops:public_shop' local_shop.slug %}">{{ local_shop.name }}</a>
+                                </h3>
+                                <p class="text-xs text-gray-500 truncate mt-0.5 flex items-center gap-1 font-medium">
+                                    <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/>
+                                        <circle cx="12" cy="11" r="2.5"/>
+                                    </svg>
+                                    <span>{{ local_shop.county }}{% if local_shop.sub_county %} · {{ local_shop.sub_county }}{% endif %}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        {% if local_shop.description %}
+                        <p class="text-xs text-gray-600 line-clamp-2 leading-relaxed">
+                            {{ local_shop.description }}
+                        </p>
+                        {% endif %}
+
+                        <!-- Badges Row -->
+                        <div class="flex flex-wrap items-center gap-2 pt-0.5">
+                            {% if local_shop.local_pickup_available %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 text-xs font-semibold border border-emerald-200/70">
+                                <svg class="w-3.5 h-3.5 text-emerald-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg>
+                                <span>Local Pickup</span>
+                            </span>
+                            {% endif %}
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-900 text-xs font-semibold border border-amber-200/70">
+                                <svg class="w-3.5 h-3.5 text-amber-700 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7"/></svg>
+                                <span>{{ local_shop.get_local_delivery_scope_display|default:"Entire County" }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer & Action CTA -->
+                    <div class="pt-3.5 border-t border-gray-100 space-y-3 mt-auto">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="text-gray-500 font-medium">Reputation</span>
+                            {% if local_shop.rating_count %}
+                            <div class="flex items-center gap-1 text-xs font-bold text-gray-900">
+                                <span class="text-amber-500">★</span>
+                                <span>{{ local_shop.rating_average|floatformat:1 }}</span>
+                                <span class="text-gray-400 font-normal">({{ local_shop.rating_count }} review{{ local_shop.rating_count|pluralize }})</span>
+                            </div>
+                            {% else %}
+                            <span class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                <span>New Local Maker</span>
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <a href="{% url 'shops:public_shop' local_shop.slug %}"
+                           class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#C8102E] hover:bg-[#9B0A21] text-white text-xs font-bold transition-all duration-200 shadow-sm group/btn active:scale-[0.98]">
+                            <span>Visit Workshop & Shop</span>
+                            <svg class="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:translate-x-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if shops_page.has_other_pages %}
+        <div class="mt-8 flex justify-center">
+            <div class="inline-flex items-center gap-2">
+                {% if shops_page.has_previous %}
+                <a href="?page={{ shops_page.previous_page_number }}{% if county %}&county={{ county }}{% endif %}{% if sub_county %}&sub_county={{ sub_county }}{% endif %}{% if ward %}&ward={{ ward }}{% endif %}{% if pickup_only %}&pickup=1{% endif %}"
+                   hx-get="?page={{ shops_page.previous_page_number }}{% if county %}&county={{ county }}{% endif %}{% if sub_county %}&sub_county={{ sub_county }}{% endif %}{% if ward %}&ward={{ ward }}{% endif %}{% if pickup_only %}&pickup=1{% endif %}"
+                   hx-target="#local-results-container"
+                   hx-swap="outerHTML"
+                   class="btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
+                    ← Previous
+                </a>
+                {% endif %}
+                <span class="text-xs font-semibold text-gray-600 px-3">
+                    Page {{ shops_page.number }} of {{ shops_page.paginator.num_pages }}
+                </span>
+                {% if shops_page.has_next %}
+                <a href="?page={{ shops_page.next_page_number }}{% if county %}&county={{ county }}{% endif %}{% if sub_county %}&sub_county={{ sub_county }}{% endif %}{% if ward %}&ward={{ ward }}{% endif %}{% if pickup_only %}&pickup=1{% endif %}"
+                   hx-get="?page={{ shops_page.next_page_number }}{% if county %}&county={{ county }}{% endif %}{% if sub_county %}&sub_county={{ sub_county }}{% endif %}{% if ward %}&ward={{ ward }}{% endif %}{% if pickup_only %}&pickup=1{% endif %}"
+                   hx-target="#local-results-container"
+                   hx-swap="outerHTML"
+                   class="btn-secondary px-4 py-2 text-xs font-semibold rounded-xl">
+                    Next →
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <!-- Empty State -->
+        <div class="rounded-2xl border-2 border-dashed border-gray-200 bg-white p-8 sm:p-12 text-center max-w-xl mx-auto space-y-3">
+            <div class="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-800 mb-1">
+                <svg class="w-6 h-6 text-emerald-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/><circle cx="12" cy="11" r="2"/></svg>
+            </div>
+            <h3 class="text-lg font-display font-bold text-gray-900">
+                No active sellers found in {{ ward|default:sub_county|default:county|default:"this location" }} yet
+            </h3>
+            <p class="text-xs text-gray-600 leading-relaxed">
+                Be the first artisan or merchant to represent your ward! Sign up to sell locally on Ziuza Local and connect with nearby shoppers.
+            </p>
+            <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                <a href="{% url 'shops:sell_entry' %}" class="px-5 py-2 rounded-full bg-[#BB1319] hover:bg-[#990F14] text-white text-xs font-bold shadow-xs transition-all">
+                    Open a shop in {{ ward|default:county|default:"your area" }}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Handcrafted in Kenya Section -->
+    <div class="pt-6 border-t border-gray-100 space-y-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-lg sm:text-xl font-display font-extrabold text-gray-900 leading-tight">
+                    Handcrafted in Kenya
+                </h2>
+                <p class="text-xs text-gray-500 mt-0.5">
+                    Popular items crafted by local artisans ready for swift delivery or pickup
+                </p>
+            </div>
+            <a href="{% url 'listings:category_index' %}" class="inline-flex items-center gap-1 text-xs font-bold text-gray-700 hover:text-emerald-800 transition-colors">
+                <span>View all</span>
+                <span aria-hidden="true">→</span>
+            </a>
+        </div>
+
+        <!-- 6 Handcrafted Products Grid matching the exact mockup -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 sm:gap-4">
+            <!-- 1. Kiondo Basket -->
+            <article class="group flex flex-col bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all">
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-50">
+                    <img src="{% static 'images/local/kiondo_basket.jpg' %}"
+                         alt="Kiondo Basket"
+                         loading="lazy"
+                         decoding="async"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <button type="button" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-kenya-red shadow-2xs transition-colors" aria-label="Favorite">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                    <span class="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-sm text-[9px] font-bold text-gray-800 shadow-xs border border-gray-100">
+                        Home & Living
+                    </span>
+                </div>
+                <div class="p-3 flex flex-col justify-between flex-1">
+                    <h3 class="font-semibold text-xs text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
+                        Kiondo Basket
+                    </h3>
+                    <p class="font-bold text-xs sm:text-sm text-gray-900 mt-1">
+                        KSh 2,450
+                    </p>
+                </div>
+            </article>
+
+            <!-- 2. Soapstone Elephants -->
+            <article class="group flex flex-col bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all">
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-50">
+                    <img src="{% static 'images/local/soapstone_elephants.jpg' %}"
+                         alt="Soapstone Elephants"
+                         loading="lazy"
+                         decoding="async"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <button type="button" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-kenya-red shadow-2xs transition-colors" aria-label="Favorite">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                    <span class="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-sm text-[9px] font-bold text-gray-800 shadow-xs border border-gray-100">
+                        Art & Collectibles
+                    </span>
+                </div>
+                <div class="p-3 flex flex-col justify-between flex-1">
+                    <h3 class="font-semibold text-xs text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
+                        Soapstone Elephants
+                    </h3>
+                    <p class="font-bold text-xs sm:text-sm text-gray-900 mt-1">
+                        KSh 1,850
+                    </p>
+                </div>
+            </article>
+
+            <!-- 3. Maasai Beaded Necklace -->
+            <article class="group flex flex-col bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all">
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-50">
+                    <img src="{% static 'images/local/maasai_necklace.jpg' %}"
+                         alt="Maasai Beaded Necklace"
+                         loading="lazy"
+                         decoding="async"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <button type="button" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-kenya-red shadow-2xs transition-colors" aria-label="Favorite">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                    <span class="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-sm text-[9px] font-bold text-gray-800 shadow-xs border border-gray-100">
+                        Fashion
+                    </span>
+                </div>
+                <div class="p-3 flex flex-col justify-between flex-1">
+                    <h3 class="font-semibold text-xs text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
+                        Maasai Beaded Necklace
+                    </h3>
+                    <p class="font-bold text-xs sm:text-sm text-gray-900 mt-1">
+                        KSh 1,200
+                    </p>
+                </div>
+            </article>
+
+            <!-- 4. Kikoy Cushion Cover -->
+            <article class="group flex flex-col bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all">
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-50">
+                    <img src="{% static 'images/local/kikoy_cushion.jpg' %}"
+                         alt="Kikoy Cushion Cover"
+                         loading="lazy"
+                         decoding="async"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <button type="button" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-kenya-red shadow-2xs transition-colors" aria-label="Favorite">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                    <span class="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-sm text-[9px] font-bold text-gray-800 shadow-xs border border-gray-100">
+                        Home & Living
+                    </span>
+                </div>
+                <div class="p-3 flex flex-col justify-between flex-1">
+                    <h3 class="font-semibold text-xs text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
+                        Kikoy Cushion Cover
+                    </h3>
+                    <p class="font-bold text-xs sm:text-sm text-gray-900 mt-1">
+                        KSh 1,050
+                    </p>
+                </div>
+            </article>
+
+            <!-- 5. Leather Tote Bag -->
+            <article class="group flex flex-col bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all">
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-50">
+                    <img src="{% static 'images/local/leather_tote.jpg' %}"
+                         alt="Leather Tote Bag"
+                         loading="lazy"
+                         decoding="async"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <button type="button" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-kenya-red shadow-2xs transition-colors" aria-label="Favorite">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                    <span class="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-sm text-[9px] font-bold text-gray-800 shadow-xs border border-gray-100">
+                        Fashion
+                    </span>
+                </div>
+                <div class="p-3 flex flex-col justify-between flex-1">
+                    <h3 class="font-semibold text-xs text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
+                        Leather Tote Bag
+                    </h3>
+                    <p class="font-bold text-xs sm:text-sm text-gray-900 mt-1">
+                        KSh 3,800
+                    </p>
+                </div>
+            </article>
+
+            <!-- 6. Scented Soy Candle -->
+            <article class="group flex flex-col bg-white rounded-2xl border border-gray-200/80 overflow-hidden shadow-2xs hover:shadow-md transition-all">
+                <div class="relative aspect-square w-full overflow-hidden bg-gray-50">
+                    <img src="{% static 'images/local/scented_candles.jpg' %}"
+                         alt="Scented Soy Candle"
+                         loading="lazy"
+                         decoding="async"
+                         class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
+                    <button type="button" class="absolute top-2 right-2 z-10 w-6 h-6 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center text-gray-700 hover:text-kenya-red shadow-2xs transition-colors" aria-label="Favorite">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </button>
+                    <span class="absolute bottom-2 left-2 z-10 px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-sm text-[9px] font-bold text-gray-800 shadow-xs border border-gray-100">
+                        Craft Supplies
+                    </span>
+                </div>
+                <div class="p-3 flex flex-col justify-between flex-1">
+                    <h3 class="font-semibold text-xs text-gray-900 truncate group-hover:text-emerald-800 transition-colors">
+                        Scented Soy Candle
+                    </h3>
+                    <p class="font-bold text-xs sm:text-sm text-gray-900 mt-1">
+                        KSh 950
+                    </p>
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+

@@ -131,19 +131,21 @@
 
     <div class="border-t border-gray-100 bg-white hidden md:block">
         <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-            <nav class="flex items-center gap-8 py-2 overflow-x-auto text-sm font-semibold text-gray-700 scrollbar-none" aria-label="Popular categories">
-                <a href="{% url 'listings:zawadi_index' %}" class="relative inline-flex items-center gap-1.5 text-kenya-red font-bold transition-colors whitespace-nowrap py-1.5 after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-kenya-red after:rounded-full">
+            <nav class="flex items-center gap-8 py-2 overflow-x-auto text-sm text-gray-700 scrollbar-none" aria-label="Popular categories">
+                <a href="{% url 'listings:zawadi_index' %}" class="inline-flex items-center gap-1.5 py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if request.resolver_match.url_name == 'zawadi_index' or '/zawadi' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">
                     {% include 'components/icons/flat_icon.html' with name='gift' class='h-4 w-4 text-kenya-red' %}
                     <span>Zawadi</span>
                 </a>
-                <a href="{% url 'listings:category_detail' 'back-to-school' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Back to School</a>
-                <a href="{% url 'listings:category_detail' 'home-living' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Home & Living</a>
-                <a href="{% url 'listings:category_detail' 'fashion' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Fashion</a>
-                <a href="{% url 'listings:category_detail' 'art-collectibles' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Art & Collectibles</a>
-                <a href="{% url 'listings:category_detail' 'vintage' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Vintage</a>
-                <a href="{% url 'search:results' %}?q=wedding" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Wedding</a>
-                <a href="{% url 'listings:category_detail' 'craft-supplies' %}" class="inline-flex items-center py-1.5 hover:text-kenya-red transition-colors whitespace-nowrap">Craft Supplies</a>
-                <a href="{% url 'search:results' %}?q=local" class="inline-flex items-center gap-1.5 font-bold text-emerald-800 hover:text-emerald-900 transition-colors whitespace-nowrap ml-auto py-1.5">
+                <a href="{% url 'listings:category_detail' 'back-to-school' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/back-to-school' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Back to School</a>
+                <a href="{% url 'listings:category_detail' 'home-living' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/home-living' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Home & Living</a>
+                <a href="{% url 'listings:category_detail' 'fashion' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/fashion' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Fashion</a>
+                <a href="{% url 'listings:category_detail' 'art-collectibles' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/art-collectibles' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Art & Collectibles</a>
+                <a href="{% url 'listings:category_detail' 'vintage' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/vintage' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Vintage</a>
+                <a href="{% url 'search:results' %}?q=wedding" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300">Wedding</a>
+                <a href="{% url 'listings:category_detail' 'craft-supplies' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/craft-supplies' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Craft Supplies</a>
+                <a href="{% url 'listings:category_detail' 'branding-custom' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/branding-custom' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Custom & Branding</a>
+                <a href="{% url 'listings:category_detail' 'fabrications-metalwork' %}" class="inline-flex items-center py-1.5 -mb-[2px] border-b-2 whitespace-nowrap transition-all {% if '/categories/fabrications-metalwork' in request.path %}font-bold text-[#BB1319] border-[#BB1319]{% else %}font-semibold text-gray-700 border-transparent hover:text-kenya-red hover:border-gray-300{% endif %}">Fabrications</a>
+                <a href="{% url 'shops:local' %}" class="inline-flex items-center gap-1.5 py-1.5 -mb-[2px] border-b-2 whitespace-nowrap ml-auto transition-all {% if request.resolver_match.url_name == 'local' or '/local' in request.path %}font-bold text-[#008751] border-[#008751] bg-emerald-50/80 px-2.5 rounded-t-md{% else %}font-bold text-emerald-800 border-transparent hover:text-emerald-900 hover:border-emerald-600{% endif %}">
                     {% include 'components/icons/flat_icon.html' with name='pin' class='h-4 w-4 text-emerald-800' %}
                     <span>Ziuza Local</span>
                 </a>
@@ -158,6 +160,10 @@
                 {% include 'components/icons/flat_icon.html' with name='search' class='h-4 w-4' %}
             </button>
         </form>
+        <a href="{% url 'shops:local' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-bold text-emerald-800 {% if request.resolver_match.url_name == 'local' or '/local' in request.path %}bg-emerald-100 ring-1 ring-emerald-300{% else %}bg-emerald-50 hover:bg-emerald-100{% endif %}">
+            {% include 'components/icons/flat_icon.html' with name='pin' class='h-4 w-4 text-emerald-800' %}
+            <span>Ziuza Local</span>
+        </a>
         <a href="{% url 'listings:category_index' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-800 hover:bg-brand-surface-ground">All categories</a>
         <a href="{% url 'cart:page' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-800 hover:bg-brand-surface-ground">Cart</a>
         <a href="{% url 'favorites:list' %}" class="block px-3 py-2 rounded-lg text-sm font-medium text-gray-800 hover:bg-brand-surface-ground">Wishlist</a>

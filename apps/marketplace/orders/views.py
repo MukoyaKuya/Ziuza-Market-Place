@@ -1,10 +1,11 @@
 from decimal import Decimal
 import logging
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.db.models import F
 from django.utils import timezone
 from pathlib import Path
@@ -334,7 +335,15 @@ def download_digital_asset(request, grant_id, asset_id):
         download_count=F('download_count') + 1,
         last_downloaded_at=timezone.now(),
     )
-    return FileResponse(asset.file.open('rb'), as_attachment=True, filename=Path(asset.file.name).name)
+    filename = Path(asset.file.name).name
+    if getattr(settings, 'USE_X_ACCEL_REDIRECT', False):
+        prefix = getattr(settings, 'X_ACCEL_REDIRECT_PREFIX', '/protected_media/').rstrip('/')
+        response = HttpResponse(content_type='application/octet-stream')
+        response['X-Accel-Redirect'] = f'{prefix}/{asset.file.name}'
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    return FileResponse(asset.file.open('rb'), as_attachment=True, filename=filename)
 
 
 @login_required

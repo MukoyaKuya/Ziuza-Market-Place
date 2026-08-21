@@ -17,6 +17,7 @@ DASHBOARD_NAV = [
     {'key': 'messages', 'label': 'Messages', 'url_name': 'messaging:seller_inbox', 'permission': MANAGE_MESSAGES},
     {'key': 'analytics', 'label': 'Analytics', 'url_name': 'analytics:seller', 'permission': VIEW_ANALYTICS},
     {'key': 'verification', 'label': 'Verification', 'url_name': 'shops:verification', 'owner_only': True},
+    {'key': 'local', 'label': 'Ziuza Local', 'url_name': 'shops:dashboard_local', 'owner_only': True},
     {'key': 'gifts', 'label': 'Gift Section (Zawadi)', 'url_name': 'shops:dashboard_gifts', 'owner_only': True},
     {'key': 'promotions', 'label': 'Promotions', 'url_name': 'promotions:seller_list', 'permission': MANAGE_PROMOTIONS},
     {'key': 'custom_orders', 'label': 'Custom orders', 'url_name': 'messaging:seller_custom_orders', 'permission': MANAGE_MESSAGES},

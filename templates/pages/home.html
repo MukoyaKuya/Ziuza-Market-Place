@@ -84,35 +84,49 @@
     {% endwith %}
     {% endif %}
 
-    <!-- Trust Badges Row -->
-    <div class="bg-[#F5F0E6] border border-[#E3D9C9] rounded-2xl p-3 sm:p-4 shadow-2xs my-5">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 divide-y sm:divide-y-0 sm:divide-x divide-[#E3D9C9]">
-            {% static 'images/category_icons/Secure_Payments.png' as tb1_icon %}
-            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
-                {% include 'components/trust_badge/trust_badge.html' with title="Secure Payments" subtitle="Pay safely with M-Pesa, card, or other methods" icon_url=tb1_icon %}
+    <!-- Promotional Banner (Admin Managed Custom Ad or Animated Kenyan Flag Strip) -->
+    {% if show_promo_banner %}
+    {% if promo_banner_ad %}
+    <div class="my-5 overflow-hidden rounded-2xl shadow-sm relative border border-black/5">
+        <a href="{{ promo_banner_ad.target_url|default:'/local/' }}" class="block group relative" aria-label="{{ promo_banner_ad.title }}">
+            {% if promo_banner_ad.image %}
+            <img src="{{ promo_banner_ad.image.url }}" 
+                 alt="{{ promo_banner_ad.alt_text|default:promo_banner_ad.title }}" 
+                 class="w-full h-auto max-h-36 sm:max-h-40 object-cover object-center group-hover:opacity-95 transition-opacity duration-300 rounded-2xl"
+                 loading="lazy">
+            {% else %}
+            <div class="min-h-[120px] sm:min-h-[136px] flex items-center justify-between px-6 sm:px-10 py-4 text-white"
+                 style="background: linear-gradient(135deg, #023820 0%, #008751 100%);">
+                <div class="space-y-1.5">
+                    <div class="flex items-center gap-3">
+                        <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/20 text-white border border-white/30 backdrop-blur-sm">
+                            {{ promo_banner_ad.alt_text|default:"FEATURED PROMO" }}
+                        </span>
+                        <h2 class="text-xl sm:text-2xl lg:text-3xl font-display font-extrabold text-white tracking-tight">{{ promo_banner_ad.title }}</h2>
+                    </div>
+                </div>
+                <span class="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white text-gray-900 font-bold text-xs sm:text-sm shadow-sm group-hover:scale-105 transition-transform">
+                    <span>Explore Now</span>
+                    <svg class="w-4 h-4 text-[#008751]" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
+                </span>
             </div>
-
-            {% static 'images/category_icons/Nationwide_Delivery.png' as tb2_icon %}
-            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
-                {% include 'components/trust_badge/trust_badge.html' with title="Nationwide Delivery" subtitle="Fast and reliable delivery across Kenya" icon_url=tb2_icon %}
-            </div>
-
-            {% static 'images/category_icons/Support_local.png' as tb3_icon %}
-            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
-                {% include 'components/trust_badge/trust_badge.html' with title="Support Local Makers" subtitle="Empowering communities and creativity" icon_url=tb3_icon %}
-            </div>
-
-            {% static 'images/category_icons/Quality_Guranteed.png' as tb4_icon %}
-            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
-                {% include 'components/trust_badge/trust_badge.html' with title="Quality Guarantee" subtitle="Handpicked products you can trust" icon_url=tb4_icon %}
-            </div>
-
-            {% static 'images/category_icons/Buyer_Protection.png' as tb5_icon %}
-            <div class="py-2 sm:py-1 px-2.5 sm:px-3.5">
-                {% include 'components/trust_badge/trust_badge.html' with title="Buyer Protection" subtitle="Shop with confidence on Ziuza" icon_url=tb5_icon %}
-            </div>
-        </div>
+            {% endif %}
+        </a>
     </div>
+    {% else %}
+    <!-- Spacious Animated Kenyan Flag Strip Banner -->
+    <div class="my-5 overflow-hidden rounded-2xl shadow-sm border border-black/5">
+        <a href="{% url 'shops:local' %}" class="block group relative" aria-label="Support Local Craftsmen • Sell on Ziuza • Join Creator Community • Buy Kenya Build Kenya • Nunua Kenyan Jenga Wakenya">
+            <img src="{% static 'images/banners/ziuza_kenya_strip_banner.gif' %}?v=kenya_flag_epic" 
+                 alt="Support Local Craftsmen • Kenyan Handmade Crafter • Join Creator Community • Buy Kenya Build Kenya • Nunua Kenyan Jenga Wakenya" 
+                 class="w-full h-auto max-h-36 sm:max-h-40 object-cover object-center group-hover:opacity-95 transition-opacity duration-300 rounded-2xl"
+                 loading="lazy"
+                 width="1280"
+                 height="140">
+        </a>
+    </div>
+    {% endif %}
+    {% endif %}
 
     <!-- Shop by Category Grid Section -->
     {% if 'categories' in show_section_types %}
