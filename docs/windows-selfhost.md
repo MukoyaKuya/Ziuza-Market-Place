@@ -11,6 +11,10 @@ Run these as separate supervised processes:
 .\scripts\run_selfhost_beat.ps1
 ```
 
+For a temporary public testing host without PostgreSQL, Redis, SMTP, or live
+M-Pesa credentials, use `scripts\run_tunnel_testing.ps1` instead. It uses
+SQLite and fake payments, and must never be used to accept real orders.
+
 Celery's conservative Windows configuration is `--pool=solo --concurrency=1`. Run exactly
 one Beat process. Install each launcher with a Windows service manager such as WinSW or
 NSSM using a restricted service account, the repository as working directory, automatic
