@@ -34,13 +34,6 @@ def shop_onboarding(request):
                 name=form.cleaned_data['name'],
                 description=form.cleaned_data.get('description') or '',
                 county=form.cleaned_data['county'],
-                sub_county=form.cleaned_data.get('sub_county') or '',
-                ward=form.cleaned_data.get('ward') or '',
-                location_text=form.cleaned_data.get('location_text') or '',
-                is_local_seller=form.cleaned_data.get('is_local_seller', True),
-                local_delivery_scope=form.cleaned_data.get('local_delivery_scope') or 'county',
-                local_pickup_available=form.cleaned_data.get('local_pickup_available', True),
-                local_pickup_instructions=form.cleaned_data.get('local_pickup_instructions') or '',
             )
         except ValidationError as exc:
             if hasattr(exc, 'message_dict'):
@@ -50,8 +43,8 @@ def shop_onboarding(request):
             else:
                 form.add_error(None, exc)
         else:
-            messages.success(request, f'“{shop.name}” is ready. Welcome to your seller dashboard.')
-            return redirect('shops:dashboard')
+            messages.success(request, f'“{shop.name}” is ready. Add your first product to start selling.')
+            return redirect('listings:seller_create')
 
     return render(
         request,

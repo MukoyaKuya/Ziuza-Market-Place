@@ -47,6 +47,22 @@
         {% endfor %}
     </section>
 
+    {% if can_manage_orders and seller_order.order.payment_method == 'whatsapp' %}
+      {% if seller_order.order.payment_status == 'pending' or seller_order.order.payment_status == 'processing' %}
+      <form method="post" action="{% url 'payments:seller_confirm_whatsapp' seller_order.id %}"
+            class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
+          {% csrf_token %}
+          <h3 class="font-display font-bold text-kenya-black">WhatsApp payment</h3>
+          <p class="text-sm text-gray-600">
+              The buyer arranged to pay you over WhatsApp (order {{ seller_order.order.public_number }}).
+              Once you've received the money — M-Pesa, cash, or otherwise — confirm below. The buyer is
+              notified and the order unlocks for fulfillment.
+          </p>
+          <button type="submit" class="btn-red btn-sm">Mark payment received</button>
+      </form>
+      {% endif %}
+    {% endif %}
+
     {% if can_manage_orders %}
     <form method="post" action="{% url 'shipping:update_fulfillment' seller_order.id %}" class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-3">
         {% csrf_token %}

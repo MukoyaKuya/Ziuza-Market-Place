@@ -50,6 +50,12 @@ class Shop(models.Model):
     ward = models.CharField(_('ward'), max_length=100, blank=True)
     village = models.CharField(_('village / street'), max_length=150, blank=True)
     location_text = models.CharField(_('location'), max_length=255, blank=True)
+    whatsapp_number = models.CharField(
+        _('WhatsApp number'),
+        max_length=20,
+        blank=True,
+        help_text=_('International digits without +, e.g. 254712345678. Enables WhatsApp checkout.'),
+    )
     is_local_seller = models.BooleanField(_('Ziuza Local seller'), default=True)
     local_delivery_scope = models.CharField(
         _('local delivery scope'),

@@ -2,9 +2,12 @@
 
 import json
 from decimal import Decimal, InvalidOperation
+from io import StringIO
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import Client, RequestFactory, override_settings
 from django.urls import reverse
 
@@ -14,7 +17,8 @@ from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.services import create_listing, publish_listing
 from apps.marketplace.orders.models import PaymentStatus
 from apps.marketplace.orders.services import create_checkout_order
-from apps.marketplace.payments.models import PaymentStatusChoice
+from apps.marketplace.payments.daraja import DarajaError
+from apps.marketplace.payments.models import CallbackOutcome, Payment, PaymentCallbackEvent, PaymentStatusChoice
 from apps.marketplace.payments.providers import get_provider
 from apps.marketplace.shops.services import create_shop
 
@@ -126,6 +130,10 @@ def test_mpesa_callback_rejects_unauthenticated_when_secret_configured(commerce_
     order.refresh_from_db()
     assert payment.status != PaymentStatusChoice.CONFIRMED
     assert order.payment_status != PaymentStatus.PAID
+    event = PaymentCallbackEvent.objects.get(provider_reference=payment.provider_reference)
+    assert event.outcome == CallbackOutcome.REJECTED
+    assert event.authenticated is False
+    assert event.payment is None
 
 
 @pytest.mark.django_db
@@ -163,6 +171,36 @@ def test_fake_callback_404_when_not_debug(commerce_order_with_fake_pending):
         },
     )
     assert resp.status_code == 404
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=False, PAYMENT_PROVIDER='fake')
+def test_buyer_fake_confirm_404_when_not_debug(client, buyer, commerce_order_with_fake_pending):
+    order, payment = commerce_order_with_fake_pending
+    client.force_login(buyer)
+
+    resp = client.post(reverse('payments:fake_confirm', args=[order.public_number]))
+
+    assert resp.status_code == 404
+    payment.refresh_from_db()
+    order.refresh_from_db()
+    assert payment.status == PaymentStatusChoice.PENDING
+    assert order.payment_status != PaymentStatus.PAID
+
+
+@pytest.mark.django_db
+@override_settings(DEBUG=False, PAYMENT_PROVIDER='mpesa', MPESA_LIVE=False)
+def test_buyer_mpesa_sandbox_confirm_404_when_not_debug(client, buyer, commerce_order_with_mpesa_pending):
+    order, payment = commerce_order_with_mpesa_pending
+    client.force_login(buyer)
+
+    resp = client.post(reverse('payments:mpesa_sandbox_confirm', args=[order.public_number]))
+
+    assert resp.status_code == 404
+    payment.refresh_from_db()
+    order.refresh_from_db()
+    assert payment.status == PaymentStatusChoice.PENDING
+    assert order.payment_status != PaymentStatus.PAID
 
 
 @pytest.mark.django_db
@@ -228,6 +266,59 @@ def test_mpesa_callback_without_amount_fails_payment(commerce_order_with_mpesa_p
     )
     assert result.status == PaymentStatusChoice.FAILED
     assert result.raw_metadata['error'] == 'amount_missing'
+
+
+@pytest.mark.django_db
+@override_settings(MPESA_DARAJA_ENABLED=True)
+def test_mpesa_network_failure_leaves_durable_attempt_and_prevents_automatic_retry(client, buyer, listing, address):
+    order = _checkout_order(client, buyer, listing, address)
+    provider = get_provider('mpesa')
+
+    with patch.object(provider, '_daraja_client') as client_factory:
+        client_factory.return_value.stk_push.side_effect = DarajaError('Unable to communicate with Daraja.')
+        with pytest.raises(DarajaError):
+            provider.initiate_payment(order=order, phone='254712345678')
+
+        payment = Payment.objects.get(order=order, provider='mpesa')
+        retry = provider.initiate_payment(order=order, phone='254712345678')
+        assert retry.pk == payment.pk
+        assert payment.status == PaymentStatusChoice.INITIATED
+        assert payment.provider_reference.startswith('MPESA-INIT-')
+        assert payment.raw_metadata['initiation_outcome'] == 'unknown'
+        assert client_factory.return_value.stk_push.call_count == 1
+
+        client_factory.return_value.stk_query.return_value = {
+            'ResponseCode': '0',
+            'ResultCode': '0',
+            'ResultDesc': 'The service request is processed successfully.',
+        }
+        reconciled = provider.reconcile_payment(payment=payment, checkout_request_id='ws_CO_recovered')
+
+    order.refresh_from_db()
+    assert reconciled.status == PaymentStatusChoice.CONFIRMED
+    assert reconciled.provider_reference == 'ws_CO_recovered'
+    assert reconciled.raw_metadata['reconciliation']['ResultCode'] == '0'
+    assert order.payment_status == PaymentStatus.PAID
+
+
+@pytest.mark.django_db
+def test_reconcile_mpesa_management_command(commerce_order_with_mpesa_pending):
+    order, payment = commerce_order_with_mpesa_pending
+    output = StringIO()
+
+    with patch('apps.marketplace.payments.providers.MpesaPaymentProvider._daraja_client') as client_factory:
+        client_factory.return_value.stk_query.return_value = {
+            'ResponseCode': '0',
+            'ResultCode': '0',
+            'ResultDesc': 'The service request is processed successfully.',
+        }
+        call_command('reconcile_mpesa_payment', payment_id=str(payment.pk), stdout=output)
+
+    payment.refresh_from_db()
+    order.refresh_from_db()
+    assert payment.status == PaymentStatusChoice.CONFIRMED
+    assert order.payment_status == PaymentStatus.PAID
+    assert f'Reconciled {payment.provider_reference}' in output.getvalue()
 
 
 @pytest.mark.django_db

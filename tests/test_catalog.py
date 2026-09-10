@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.bulk import CATALOG_COLUMNS, import_catalog_csv
-from apps.marketplace.listings.models import BulkOperationStatus, Listing, ListingStatus
+from apps.marketplace.listings.models import BulkOperationStatus, Inventory, Listing, ListingStatus
 from apps.marketplace.listings.services import (
     create_listing,
     pause_listing,
@@ -181,7 +181,7 @@ def test_seller_listing_list_and_create_flow(client, user, shop, category):
             'short_description': 'Market basket',
             'description': 'Handwoven',
             'base_price': '2800.00',
-            'currency': 'KES',
+            'currency': 'USD',
             'sku': 'KION-1',
             'quantity_available': '4',
         },
@@ -190,6 +190,7 @@ def test_seller_listing_list_and_create_flow(client, user, shop, category):
     listing = Listing.objects.get(title='Sisal Kiondo')
     assert listing.status == ListingStatus.DRAFT
     assert listing.shop_id == shop.id
+    assert listing.currency == 'KES'
 
 
 @pytest.mark.django_db
@@ -202,6 +203,20 @@ def test_inventory_updates_sold_out_status(user, listing):
     set_inventory_quantity(actor=user, listing=listing, quantity_available=3)
     listing.refresh_from_db()
     assert listing.status == ListingStatus.ACTIVE
+
+
+@pytest.mark.django_db
+def test_inventory_cannot_be_reduced_below_reserved_quantity(user, listing):
+    inventory = Inventory.objects.get(listing=listing, variant__isnull=True)
+    inventory.quantity_reserved = 3
+    inventory.save(update_fields=['quantity_reserved', 'updated_at'])
+
+    with pytest.raises(ValidationError, match='reserved by pending orders'):
+        set_inventory_quantity(actor=user, listing=listing, quantity_available=2)
+
+    inventory.refresh_from_db()
+    assert inventory.quantity_available == 5
+    assert inventory.quantity_reserved == 3
 
 
 @pytest.mark.django_db

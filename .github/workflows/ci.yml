@@ -57,6 +57,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
+      - name: Public deployment settings check
+        env:
+          SECRET_KEY: ci-only-secret-key-with-more-than-fifty-characters-and-symbols-12345!
+          DATABASE_URL: postgres://ci:ci@127.0.0.1:5432/ci
+          PAYMENT_PROVIDER: mpesa
+          MPESA_LIVE: 'True'
+          MPESA_DARAJA_ENABLED: 'True'
+          MPESA_CALLBACK_SECRET: ci-callback-secret
+          MPESA_CALLBACK_URL: https://ziuza.shop/payments/callback/mpesa/
+          MPESA_CONSUMER_KEY: ci-consumer-key
+          MPESA_CONSUMER_SECRET: ci-consumer-secret
+          MPESA_SHORTCODE: '123456'
+          MPESA_PASSKEY: ci-passkey
+          PUBLIC_SITE_URL: https://ziuza.shop
+          ALLOWED_HOSTS: ziuza.shop,www.ziuza.shop
+          CSRF_TRUSTED_ORIGINS: https://ziuza.shop,https://www.ziuza.shop
+        run: |
+          python manage.py check --deploy --fail-level WARNING --settings=config.settings.production
+          python manage.py check --deploy --fail-level WARNING --settings=config.settings.selfhost
       - name: Migrate check
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test
@@ -64,7 +83,58 @@ jobs:
           python manage.py makemigrations --check --dry-run
           python manage.py migrate --run-syncdb
           python manage.py check
+          python manage.py ops_preflight
       - name: Pytest with coverage gate
         env:
           DJANGO_SETTINGS_MODULE: config.settings.test
         run: pytest -q --cov=apps --cov-fail-under=75
+
+  postgres-commerce-integration:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: ziuza_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd "pg_isready -U postgres -d ziuza_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Run PostgreSQL commerce, search, and delivery tests
+        run: >-
+          pytest -q tests/test_checkout_integrity.py tests/test_search.py
+          tests/test_notification_delivery.py tests/test_notification_delivery_postgres.py
+          --create-db --ds=config.settings.test_postgres
+
+  powershell-syntax:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate PowerShell scripts
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem -Path scripts -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "${_}" }
+              $failed = $true
+            }
+          }
+          if ($failed) { exit 1 }

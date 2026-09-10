@@ -1,9 +1,11 @@
+import uuid
 from collections import defaultdict
 from datetime import timedelta
 
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from apps.marketplace.notifications.models import (
@@ -16,6 +18,7 @@ from apps.marketplace.notifications.models import (
 
 TYPE_CATEGORIES = {
     'order_placed': 'order_updates',
+    'payment_confirmed': 'order_updates',
     'shipment_update': 'shipping_updates',
     'message': 'messages',
     'custom_order': 'messages',
@@ -26,6 +29,10 @@ TYPE_CATEGORIES = {
     'moderation': 'marketplace_updates',
     'help_request': 'order_updates',
     'help_response': 'order_updates',
+    'help_request_response': 'order_updates',
+    'help_request_message': 'order_updates',
+    'help_request_escalated': 'order_updates',
+    'help_request_resolved': 'order_updates',
     'review_received': 'marketplace_updates',
     'review_response': 'marketplace_updates',
     'review_reminder': 'order_updates',
@@ -138,27 +145,38 @@ def apply_preference_to_pending(preference):
 
 def _claim(delivery_ids, now):
     with transaction.atomic():
+        claim_token = uuid.uuid4()
         claimed = list(
             NotificationDelivery.objects.select_for_update()
             .filter(id__in=delivery_ids, status=DeliveryStatus.PENDING, available_at__lte=now)
             .select_related('recipient', 'notification')
+            .order_by('available_at', 'created_at', 'id')
         )
         for delivery in claimed:
             delivery.status = DeliveryStatus.PROCESSING
             delivery.attempts += 1
-            delivery.save(update_fields=['status', 'attempts', 'updated_at'])
+            delivery.claim_token = claim_token
+            delivery.processing_started_at = now
+            delivery.save(update_fields=['status', 'attempts', 'claim_token', 'processing_started_at', 'updated_at'])
         return claimed
 
 
 def _finish(deliveries, *, error=None):
     now = timezone.now()
+    claim_tokens = {item.id: item.claim_token for item in deliveries}
     with transaction.atomic():
-        for delivery in NotificationDelivery.objects.select_for_update().filter(id__in=[item.id for item in deliveries]):
+        locked = NotificationDelivery.objects.select_for_update().filter(
+            id__in=claim_tokens,
+            status=DeliveryStatus.PROCESSING,
+        )
+        for delivery in locked:
+            if delivery.claim_token != claim_tokens[delivery.id]:
+                continue
             if error is None:
                 delivery.status = DeliveryStatus.SENT
                 delivery.sent_at = now
                 delivery.last_error = ''
-                fields = ['status', 'sent_at', 'last_error', 'updated_at']
+                fields = ['status', 'sent_at', 'last_error', 'claim_token', 'processing_started_at', 'updated_at']
             else:
                 delivery.last_error = str(error).replace('\n', ' ')[:500]
                 if delivery.attempts >= 5:
@@ -166,18 +184,27 @@ def _finish(deliveries, *, error=None):
                 else:
                     delivery.status = DeliveryStatus.PENDING
                     delivery.available_at = now + timedelta(minutes=min(60, 5 * (2 ** (delivery.attempts - 1))))
-                fields = ['status', 'available_at', 'last_error', 'updated_at']
+                fields = ['status', 'available_at', 'last_error', 'claim_token', 'processing_started_at', 'updated_at']
+            delivery.claim_token = None
+            delivery.processing_started_at = None
             delivery.save(update_fields=fields)
 
 
 def deliver_pending_notifications(*, limit=500, now=None):
     now = now or timezone.now()
-    NotificationDelivery.objects.filter(
-        status=DeliveryStatus.PROCESSING,
-        updated_at__lt=now - timedelta(minutes=15),
-    ).update(status=DeliveryStatus.PENDING, available_at=now)
+    lease_cutoff = now - timedelta(minutes=15)
+    NotificationDelivery.objects.filter(status=DeliveryStatus.PROCESSING).filter(
+        Q(processing_started_at__lt=lease_cutoff)
+        | Q(processing_started_at__isnull=True, updated_at__lt=lease_cutoff)
+    ).update(
+        status=DeliveryStatus.PENDING,
+        available_at=now,
+        claim_token=None,
+        processing_started_at=None,
+    )
     due = list(
         NotificationDelivery.objects.filter(status=DeliveryStatus.PENDING, available_at__lte=now)
+        .order_by('available_at', 'created_at', 'id')
         .values('id', 'recipient_id', 'mode')[:limit]
     )
     groups = defaultdict(list)

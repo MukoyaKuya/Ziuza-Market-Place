@@ -168,6 +168,8 @@ def test_analytics_days_query_param(client, buyer, seller, listing, address, sho
     assert response.status_code == 200
     assert response.context['selected_days'] == 7
     assert len(response.context['daily']) == 7
+    assert not ShopDailyMetric.objects.exists()
+    assert not ListingDailyMetric.objects.exists()
 
     bad = client.get(reverse('analytics:seller'), {'days': 99})
     assert bad.status_code == 200

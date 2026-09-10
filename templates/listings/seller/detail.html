@@ -30,6 +30,28 @@
         {% endif %}
     </div>
 
+    {% if listing.status != 'active' and listing.status != 'archived' %}
+    <section class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+        <h3 class="font-display font-bold text-emerald-950">Ready to publish?</h3>
+        <p class="mt-1 text-sm text-emerald-900">Review these essentials before making your listing public.</p>
+        <ul class="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+            <li class="font-semibold text-emerald-900">✓ Title, category, and KES price saved</li>
+            {% if listing.product_type == 'digital' %}
+            <li class="font-semibold {% if listing.digital_assets.all %}text-emerald-900{% else %}text-amber-800{% endif %}">
+                {% if listing.digital_assets.all %}✓ Digital file uploaded{% else %}○ Upload a digital file (required){% endif %}
+            </li>
+            {% else %}
+            <li class="font-semibold {% if base_inventory and base_inventory.available_to_sell > 0 %}text-emerald-900{% else %}text-amber-800{% endif %}">
+                {% if base_inventory and base_inventory.available_to_sell > 0 %}✓ Stock available{% else %}○ Add stock to sell immediately{% endif %}
+            </li>
+            {% endif %}
+            <li class="font-semibold {% if listing.images.all %}text-emerald-900{% else %}text-gray-600{% endif %}">
+                {% if listing.images.all %}✓ Product image added{% else %}○ Add a product image (recommended){% endif %}
+            </li>
+        </ul>
+    </section>
+    {% endif %}
+
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {% if listing.product_type == 'digital' %}<section class="bg-white rounded-2xl border border-brand-surface-border p-5 space-y-4"><h3 class="font-display font-bold">Private digital files</h3>{% for asset in listing.digital_assets.all %}<p class="text-sm">{{ asset.title }}{% if asset.version %} · {{ asset.version }}{% endif %}</p>{% empty %}<p class="text-sm text-gray-500">Upload at least one file before publishing.</p>{% endfor %}<form method="post" enctype="multipart/form-data" action="{% url 'listings:seller_add_digital_asset' listing.id %}" class="space-y-3">{% csrf_token %}{% for field in digital_asset_form %}<div><label class="field-label">{{ field.label }}</label>{{ field }}</div>{% endfor %}<button class="btn-secondary btn-sm">Add private file</button></form></section>{% endif %}
         <section class="bg-white rounded-2xl border border-brand-surface-border p-5 shadow-ziuza-sm space-y-4">

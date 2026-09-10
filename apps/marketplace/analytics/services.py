@@ -2,11 +2,12 @@ from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
-from django.db.models import Sum
+from django.db.models import Max, Sum
 from django.utils import timezone
 
 from apps.marketplace.analytics.models import ListingDailyMetric, ShopDailyMetric
 from apps.marketplace.favorites.models import Favorite
+from apps.marketplace.listings.models import Listing
 from apps.marketplace.orders.models import OrderItem, PaymentStatus, SellerOrder
 from apps.marketplace.reviews.models import Review
 from apps.marketplace.search.models import RecentlyViewedListing
@@ -31,8 +32,9 @@ def rollup_shop_day(*, shop, day: date) -> ShopDailyMetric:
     paid_orders = SellerOrder.objects.filter(
         shop=shop,
         order__payment_status=PaymentStatus.PAID,
-        created_at__gte=day_start,
-        created_at__lt=day_end,
+        order__payments__status='confirmed',
+        order__payments__confirmed_at__gte=day_start,
+        order__payments__confirmed_at__lt=day_end,
     )
     orders_count = paid_orders.count()
     revenue = paid_orders.aggregate(total=Sum('subtotal'))['total'] or Decimal('0.00')
@@ -41,11 +43,12 @@ def rollup_shop_day(*, shop, day: date) -> ShopDailyMetric:
         OrderItem.objects.filter(
             seller_order__shop=shop,
             order__payment_status=PaymentStatus.PAID,
-            seller_order__created_at__gte=day_start,
-            seller_order__created_at__lt=day_end,
+            order__payments__status='confirmed',
+            order__payments__confirmed_at__gte=day_start,
+            order__payments__confirmed_at__lt=day_end,
         )
-        .values('listing_id', 'title_snapshot')
-        .annotate(units_sold=Sum('quantity'), revenue=Sum('line_total'))
+        .values('listing_id')
+        .annotate(title_snapshot=Max('title_snapshot'), units_sold=Sum('quantity'), revenue=Sum('line_total'))
     )
     units_sold = sum((row['units_sold'] or 0) for row in item_rows)
 
@@ -74,6 +77,7 @@ def rollup_shop_day(*, shop, day: date) -> ShopDailyMetric:
     )
 
     seen_listing_uuids = set()
+    live_listing_ids = set(Listing.objects.filter(id__in=[row['listing_id'] for row in item_rows]).values_list('id', flat=True))
     for row in item_rows:
         listing_uuid = row['listing_id']
         if listing_uuid is None:
@@ -84,7 +88,7 @@ def rollup_shop_day(*, shop, day: date) -> ShopDailyMetric:
             listing_uuid=listing_uuid,
             date=day,
             defaults={
-                'listing_id': listing_uuid,
+                'listing_id': listing_uuid if listing_uuid in live_listing_ids else None,
                 'title_snapshot': row['title_snapshot'] or 'Listing',
                 'units_sold': row['units_sold'] or 0,
                 'revenue': row['revenue'] or Decimal('0.00'),
@@ -131,10 +135,10 @@ def ensure_shop_metrics(*, shop, start: date, end: date) -> int:
 
 
 def shops_with_paid_activity(*, since: date | None = None):
-    qs = SellerOrder.objects.filter(order__payment_status=PaymentStatus.PAID)
+    qs = SellerOrder.objects.filter(order__payment_status=PaymentStatus.PAID, order__payments__status='confirmed')
     if since is not None:
         since_start, _ = _day_bounds(since)
-        qs = qs.filter(created_at__gte=since_start)
+        qs = qs.filter(order__payments__confirmed_at__gte=since_start)
     shop_ids = qs.values_list('shop_id', flat=True).distinct()
     return Shop.objects.filter(id__in=shop_ids)
 

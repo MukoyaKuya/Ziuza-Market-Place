@@ -46,6 +46,8 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     is_staff = models.BooleanField(_('staff status'), default=False)
     is_active = models.BooleanField(_('active'), default=True)
+    email_verified = models.BooleanField(_('email verified'), default=False)
+    email_verified_at = models.DateTimeField(_('email verified at'), null=True, blank=True)
 
     date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
     updated_at = models.DateTimeField(_('updated at'), auto_now=True)

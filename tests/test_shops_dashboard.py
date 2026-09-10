@@ -1,3 +1,6 @@
+import json
+import logging
+
 import pytest
 from django.contrib.auth import get_user_model
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -57,23 +60,29 @@ def test_sell_entry_redirects_to_onboarding_without_shop(client, user):
 
 
 @pytest.mark.django_db
-def test_onboarding_creates_shop_and_opens_dashboard(client, user):
+def test_onboarding_creates_shop_and_opens_first_listing(
+    client, user, caplog, django_capture_on_commit_callbacks,
+):
     client.force_login(user)
-    response = client.post(
-        reverse('shops:onboarding'),
-        {
-            'name': 'Kisii Stone Studio',
-            'description': 'Soapstone carvings',
-            'county': 'Kisii',
-            'location_text': 'Kisii Town',
-        },
-    )
+    with caplog.at_level(logging.INFO, logger='commerce'):
+        with django_capture_on_commit_callbacks(execute=True):
+            response = client.post(
+                reverse('shops:onboarding'),
+                {
+                    'name': 'Kisii Stone Studio',
+                    'description': 'Soapstone carvings',
+                    'county': 'Kisii',
+                },
+            )
     assert response.status_code == 302
-    assert response.url == reverse('shops:dashboard')
+    assert response.url == reverse('listings:seller_create')
     shop = Shop.objects.get(owner=user)
     assert shop.name == 'Kisii Stone Studio'
     assert shop.slug.startswith('kisii-stone-studio')
     assert shop.verification_status == ShopVerificationStatus.UNVERIFIED
+    event = json.loads(caplog.records[-1].message)
+    assert event['event'] == 'onboarding.shop_created'
+    assert event['shop_id'] == str(shop.id)
 
 
 @pytest.mark.django_db

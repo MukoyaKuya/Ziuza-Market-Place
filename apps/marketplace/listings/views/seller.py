@@ -77,6 +77,7 @@ def seller_listing_list(request, shop: Shop):
 @_with_shop
 @require_http_methods(['GET', 'POST'])
 def seller_listing_create(request, shop: Shop):
+    is_first_listing = not shop.listings.exists()
     form = ListingForm(request.POST or None, shop=shop)
     if request.method == 'POST' and form.is_valid():
         try:
@@ -86,7 +87,7 @@ def seller_listing_create(request, shop: Shop):
                 category=form.cleaned_data['category'],
                 title=form.cleaned_data['title'],
                 base_price=form.cleaned_data['base_price'],
-                currency=form.cleaned_data['currency'],
+                currency='KES',
                 short_description=form.cleaned_data.get('short_description') or '',
                 description=form.cleaned_data.get('description') or '',
                 sku=form.cleaned_data.get('sku') or '',
@@ -109,7 +110,8 @@ def seller_listing_create(request, shop: Shop):
             shop=shop,
             section='listings',
             form=form,
-            page_heading='New listing',
+            page_heading='Create your first listing' if is_first_listing else 'New listing',
+            is_first_listing=is_first_listing,
             form_action=reverse('listings:seller_create'),
         ),
     )
@@ -166,7 +168,7 @@ def seller_listing_edit(request, shop: Shop, listing_id):
                 short_description=form.cleaned_data.get('short_description') or '',
                 description=form.cleaned_data.get('description') or '',
                 base_price=form.cleaned_data['base_price'],
-                currency=form.cleaned_data['currency'],
+                currency='KES',
                 sku=form.cleaned_data.get('sku') or '',
                 product_type=form.cleaned_data['product_type'],
                 seo_title=form.cleaned_data.get('seo_title') or '',

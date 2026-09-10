@@ -4,7 +4,10 @@
 
 {% block dashboard_content %}
 <div class="bg-white rounded-2xl border border-brand-surface-border shadow-ziuza-sm p-6 sm:p-8">
-    <h2 class="text-xl font-display font-bold text-kenya-black mb-6">{{ page_heading }}</h2>
+    <h2 class="text-xl font-display font-bold text-kenya-black{% if not is_first_listing %} mb-6{% endif %}">{{ page_heading }}</h2>
+    {% if is_first_listing %}
+    <p class="mt-2 mb-6 text-sm text-gray-600">Add the essentials now. Your listing is saved as a draft so you can add images and review it before publishing.</p>
+    {% endif %}
 
     {% if form.non_field_errors %}
     <div class="alert-error mb-4" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>
@@ -12,6 +15,9 @@
 
     <form method="post" action="{{ form_action }}" class="space-y-4 max-w-xl" novalidate>
         {% csrf_token %}
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+            Prices on Ziuza are listed in Kenyan shillings (KES).
+        </div>
         {% for field in form %}
         <div>
             <label for="{{ field.id_for_label }}" class="field-label">{{ field.label }}{% if field.field.required %}<span class="text-kenya-red" aria-hidden="true"> *</span>{% endif %}</label>
@@ -20,7 +26,7 @@
         </div>
         {% endfor %}
         <div class="flex flex-wrap gap-3 pt-2">
-            <button type="submit" class="btn-red">Save</button>
+            <button type="submit" class="btn-red">Save draft &amp; continue</button>
             <a href="{% url 'listings:seller_list' %}" class="btn-secondary">Cancel</a>
         </div>
     </form>

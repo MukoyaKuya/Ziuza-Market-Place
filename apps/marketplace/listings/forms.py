@@ -24,7 +24,6 @@ class ListingForm(forms.ModelForm):
             'short_description',
             'description',
             'base_price',
-            'currency',
             'sku',
             'product_type',
             'shipping_profile',
@@ -37,7 +36,6 @@ class ListingForm(forms.ModelForm):
             'short_description': forms.TextInput(attrs={'class': 'field-input'}),
             'description': forms.Textarea(attrs={'class': 'field-textarea', 'rows': 5}),
             'base_price': forms.NumberInput(attrs={'class': 'field-input', 'step': '0.01', 'min': '0.01'}),
-            'currency': forms.TextInput(attrs={'class': 'field-input', 'maxlength': 3}),
             'sku': forms.TextInput(attrs={'class': 'field-input'}),
             'product_type': forms.Select(attrs={'class': 'field-select'}),
             'shipping_profile': forms.Select(attrs={'class': 'field-select'}),
@@ -51,7 +49,6 @@ class ListingForm(forms.ModelForm):
         self.fields['category'].queryset = Category.objects.filter(is_visible=True).order_by(
             'position', 'name'
         )
-        self.fields['currency'].initial = 'KES'
         self.fields['product_type'].required = False
         if shop is None and self.instance and self.instance.pk:
             shop = self.instance.shop
@@ -70,9 +67,6 @@ class ListingForm(forms.ModelForm):
         if price is None or price < Decimal('0.01'):
             raise forms.ValidationError(_('Enter a valid price of at least 0.01.'))
         return price
-
-    def clean_currency(self):
-        return (self.cleaned_data.get('currency') or 'KES').upper()[:3]
 
     def clean_product_type(self):
         return self.cleaned_data.get('product_type') or 'physical'

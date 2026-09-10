@@ -47,6 +47,7 @@ def featured_listings(*, limit: int = 8):
             status=ListingStatus.ACTIVE,
             is_featured=True,
             shop__is_active=True,
+            shop__vacation_mode=False,
         )
         .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
         .select_related('shop', 'category')
@@ -67,6 +68,7 @@ def rotating_discovery(*, position: int, limit: int = 8):
             Listing.objects.filter(
                 status=ListingStatus.ACTIVE,
                 shop__is_active=True,
+                shop__vacation_mode=False,
             )
             .filter(category__in=[category, *category.children.filter(is_visible=True)])
             .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
@@ -94,6 +96,7 @@ def homepage_discovery(*, position: int, limit: int = 4):
         Listing.objects.filter(
             status=ListingStatus.ACTIVE,
             shop__is_active=True,
+            shop__vacation_mode=False,
         )
         .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
         .exclude(id__in=listing_ids)

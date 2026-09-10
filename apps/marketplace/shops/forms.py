@@ -3,7 +3,7 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.constants import KENYA_COUNTIES
 from apps.marketplace.listings.models import Listing, ListingStatus
-from apps.marketplace.shops.models import LocalDeliveryScope, Shop
+from apps.marketplace.shops.models import Shop
 
 
 class CreateShopForm(forms.Form):
@@ -30,63 +30,6 @@ class CreateShopForm(forms.Form):
         initial='Nairobi',
         widget=forms.Select(attrs={'class': 'field-select'}),
     )
-    sub_county = forms.CharField(
-        label=_('Sub-County'),
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'e.g. Westlands, Nyali, Mavoko',
-        }),
-    )
-    ward = forms.CharField(
-        label=_('Ward / Neighborhood'),
-        max_length=100,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'e.g. Parklands, Karen, Central',
-        }),
-    )
-    location_text = forms.CharField(
-        label=_('Location details'),
-        max_length=255,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'Street, landmark or village (optional)',
-        }),
-    )
-    is_local_seller = forms.BooleanField(
-        label=_('Enroll in Ziuza Local directory'),
-        required=False,
-        initial=True,
-        widget=forms.CheckboxInput(attrs={'class': 'field-checkbox'}),
-    )
-    local_delivery_scope = forms.ChoiceField(
-        label=_('Local service reach'),
-        choices=LocalDeliveryScope.choices,
-        initial=LocalDeliveryScope.COUNTY,
-        required=False,
-        widget=forms.Select(attrs={'class': 'field-select'}),
-    )
-    local_pickup_available = forms.BooleanField(
-        label=_('Offer local pickup to nearby buyers'),
-        required=False,
-        initial=True,
-        widget=forms.CheckboxInput(attrs={'class': 'field-checkbox'}),
-    )
-    local_pickup_instructions = forms.CharField(
-        label=_('Local pickup point / instructions'),
-        max_length=255,
-        required=False,
-        widget=forms.TextInput(attrs={
-            'class': 'field-input',
-            'placeholder': 'e.g. Workshop pickup at Biashara Plaza, Room 4',
-        }),
-    )
-
-
 class ShopSettingsForm(forms.ModelForm):
     county = forms.ChoiceField(
         choices=KENYA_COUNTIES,
@@ -108,6 +51,7 @@ class ShopSettingsForm(forms.ModelForm):
             'ward',
             'village',
             'location_text',
+            'whatsapp_number',
             'policies',
             'shipping_policy',
             'return_policy',
@@ -123,6 +67,11 @@ class ShopSettingsForm(forms.ModelForm):
             'ward': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Parklands/Highridge'}),
             'village': forms.TextInput(attrs={'class': 'field-input', 'placeholder': 'e.g. Workshop 12, River Road'}),
             'location_text': forms.TextInput(attrs={'class': 'field-input'}),
+            'whatsapp_number': forms.TextInput(attrs={
+                'class': 'field-input',
+                'placeholder': 'e.g. 0712345678 or +255712345678',
+                'inputmode': 'tel',
+            }),
             'policies': forms.Textarea(attrs={
                 'class': 'field-textarea',
                 'rows': 4,
@@ -140,7 +89,18 @@ class ShopSettingsForm(forms.ModelForm):
             'is_active': _('Shop is active'),
             'policies': _('Shop policies'),
             'location_text': _('Location details'),
+            'whatsapp_number': _('WhatsApp number (enables WhatsApp checkout)'),
         }
+
+    def clean_whatsapp_number(self):
+        value = (self.cleaned_data.get('whatsapp_number') or '').strip()
+        if not value:
+            return ''
+        from apps.marketplace.payments.whatsapp import normalize_whatsapp_number
+        try:
+            return normalize_whatsapp_number(value)
+        except ValueError as exc:
+            raise forms.ValidationError(str(exc)) from exc
 
     def clean(self):
         cleaned = super().clean()

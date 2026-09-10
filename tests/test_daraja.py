@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from apps.marketplace.payments.daraja import DarajaClient, DarajaConfig, normalize_phone
+from apps.marketplace.payments.daraja import DarajaClient, DarajaConfig, DarajaError, normalize_phone
 
 
 class JsonResponse:
@@ -88,3 +88,31 @@ def test_stk_push_rejects_fractional_kes_before_network_call():
             account_reference='ZIU-1',
             description='Order',
         )
+
+
+@patch('apps.marketplace.payments.daraja.urlopen')
+def test_stk_query_uses_authenticated_daraja_endpoint(mock_urlopen):
+    mock_urlopen.side_effect = [
+        JsonResponse({'access_token': 'access-token'}),
+        JsonResponse({'ResponseCode': '0', 'ResultCode': '0', 'ResultDesc': 'Success'}),
+    ]
+
+    response = DarajaClient(config()).stk_query(checkout_request_id='ws_CO_123')
+
+    query_request = mock_urlopen.call_args_list[1].args[0]
+    payload = json.loads(query_request.data)
+    assert query_request.full_url.endswith('/mpesa/stkpushquery/v1/query')
+    assert query_request.get_header('Authorization') == 'Bearer access-token'
+    assert payload['CheckoutRequestID'] == 'ws_CO_123'
+    assert response['ResultCode'] == '0'
+
+
+@patch('apps.marketplace.payments.daraja.urlopen')
+def test_stk_query_rejects_response_without_final_result(mock_urlopen):
+    mock_urlopen.side_effect = [
+        JsonResponse({'access_token': 'access-token'}),
+        JsonResponse({'ResponseCode': '0', 'ResponseDescription': 'Still processing'}),
+    ]
+
+    with pytest.raises(DarajaError, match='did not return a final result'):
+        DarajaClient(config()).stk_query(checkout_request_id='ws_CO_123')

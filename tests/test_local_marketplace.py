@@ -133,6 +133,17 @@ def test_local_index_renders_and_filters(client, local_shop, mombasa_seller):
 
 
 @pytest.mark.django_db
+def test_local_index_hides_vacation_shops(client, local_shop):
+    local_shop.vacation_mode = True
+    local_shop.save(update_fields=['vacation_mode', 'updated_at'])
+
+    response = client.get(reverse('shops:local'))
+
+    assert response.status_code == 200
+    assert 'Nairobi Pottery Works' not in response.content.decode()
+
+
+@pytest.mark.django_db
 def test_local_index_htmx_partial(client, local_shop):
     url = reverse('shops:local')
     response = client.get(f'{url}?county=Nairobi', HTTP_HX_REQUEST='true')
@@ -143,7 +154,7 @@ def test_local_index_htmx_partial(client, local_shop):
 
 
 @pytest.mark.django_db
-def test_seller_onboarding_with_local_fields(client):
+def test_seller_onboarding_uses_local_defaults(client):
     user = User.objects.create_user(
         email='new_local_artisan@ziuza.test',
         password='password123',
@@ -157,25 +168,18 @@ def test_seller_onboarding_with_local_fields(client):
         'name': 'Machakos Woodcrafts',
         'description': 'Carvings and handmade bowls.',
         'county': 'Machakos',
-        'sub_county': 'Machakos Town',
-        'ward': 'Machakos Central',
-        'location_text': 'Market Lane',
-        'is_local_seller': 'on',
-        'local_delivery_scope': 'county',
-        'local_pickup_available': 'on',
-        'local_pickup_instructions': 'Workshop desk',
     })
     assert response.status_code == 302
-    assert response.url == reverse('shops:dashboard')
+    assert response.url == reverse('listings:seller_create')
 
     shop = Shop.objects.get(name='Machakos Woodcrafts')
     assert shop.county == 'Machakos'
-    assert shop.sub_county == 'Machakos Town'
-    assert shop.ward == 'Machakos Central'
+    assert shop.sub_county == ''
+    assert shop.ward == ''
     assert shop.is_local_seller is True
     assert shop.local_delivery_scope == 'county'
     assert shop.local_pickup_available is True
-    assert shop.local_pickup_instructions == 'Workshop desk'
+    assert shop.local_pickup_instructions == ''
 
 
 @pytest.mark.django_db

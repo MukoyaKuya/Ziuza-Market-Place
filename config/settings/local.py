@@ -15,7 +15,10 @@ else:
         }
     }
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# Email: print to the runserver console until SMTP credentials exist in .env.
+# (Resend is prewired in .env — pasting the API key is enough to go live.)
+if not env('EMAIL_HOST_PASSWORD', default=''):
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ALLOWED_HOSTS = ['*']
 CSRF_TRUSTED_ORIGINS = [

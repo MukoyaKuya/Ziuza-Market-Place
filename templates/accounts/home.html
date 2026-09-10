@@ -4,6 +4,8 @@
 
 {% block account_content %}
 <div class="space-y-6">
+    {% include 'accounts/partials/verify_banner.html' %}
+
     <div>
         <h2 class="text-xl font-display font-bold text-kenya-black">
             Habari{% if request.user.display_name %}, {{ request.user.display_name }}{% endif %}

@@ -32,7 +32,7 @@ def local_index(request):
 
     # Filter local shops
     shops_qs = (
-        Shop.objects.filter(is_active=True, is_local_seller=True)
+        Shop.objects.filter(is_active=True, vacation_mode=False, is_local_seller=True)
         .exclude(verification_status=ShopVerificationStatus.SUSPENDED)
         .order_by('-rating_average', '-created_at')
     )
@@ -57,6 +57,7 @@ def local_index(request):
         Listing.objects.filter(
             status=ListingStatus.ACTIVE,
             shop__is_active=True,
+            shop__vacation_mode=False,
             shop__is_local_seller=True,
         )
         .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)

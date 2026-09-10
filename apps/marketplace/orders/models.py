@@ -29,6 +29,11 @@ class FulfillmentStatus(models.TextChoices):
     CANCELLED = 'cancelled', _('Cancelled')
 
 
+class PaymentMethod(models.TextChoices):
+    ONLINE = 'online', _('Online (provider)')
+    WHATSAPP = 'whatsapp', _('Arranged on WhatsApp')
+
+
 class HelpRequestStatus(models.TextChoices):
     OPEN = 'open', _('Open')
     SELLER_RESPONDED = 'seller_responded', _('Seller responded')
@@ -79,6 +84,9 @@ class Order(models.Model):
     promotion_code = models.CharField(max_length=32, blank=True)
     grand_total = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     payment_status = models.CharField(max_length=32, choices=PaymentStatus.choices, default=PaymentStatus.PENDING)
+    payment_method = models.CharField(
+        max_length=20, choices=PaymentMethod.choices, default=PaymentMethod.ONLINE
+    )
     fulfillment_status = models.CharField(
         max_length=32, choices=FulfillmentStatus.choices, default=FulfillmentStatus.UNFULFILLED
     )

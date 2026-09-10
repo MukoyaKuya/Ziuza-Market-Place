@@ -55,10 +55,19 @@ Source: `static/src/input.css` → output: `static/css/styles.css`.
 
 ## 4. Database and static files
 
+The migration role must be allowed to provision the trusted PostgreSQL `pg_trgm`
+extension. If it cannot create extensions, a database administrator must run:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+SELECT extname FROM pg_extension WHERE extname = 'pg_trgm';
+```
+
 ```bash
 export DJANGO_SETTINGS_MODULE=config.settings.production
 python manage.py migrate
 python manage.py collectstatic --noinput
+python manage.py ops_preflight --require-celery
 ```
 
 Run migrations before serving traffic. Re-run `collectstatic` after upgrades that change static assets.
@@ -85,6 +94,10 @@ You can run scheduled jobs using **Celery & Celery Beat** (recommended) or cron-
 
 ### Option A: Celery Worker + Celery Beat (Recommended)
 
+Email delivery is at-least-once: an SMTP timeout or worker crash can result in a
+duplicate message. Messages must remain safe to receive more than once. Run exactly
+one Beat scheduler to avoid duplicate periodic task publication.
+
 Run a Celery worker and Celery Beat daemon:
 
 ```bash
@@ -106,6 +119,15 @@ celery -A config beat --loglevel=info
 | Recurring (e.g. every 5 min) | `python manage.py deliver_notifications` | Send queued notification emails |
 | Daily | `python manage.py process_review_reminders` | Invite buyers to review after delivery |
 | Daily | `python manage.py rollup_shop_analytics` | Persist seller analytics chart data |
+| Weekly | `python manage.py purge_inactive_carts` | Delete abandoned anonymous carts |
+| Weekly | `python manage.py purge_operational_data --execute` | Apply configured operational retention |
+
+For an M-Pesa attempt left in `initiated` state after a timeout or database error, recover the
+`CheckoutRequestID` from the critical application log and reconcile it without sending another STK push:
+
+```bash
+python manage.py reconcile_mpesa_payment --payment <payment-uuid> --checkout-id <CheckoutRequestID>
+```
 
 Example crontab entries (adjust paths):
 
@@ -128,7 +150,17 @@ Example crontab entries (adjust paths):
 
 Point load balancer or orchestrator probes at these paths.
 
-## 8. Post-deploy verification
+When `check_celery=1` is requested, readiness fails unless a worker responds. Use this only
+when Celery is authoritative; cron-only deployments should use the database readiness URL.
+
+## 8. Backups and performance monitoring
+
+Follow [`backup-restore.md`](backup-restore.md) and complete a restore drill before launch.
+For PostgreSQL, configure `log_min_duration_statement` or the managed database's query
+insights feature. Start near 500 ms, inspect production traces, then tune the threshold.
+Do not log SQL parameters because they may contain buyer or payment data.
+
+## 9. Post-deploy verification
 
 - [ ] Homepage and a listing page render with CSS (confirms `npm run build:css` ran)
 - [ ] `/health/live/` and `/health/ready/` return 200

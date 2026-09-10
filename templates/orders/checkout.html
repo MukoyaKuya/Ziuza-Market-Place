@@ -63,8 +63,28 @@
                 {% endfor %}
             </fieldset>{% else %}<p class="rounded-ziuza bg-green-50 border border-green-200 p-3 text-sm">Digital products are available in your account after payment. No shipping fee.</p>{% endif %}
 
+            {% if whatsapp_eligible %}
+            <fieldset>
+                <legend class="font-display font-bold text-lg mb-3">Payment</legend>
+                <label class="flex gap-3 items-start rounded-ziuza border border-brand-surface-border p-3 mb-2 cursor-pointer hover:border-kenya-green">
+                    <input type="radio" name="payment_method" value="online" checked class="mt-1">
+                    <span class="text-sm">
+                        Pay online now
+                        <span class="block text-xs text-gray-500">M-Pesa STK push or the configured provider</span>
+                    </span>
+                </label>
+                <label class="flex gap-3 items-start rounded-ziuza border border-brand-surface-border p-3 cursor-pointer hover:border-kenya-green">
+                    <input type="radio" name="payment_method" value="whatsapp" class="mt-1">
+                    <span class="text-sm">
+                        Arrange payment on WhatsApp with {{ whatsapp_shop.name }}
+                        <span class="block text-xs text-gray-500">Place the order, then chat with the shop to pay — M-Pesa till, cash on delivery, whatever you agree</span>
+                    </span>
+                </label>
+            </fieldset>
+            {% endif %}
+
             {% if addresses or not requires_shipping or allows_addressless_pickup %}
-            <button type="submit" class="btn-red">Place order & pay</button>
+            <button type="submit" class="btn-red">{% if whatsapp_eligible %}Place order{% else %}Place order &amp; pay{% endif %}</button>
             {% endif %}
         </form>
 

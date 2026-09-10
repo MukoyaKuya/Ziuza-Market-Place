@@ -1,3 +1,4 @@
+import uuid
 from datetime import timedelta
 
 import pytest
@@ -6,7 +7,7 @@ from django.core import mail
 from django.urls import reverse
 from django.utils import timezone
 
-from apps.marketplace.notifications.delivery import deliver_pending_notifications
+from apps.marketplace.notifications.delivery import TYPE_CATEGORIES, _finish, deliver_pending_notifications
 from apps.marketplace.notifications.models import (
     DeliveryStatus,
     DigestFrequency,
@@ -156,3 +157,33 @@ def test_unread_count_partial(client, recipient):
     assert 'Unread 1' not in response.content.decode()  # Body isn't rendered in badge
     assert '1' in response.content.decode()
 
+
+@pytest.mark.parametrize('notification_type', [
+    'help_request',
+    'help_response',
+    'help_request_response',
+    'help_request_message',
+    'help_request_escalated',
+    'help_request_resolved',
+])
+def test_help_request_notifications_use_order_preferences(notification_type):
+    assert TYPE_CATEGORIES[notification_type] == 'order_updates'
+
+
+@pytest.mark.django_db
+def test_stale_worker_cannot_finish_a_newer_delivery_claim(recipient):
+    notification = notify(recipient=recipient, type='order_placed', title='Claimed notification')
+    stale_delivery = NotificationDelivery.objects.get(notification=notification)
+    stale_delivery.claim_token = uuid.uuid4()
+    current_token = uuid.uuid4()
+    NotificationDelivery.objects.filter(pk=stale_delivery.pk).update(
+        status=DeliveryStatus.PROCESSING,
+        claim_token=current_token,
+        processing_started_at=timezone.now(),
+    )
+
+    _finish([stale_delivery])
+
+    stale_delivery.refresh_from_db()
+    assert stale_delivery.status == DeliveryStatus.PROCESSING
+    assert stale_delivery.claim_token == current_token

@@ -80,7 +80,7 @@ def search_results(request):
             'max_price': request.GET.get('max_price', ''),
             'product_type': product_type or '',
             'county': county,
-            'counties': Shop.objects.filter(is_active=True)
+            'counties': Shop.objects.filter(is_active=True, vacation_mode=False)
                 .exclude(verification_status=ShopVerificationStatus.SUSPENDED)
                 .exclude(county='').values_list('county', flat=True).distinct().order_by('county'),
             'verified_only': verified_only,

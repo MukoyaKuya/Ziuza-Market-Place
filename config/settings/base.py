@@ -12,6 +12,8 @@ env = environ.Env(
     SECRET_KEY=(str, 'django-insecure-change-me-in-production'),
     ALLOWED_HOSTS=(list, ['127.0.0.1', 'localhost']),
     ORDER_RESERVATION_MINUTES=(int, 30),
+    WHATSAPP_CHECKOUT_ENABLED=(bool, True),
+    WHATSAPP_ORDER_RESERVATION_HOURS=(int, 24),
     PUBLIC_SITE_URL=(str, 'http://localhost:8000'),
     DEFAULT_FROM_EMAIL=(str, 'Ziuza Marketplace <notifications@ziuza.local>'),
     EMAIL_BACKEND=(str, 'django.core.mail.backends.smtp.EmailBackend'),
@@ -87,6 +89,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.accounts.middleware.RequireVerifiedEmailMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.SimpleRateLimitMiddleware',
@@ -127,6 +130,7 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'accounts:account_home'
 LOGOUT_REDIRECT_URL = 'core:home'
+REQUIRE_EMAIL_VERIFICATION = env.bool('REQUIRE_EMAIL_VERIFICATION', default=True)
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -203,9 +207,20 @@ MPESA_TRANSACTION_TYPE = env('MPESA_TRANSACTION_TYPE', default='CustomerPayBillO
 MPESA_HTTP_TIMEOUT = env.int('MPESA_HTTP_TIMEOUT', default=15)
 ORDER_RESERVATION_MINUTES = env('ORDER_RESERVATION_MINUTES')
 
-# Only enable this when the application is behind a trusted proxy that replaces
-# (rather than appends to) X-Forwarded-For.
-TRUST_X_FORWARDED_FOR = env.bool('TRUST_X_FORWARDED_FOR', default=False)
+# WhatsApp click-to-chat checkout (seller-confirmed manual payments)
+WHATSAPP_CHECKOUT_ENABLED = env('WHATSAPP_CHECKOUT_ENABLED')
+WHATSAPP_ORDER_RESERVATION_HOURS = env('WHATSAPP_ORDER_RESERVATION_HOURS')
+
+# Client-IP headers are used only when the direct peer is explicitly trusted.
+TRUSTED_PROXY_IPS = env.list('TRUSTED_PROXY_IPS', default=[])
+TRUSTED_CLIENT_IP_HEADER = env('TRUSTED_CLIENT_IP_HEADER', default='')
+
+# Operational data only. Financial, order, dispute, and message records are not purged.
+RETENTION_OTP_DAYS = env.int('RETENTION_OTP_DAYS', default=1)
+RETENTION_RECENT_VIEWS_DAYS = env.int('RETENTION_RECENT_VIEWS_DAYS', default=180)
+RETENTION_DELIVERY_DAYS = env.int('RETENTION_DELIVERY_DAYS', default=90)
+RETENTION_READ_NOTIFICATION_DAYS = env.int('RETENTION_READ_NOTIFICATION_DAYS', default=180)
+RETENTION_CALLBACK_PAYLOAD_DAYS = env.int('RETENTION_CALLBACK_PAYLOAD_DAYS', default=365)
 
 # Optional Sentry (install sentry-sdk[django] in prod extras when enabling)
 SENTRY_DSN = env('SENTRY_DSN', default='')
@@ -256,6 +271,10 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(day_of_week=0, hour=3, minute=0),
         'kwargs': {'days': 30},
     },
+    'purge-operational-data-weekly': {
+        'task': 'apps.core.tasks.purge_operational_data_task',
+        'schedule': crontab(day_of_week=0, hour=4, minute=0),
+    },
 }
 
 
@@ -294,6 +313,11 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': True,
+        },
+        'commerce': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }

@@ -14,7 +14,11 @@ class ListingSitemap(Sitemap):
 
     def items(self):
         return (
-            Listing.objects.filter(status=ListingStatus.ACTIVE, shop__is_active=True)
+            Listing.objects.filter(
+                status=ListingStatus.ACTIVE,
+                shop__is_active=True,
+                shop__vacation_mode=False,
+            )
             .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
             .order_by('-published_at')[:5000]
         )
@@ -42,7 +46,7 @@ class ShopSitemap(Sitemap):
     priority = 0.5
 
     def items(self):
-        return Shop.objects.filter(is_active=True).exclude(
+        return Shop.objects.filter(is_active=True, vacation_mode=False).exclude(
             verification_status=ShopVerificationStatus.SUSPENDED
         )
 

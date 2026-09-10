@@ -33,7 +33,21 @@
             <div class="flex justify-between font-bold text-base"><dt>Total</dt><dd>KES {{ order.grand_total }}</dd></div>
         </dl>
         {% if order.payment_status == 'pending' or order.payment_status == 'processing' %}
+        {% if order.payment_method == 'whatsapp' %}
+        <div class="alert-warning space-y-2" role="status">
+            <p>
+                <strong>Waiting for {{ order.seller_orders.first.shop.name }} to confirm your payment.</strong>
+                Arrange payment with them on WhatsApp; they'll confirm here once they receive the money.
+            </p>
+            {% if whatsapp_url %}
+            <a href="{{ whatsapp_url }}" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-ziuza px-4 py-2 text-sm font-semibold text-white"
+               style="background-color:#25D366">Reopen WhatsApp chat</a>
+            {% endif %}
+        </div>
+        {% else %}
         <a href="{% url 'payments:initiate' order.public_number %}" class="btn-red btn-sm inline-flex">Complete payment</a>
+        {% endif %}
         <form method="post" action="{% url 'orders:buyer_cancel' order.public_number %}" class="inline-block ml-2">
             {% csrf_token %}
             <button type="submit" class="btn-outline btn-sm">Cancel order</button>

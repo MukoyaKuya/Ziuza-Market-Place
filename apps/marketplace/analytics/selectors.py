@@ -1,11 +1,11 @@
 from datetime import timedelta
 from decimal import Decimal
 
-from django.db.models import Count, Sum
+from django.db.models import Count, Max, Sum
 from django.db.models.functions import TruncDate
 
 from apps.marketplace.analytics.models import ListingDailyMetric, ShopDailyMetric
-from apps.marketplace.analytics.services import ensure_shop_metrics, nairobi_today
+from apps.marketplace.analytics.services import nairobi_today
 from apps.marketplace.favorites.models import Favorite
 from apps.marketplace.orders.models import (
     FulfillmentStatus,
@@ -53,14 +53,15 @@ def _dense_daily_live(*, shop, start, end, days: int):
     paid_seller_orders = SellerOrder.objects.filter(
         shop=shop,
         order__payment_status=PaymentStatus.PAID,
-        created_at__date__gte=start,
-        created_at__date__lte=end,
+        order__payments__status='confirmed',
+        order__payments__confirmed_at__date__gte=start,
+        order__payments__confirmed_at__date__lte=end,
     )
     # TruncDate uses the active timezone (Africa/Nairobi)
     rows = {
         row['day']: row
         for row in (
-            paid_seller_orders.annotate(day=TruncDate('created_at'))
+            paid_seller_orders.annotate(day=TruncDate('order__payments__confirmed_at'))
             .values('day')
             .annotate(orders=Count('id'), revenue=Sum('subtotal'))
         )
@@ -113,12 +114,13 @@ def _top_listings_live(*, shop, start, end):
         OrderItem.objects.filter(
             seller_order__shop=shop,
             order__payment_status=PaymentStatus.PAID,
-            seller_order__created_at__gte=start_dt,
-            seller_order__created_at__lt=end_dt,
+            order__payments__status='confirmed',
+            order__payments__confirmed_at__gte=start_dt,
+            order__payments__confirmed_at__lt=end_dt,
         )
-        .values('title_snapshot', 'listing_id')
-        .annotate(units_sold=Sum('quantity'), revenue=Sum('line_total'))
-        .order_by('-units_sold')[:5]
+        .values('listing_id')
+        .annotate(title_snapshot=Max('title_snapshot'), units_sold=Sum('quantity'), revenue=Sum('line_total'))
+        .order_by('-units_sold', 'listing_id')[:5]
     )
     return list(top_listings)
 
@@ -128,54 +130,29 @@ def shop_analytics_summary(*, shop, days: int = 14):
         days = 14
     start, end = _window_bounds(days=days)
 
-    metric_count = ShopDailyMetric.objects.filter(shop=shop, date__gte=start, date__lte=end).count()
-    use_metrics = metric_count > 0
+    daily = _dense_daily_live(shop=shop, start=start, end=end, days=days)
+    revenue = sum((row['revenue'] or Decimal('0.00')) for row in daily)
+    order_count = sum(row['orders'] for row in daily)
+    top_listings = _top_listings_live(shop=shop, start=start, end=end)
 
-    if use_metrics:
-        daily = _dense_daily_from_metrics(shop=shop, start=start, end=end, days=days)
-        window_agg = ShopDailyMetric.objects.filter(shop=shop, date__gte=start, date__lte=end).aggregate(
-            revenue=Sum('revenue'),
-            order_count=Sum('orders'),
-            units=Sum('units_sold'),
-        )
-        revenue = window_agg['revenue'] or Decimal('0.00')
-        order_count = window_agg['order_count'] or 0
-        units = window_agg['units'] or 0
-        top_listings = _top_listings_from_metrics(shop=shop, start=start, end=end)
-        if not top_listings:
-            top_listings = _top_listings_live(shop=shop, start=start, end=end)
-    else:
-        daily = _dense_daily_live(shop=shop, start=start, end=end, days=days)
-        revenue = sum((row['revenue'] or Decimal('0.00')) for row in daily)
-        order_count = sum(row['orders'] for row in daily)
-        units = (
-            OrderItem.objects.filter(
-                seller_order__shop=shop,
-                order__payment_status=PaymentStatus.PAID,
-            )
-            .aggregate(total=Sum('quantity'))['total']
-            or 0
-        )
-        # Lifetime units when no metrics — but for window consistency use live window top listings
-        top_listings = _top_listings_live(shop=shop, start=start, end=end)
-        # Window units from items
-        from datetime import datetime, time
-        from zoneinfo import ZoneInfo
+    from datetime import datetime, time
+    from zoneinfo import ZoneInfo
 
-        from django.utils import timezone
+    from django.utils import timezone
 
-        nairobi = ZoneInfo('Africa/Nairobi')
-        start_dt = timezone.make_aware(datetime.combine(start, time.min), nairobi)
-        end_dt = timezone.make_aware(datetime.combine(end + timedelta(days=1), time.min), nairobi)
-        units = (
-            OrderItem.objects.filter(
-                seller_order__shop=shop,
-                order__payment_status=PaymentStatus.PAID,
-                seller_order__created_at__gte=start_dt,
-                seller_order__created_at__lt=end_dt,
-            ).aggregate(total=Sum('quantity'))['total']
-            or 0
-        )
+    nairobi = ZoneInfo('Africa/Nairobi')
+    start_dt = timezone.make_aware(datetime.combine(start, time.min), nairobi)
+    end_dt = timezone.make_aware(datetime.combine(end + timedelta(days=1), time.min), nairobi)
+    units = (
+        OrderItem.objects.filter(
+            seller_order__shop=shop,
+            order__payment_status=PaymentStatus.PAID,
+            order__payments__status='confirmed',
+            order__payments__confirmed_at__gte=start_dt,
+            order__payments__confirmed_at__lt=end_dt,
+        ).aggregate(total=Sum('quantity'))['total']
+        or 0
+    )
 
     # Lifetime-ish live KPIs (unchanged semantics for overview / protection / audience)
     paid_seller_orders = SellerOrder.objects.filter(
@@ -300,10 +277,8 @@ def shop_analytics_summary(*, shop, days: int = 14):
     }
 
 
-# Re-export for views that call ensure before summary
 __all__ = [
     'ALLOWED_ANALYTICS_DAYS',
-    'ensure_shop_metrics',
     'nairobi_today',
     'shop_analytics_summary',
 ]

@@ -67,6 +67,8 @@ class NotificationDelivery(models.Model):
     status = models.CharField(max_length=16, choices=DeliveryStatus.choices, default=DeliveryStatus.PENDING, db_index=True)
     available_at = models.DateTimeField(default=timezone.now, db_index=True)
     attempts = models.PositiveSmallIntegerField(default=0)
+    claim_token = models.UUIDField(null=True, blank=True, editable=False)
+    processing_started_at = models.DateTimeField(null=True, blank=True)
     last_error = models.CharField(max_length=500, blank=True)
     sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

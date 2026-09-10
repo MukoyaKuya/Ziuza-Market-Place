@@ -1,0 +1,9 @@
+{% if not request.user.email_verified %}
+<div class="alert-warning flex flex-wrap items-center justify-between gap-3" role="status">
+    <span>Verify your email ({{ request.user.email }}) to secure your Ziuza account.</span>
+    <form method="post" action="{% url 'accounts:resend_verification' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-outline btn-sm">Verify now</button>
+    </form>
+</div>
+{% endif %}

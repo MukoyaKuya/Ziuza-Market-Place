@@ -18,9 +18,16 @@
             <button type="submit" class="btn-red w-full">Send payment prompt</button>
         </form>
         {% else %}
+        {% if payment.status == 'initiated' %}
+        <div class="rounded-xl bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
+            The payment request outcome is being reconciled. Do not submit another payment; check your phone and order status first.
+        </div>
+        {% endif %}
         <dl class="text-sm space-y-2">
             <div class="flex justify-between"><dt>Amount</dt><dd class="font-bold">KES {{ payment.amount }}</dd></div>
+            {% if payment.status != 'initiated' %}
             <div class="flex justify-between"><dt>Checkout ID</dt><dd class="font-mono text-xs">{{ payment.provider_reference }}</dd></div>
+            {% endif %}
             <div class="flex justify-between"><dt>Status</dt><dd>{{ payment.get_status_display }}</dd></div>
         </dl>
         {% if payment.status != 'confirmed' and not daraja_enabled %}

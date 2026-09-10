@@ -58,6 +58,7 @@
               class="mt-4 space-y-3"
               novalidate>
             {% csrf_token %}
+            {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
 
             <div>
                 <label for="modal_reg_email" class="mb-1.5 block text-sm font-semibold text-gray-700">Email</label>
@@ -157,8 +158,8 @@
 
         <div class="mt-6 text-center text-sm text-gray-600">
             Already have an account?
-            <a href="{% url 'accounts:login' %}"
-               hx-get="{% url 'accounts:login' %}"
+            <a href="{% url 'accounts:login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}"
+               hx-get="{% url 'accounts:login' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}"
                hx-target="#modal-container"
                hx-swap="innerHTML"
                class="ml-1 font-bold text-[#008751] hover:underline">Sign in →</a>

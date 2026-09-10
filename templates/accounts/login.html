@@ -4,93 +4,25 @@
 {% block title %}Sign in | Ziuza Marketplace{% endblock %}
 
 {% block content %}
-<div class="w-full max-w-5xl mx-auto">
-    <!-- Main Split Card Container -->
-    <div class="bg-white/95 rounded-2xl sm:rounded-3xl border border-white shadow-2xl shadow-stone-200/60 overflow-hidden grid grid-cols-1 lg:grid-cols-2 ring-1 ring-black/5">
-        
-        <!-- Left Side: Artisan & Craft Showcase Card -->
-        <div class="relative hidden lg:flex flex-col justify-between p-7 lg:p-8 text-white bg-cover bg-center overflow-hidden"
-             style="background-image: url('{% static "images/hero_kenyan_basket.png" %}');">
-            
-            <!-- Dark Gradient Overlay -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/35 z-10"></div>
+<div class="w-full max-w-md mx-auto">
+    <!-- Sign In Card -->
+    <div class="bg-white/95 rounded-2xl sm:rounded-3xl border border-white shadow-2xl shadow-stone-200/60 overflow-hidden ring-1 ring-black/5">
 
-            <!-- Kenyan Flag Ribbon Curve Motif (Bottom Left) -->
-            <div class="absolute bottom-0 left-0 right-0 z-20 pointer-events-none opacity-95">
-                <svg viewBox="0 0 500 130" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
-                    <path d="M-20 60C100 110 240 20 380 75C440 95 480 70 520 60V140H-20V60Z" fill="#008751"/>
-                    <path d="M-20 75C110 120 250 35 390 88C445 105 485 80 520 70V140H-20V75Z" fill="#E31B23"/>
-                    <path d="M-20 90C120 130 260 50 400 100C450 115 490 90 520 80V140H-20V90Z" fill="#FFFFFF"/>
-                </svg>
-            </div>
-
-            <!-- Top Left Heading Content -->
-            <div class="relative z-20 space-y-1 max-w-sm pt-1">
-                <h2 class="auth-display text-2xl lg:text-3xl text-white tracking-tight leading-tight">Welcome back!</h2>
-                <p class="auth-subtitle text-gray-200 font-normal leading-relaxed">
-                    Sign in to continue shopping unique, handmade products from Kenya.
-                </p>
-            </div>
-
-            <!-- Middle Value Bullet Features -->
-            <div class="relative z-20 space-y-2.5 my-auto py-4 max-w-sm">
-                <!-- Bullet 1 -->
-                <div class="flex items-start gap-3 rounded-xl px-3 py-2" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(2px);">
-                    <div class="w-8 h-8 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-white">Shop Authentic</h4>
-                        <p class="text-xs text-gray-200 leading-4 mt-0.5">Discover handmade, vintage and unique Kenyan products.</p>
-                    </div>
-                </div>
-
-                <!-- Bullet 2 -->
-                <div class="flex items-start gap-3 rounded-xl px-3 py-2" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(2px);">
-                    <div class="w-8 h-8 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-white">Support Creators</h4>
-                        <p class="text-xs text-gray-200 leading-4 mt-0.5">Empower local artisans and small businesses.</p>
-                    </div>
-                </div>
-
-                <!-- Bullet 3 -->
-                <div class="flex items-start gap-3 rounded-xl px-3 py-2" style="background: rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(2px);">
-                    <div class="w-8 h-8 rounded-full bg-[#00482B]/80 border border-white/20 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-sm text-white">Secure &amp; Easy</h4>
-                        <p class="text-xs text-gray-200 leading-4 mt-0.5">Your data is protected with industry-standard security.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Side: Sign In Form -->
+        <!-- Sign In Form -->
         <div class="p-6 sm:p-7 lg:p-8 bg-white flex flex-col justify-center" x-data="{ showPassword: false }">
             
             <!-- Brand Header -->
-            <div class="text-center mb-4">
-                <div class="inline-flex items-center justify-center rounded-2xl border border-[#008751]/15 bg-gradient-to-b from-[#F7FBF9] to-white px-4 py-2 mb-2.5 shadow-sm">
+            <div class="text-center mb-5">
+                <div class="inline-flex items-center justify-center rounded-2xl border border-[#008751]/15 bg-gradient-to-b from-[#F7FBF9] to-white px-4 py-2 mb-3 shadow-sm">
                     <img src="{% static 'brand/ziuza-logo.svg' %}" alt="Ziuza" class="h-7 w-auto object-contain" loading="lazy">
                 </div>
-                <p class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#008751]/80 mb-1">Welcome Back</p>
-                <h1 class="auth-display auth-title text-gray-900">Sign in to your account</h1>
-                <p class="auth-subtitle text-gray-500 mt-0.5">Access your orders, wishlist, and Kenyan shop.</p>
+                <h1 class="auth-display auth-title text-gray-900">Sign in</h1>
                 {% if request.GET.intent == 'favorite' %}
                 <div class="mt-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-800 flex items-center justify-center gap-1.5">
                     <svg class="w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
                     <span>Sign in to save this item to your favorites.</span>
                 </div>
                 {% endif %}
-                <div class="mt-2 flex flex-wrap justify-center gap-1.5 text-[10px] font-semibold text-gray-600">
-                    <span class="rounded-full bg-gray-100 px-2 py-0.5">Fast checkout</span>
-                    <span class="rounded-full bg-gray-100 px-2 py-0.5">Saved favorites</span>
-                    <span class="rounded-full bg-gray-100 px-2 py-0.5">Order tracking</span>
-                </div>
             </div>
 
             {% if form.non_field_errors %}
@@ -102,6 +34,7 @@
             <!-- Form -->
             <form method="post" class="space-y-3" novalidate>
                 {% csrf_token %}
+                {% if next_url %}<input type="hidden" name="next" value="{{ next_url }}">{% endif %}
 
                 <!-- Email Field -->
                 <div>
@@ -124,7 +57,7 @@
                 <div>
                     <div class="flex items-center justify-between mb-1">
                         <label for="id_password" class="auth-label block text-gray-700">Password</label>
-                        <a href="{% url 'accounts:login' %}" class="text-[11px] font-semibold text-[#008751] hover:underline">Forgot?</a>
+                        <a href="{% url 'accounts:password_reset' %}" class="text-[11px] font-semibold text-[#008751] hover:underline">Forgot?</a>
                     </div>
                     <div class="relative">
                         <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -169,18 +102,10 @@
                 </button>
             </form>
 
-            <p class="auth-footnote mt-2 text-center text-gray-500">By signing in, you continue to secure checkout and personalized recommendations.</p>
-
             <!-- Bottom Switch Link -->
-            <div class="auth-footnote mt-3 text-center text-gray-600 font-medium">
+            <div class="auth-footnote mt-4 text-center text-gray-600 font-medium">
                 New to Ziuza?
-                <a href="{% url 'accounts:register' %}" class="font-bold text-[#008751] hover:underline ml-1">Create an account &rarr;</a>
-            </div>
-
-            <!-- Security Guarantee -->
-            <div class="auth-footnote pt-2.5 mt-2.5 border-t border-gray-100 flex items-center justify-center gap-1.5 text-[#008751] font-medium">
-                <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>256-Bit Encrypted &amp; Secure Checkout</span>
+                <a href="{% url 'accounts:register' %}{% if next_url %}?next={{ next_url|urlencode }}{% endif %}" class="font-bold text-[#008751] hover:underline ml-1">Create an account</a>
             </div>
         </div>
     </div>

@@ -13,6 +13,12 @@ class PaymentStatusChoice(models.TextChoices):
     REFUNDED = 'refunded', 'Refunded'
 
 
+class CallbackOutcome(models.TextChoices):
+    RECEIVED = 'received', 'Received'
+    PROCESSED = 'processed', 'Processed'
+    REJECTED = 'rejected', 'Rejected'
+
+
 class Payment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     order = models.ForeignKey(Order, on_delete=models.PROTECT, related_name='payments')
@@ -33,3 +39,25 @@ class Payment(models.Model):
                 name='uniq_one_confirmed_payment_per_order',
             ),
         ]
+
+
+class PaymentCallbackEvent(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    payment = models.ForeignKey(
+        Payment,
+        on_delete=models.SET_NULL,
+        related_name='callback_events',
+        null=True,
+        blank=True,
+    )
+    provider = models.CharField(max_length=40)
+    provider_reference = models.CharField(max_length=120, blank=True, db_index=True)
+    authenticated = models.BooleanField(default=False)
+    payload = models.JSONField(default=dict, blank=True)
+    outcome = models.CharField(max_length=20, choices=CallbackOutcome.choices, default=CallbackOutcome.RECEIVED)
+    error_code = models.CharField(max_length=80, blank=True)
+    received_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-received_at']

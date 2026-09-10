@@ -81,14 +81,18 @@ class DarajaClient:
             raise DarajaError('Daraja OAuth response did not contain an access token.')
         return token
 
+    def _timestamp_and_password(self) -> tuple[str, str]:
+        timestamp = timezone.localtime(timezone.now()).strftime('%Y%m%d%H%M%S')
+        password = base64.b64encode(
+            f'{self.config.shortcode}{self.config.passkey}{timestamp}'.encode()
+        ).decode()
+        return timestamp, password
+
     def stk_push(self, *, phone: str, amount: Decimal, account_reference: str, description: str) -> dict:
         phone = normalize_phone(phone)
         if amount != amount.to_integral_value():
             raise ValueError('M-Pesa STK Push amount must be a whole number of Kenyan shillings.')
-        timestamp = timezone.localtime(timezone.now()).strftime('%Y%m%d%H%M%S')  # Daraja expects EAT wall time
-        password = base64.b64encode(
-            f'{self.config.shortcode}{self.config.passkey}{timestamp}'.encode()
-        ).decode()
+        timestamp, password = self._timestamp_and_password()
         payload = {
             'BusinessShortCode': self.config.shortcode,
             'Password': password,
@@ -115,4 +119,27 @@ class DarajaClient:
         response = self._request(request)
         if str(response.get('ResponseCode')) != '0' or not response.get('CheckoutRequestID'):
             raise DarajaError(response.get('errorMessage') or response.get('CustomerMessage') or 'STK Push rejected.')
+        return response
+
+    def stk_query(self, *, checkout_request_id: str) -> dict:
+        timestamp, password = self._timestamp_and_password()
+        payload = {
+            'BusinessShortCode': self.config.shortcode,
+            'Password': password,
+            'Timestamp': timestamp,
+            'CheckoutRequestID': checkout_request_id,
+        }
+        request = Request(
+            f'{self.config.base_url}/mpesa/stkpushquery/v1/query',
+            data=json.dumps(payload).encode(),
+            method='POST',
+            headers={
+                'Authorization': f'Bearer {self.access_token()}',
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+        )
+        response = self._request(request)
+        if 'ResultCode' not in response:
+            raise DarajaError(response.get('errorMessage') or 'Daraja STK query did not return a final result.')
         return response

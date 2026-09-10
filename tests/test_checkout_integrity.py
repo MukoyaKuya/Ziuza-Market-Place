@@ -15,9 +15,11 @@ from apps.marketplace.cart.services import add_to_cart, get_or_create_cart
 from apps.marketplace.categories.models import Category
 from apps.marketplace.listings.models import Inventory
 from apps.marketplace.listings.services import create_listing, publish_listing
-from apps.marketplace.orders.models import Order
+from apps.marketplace.orders.models import Order, PaymentStatus
 from apps.marketplace.orders.services import create_checkout_order
 from apps.marketplace.payments.models import Payment, PaymentStatusChoice
+from apps.marketplace.payments.providers import get_provider
+from apps.marketplace.shops.models import ShopVerificationStatus
 from apps.marketplace.shops.services import create_shop
 
 User = get_user_model()
@@ -111,6 +113,35 @@ def test_sequential_double_checkout_second_fails_empty_cart(client, buyer, listi
         )
 
 
+@pytest.mark.parametrize('shop_state', ['vacation', 'inactive', 'suspended'])
+@pytest.mark.django_db
+def test_checkout_rejects_shop_that_became_unavailable(client, buyer, listing, address, shop, shop_state):
+    cart = _cart_with_item(client, buyer, listing)
+    if shop_state == 'vacation':
+        shop.vacation_mode = True
+        shop.save(update_fields=['vacation_mode', 'updated_at'])
+    elif shop_state == 'inactive':
+        shop.is_active = False
+        shop.save(update_fields=['is_active', 'updated_at'])
+    else:
+        shop.verification_status = ShopVerificationStatus.SUSPENDED
+        shop.save(update_fields=['verification_status', 'updated_at'])
+
+    with pytest.raises(ValidationError, match='unavailable shop'):
+        create_checkout_order(
+            actor=buyer,
+            cart=cart,
+            shipping_address=address,
+            shipping_method_code='standard',
+            shipping_fee=Decimal('300.00'),
+        )
+
+    inventory = Inventory.objects.get(listing=listing, variant__isnull=True)
+    assert inventory.quantity_reserved == 0
+    assert cart.items.count() == 1
+    assert not Order.objects.filter(buyer=buyer).exists()
+
+
 @pytest.mark.skipif(
     connection.vendor == 'sqlite',
     reason='SQLite does not support row-level locking required for concurrent transaction testing',
@@ -149,6 +180,57 @@ def test_concurrent_double_checkout_creates_one_order(client, buyer, listing, ad
     assert Order.objects.filter(buyer=buyer).count() == 1
     assert len(orders) == 1
     assert len(errors) == 1
+
+
+@pytest.mark.skipif(
+    connection.vendor == 'sqlite',
+    reason='SQLite does not support row-level locking required for concurrent transaction testing',
+)
+@pytest.mark.django_db(transaction=True)
+def test_concurrent_payment_callbacks_are_idempotent(client, buyer, listing, address):
+    cart = _cart_with_item(client, buyer, listing)
+    order = create_checkout_order(
+        actor=buyer,
+        cart=cart,
+        shipping_address=address,
+        shipping_method_code='standard',
+        shipping_fee=Decimal('300.00'),
+    )
+    payment = get_provider('fake').initiate_payment(order=order)
+    callback = {
+        'provider_reference': payment.provider_reference,
+        'amount': str(payment.amount),
+        'currency': payment.currency,
+    }
+    results = []
+    errors = []
+    barrier = threading.Barrier(2)
+
+    def process_callback():
+        barrier.wait()
+        try:
+            connection.ensure_connection()
+            results.append(get_provider('fake').process_callback(payload=callback))
+        except DatabaseError as exc:
+            errors.append(exc)
+        finally:
+            connection.close()
+
+    threads = [threading.Thread(target=process_callback) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    payment.refresh_from_db()
+    order.refresh_from_db()
+    inventory = Inventory.objects.get(listing=listing, variant__isnull=True)
+    assert len(results) == 2
+    assert not errors
+    assert payment.status == PaymentStatusChoice.CONFIRMED
+    assert order.payment_status == PaymentStatus.PAID
+    assert inventory.quantity_available == 4
+    assert inventory.quantity_reserved == 0
 
 
 @pytest.mark.django_db

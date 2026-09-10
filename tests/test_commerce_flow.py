@@ -23,7 +23,7 @@ from apps.marketplace.listings.services import (
 from apps.marketplace.orders.models import FulfillmentStatus, HelpRequestStatus, Order, PaymentStatus
 from apps.marketplace.orders.services import create_checkout_order, expire_stale_orders, release_order_inventory
 from apps.marketplace.orders.support import open_help_request, seller_respond_to_help_request
-from apps.marketplace.payments.models import PaymentStatusChoice
+from apps.marketplace.payments.models import CallbackOutcome, PaymentCallbackEvent, PaymentStatusChoice
 from apps.marketplace.payments.providers import get_provider
 from apps.marketplace.promotions.models import DiscountType, Promotion, RedemptionStatus
 from apps.marketplace.reviews.models import Review, create_review
@@ -327,6 +327,9 @@ def test_mpesa_callback_endpoint_requires_token_and_accepts_daraja_json(client, 
     assert accepted.status_code == 200
     order.refresh_from_db()
     assert order.payment_status == PaymentStatus.PAID
+    events = PaymentCallbackEvent.objects.filter(provider_reference=payment.provider_reference).order_by('received_at')
+    assert [event.outcome for event in events] == [CallbackOutcome.REJECTED, CallbackOutcome.PROCESSED]
+    assert events[1].payment_id == payment.id
 
 
 def _paid_order(client, buyer, listing, address):

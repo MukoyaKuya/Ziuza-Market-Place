@@ -34,6 +34,7 @@ from apps.marketplace.orders.support import (
     open_help_request,
     seller_respond_to_help_request,
 )
+from apps.marketplace.payments.whatsapp import build_whatsapp_checkout_url
 from apps.marketplace.shipping.services import calculate_shipping_quotes
 from apps.marketplace.shops.dashboard_context import dashboard_context
 from apps.marketplace.shops.permissions import (
@@ -46,6 +47,22 @@ from apps.marketplace.shops.permissions import (
 from apps.marketplace.shops.selectors import get_shop_for_user
 
 
+def _whatsapp_checkout_shop(totals):
+    """Shop eligible for WhatsApp payment: enabled, single-shop cart, number set."""
+    if not getattr(settings, 'WHATSAPP_CHECKOUT_ENABLED', True):
+        return None
+    shop_ids = {line['item'].listing.shop_id for line in totals['lines']}
+    if len(shop_ids) != 1:
+        return None
+    from apps.marketplace.shops.models import Shop
+    return (
+        Shop.objects.filter(pk=next(iter(shop_ids)), is_active=True)
+        .exclude(whatsapp_number='')
+        .only('id', 'name', 'whatsapp_number')
+        .first()
+    )
+
+
 @login_required
 @require_http_methods(['GET', 'POST'])
 def checkout(request):
@@ -53,9 +70,13 @@ def checkout(request):
     totals = annotate_cart_totals(cart)
     requires_shipping = any(line['item'].listing.product_type != 'digital' for line in totals['lines'])
     addresses = list_addresses_for_user(user=request.user)
+    whatsapp_shop = _whatsapp_checkout_shop(totals) if totals['lines'] else None
     if request.method == 'POST':
         address_id = request.POST.get('address_id')
         method_code = request.POST.get('shipping_method') or 'standard'
+        payment_method = request.POST.get('payment_method') or 'online'
+        if payment_method == 'whatsapp' and whatsapp_shop is None:
+            payment_method = 'online'
         try:
             address = Address.objects.get(id=address_id, user=request.user) if requires_shipping and address_id else None
             methods = calculate_shipping_quotes(
@@ -75,17 +96,25 @@ def checkout(request):
                 shipping_fee=method.base_fee if method else Decimal('0.00'),
                 shipping_breakdown=method.breakdown if method else [],
                 coupon_code=request.POST.get('coupon_code') or '',
+                payment_method=payment_method,
             )
             # notify seller(s)
             try:
                 from apps.marketplace.notifications.services import notify
 
                 for seller_order in order.seller_orders.select_related('shop__owner'):
+                    if payment_method == 'whatsapp':
+                        body = (
+                            f'Order {order.public_number}: the buyer will contact you on WhatsApp '
+                            'to arrange payment. Confirm receipt from the order page once paid.'
+                        )
+                    else:
+                        body = f'Order {order.public_number} awaits payment confirmation.'
                     notify(
                         recipient=seller_order.shop.owner,
                         type='order_placed',
                         title='New order received',
-                        body=f'Order {order.public_number} awaits payment confirmation.',
+                        body=body,
                         target_url=f'/seller/orders/{seller_order.id}/',
                     )
             except Exception:
@@ -93,6 +122,8 @@ def checkout(request):
                     'Order created but seller notification failed',
                     extra={'order_public_number': order.public_number},
                 )
+            if order.payment_method == 'whatsapp':
+                return redirect('orders:whatsapp_checkout', public_number=order.public_number)
             return redirect('payments:initiate', public_number=order.public_number)
         except (Address.DoesNotExist, ValidationError) as exc:
             messages.error(request, str(exc) or 'Checkout failed.')
@@ -113,6 +144,36 @@ def checkout(request):
             'shipping_methods': shipping_quotes,
             'requires_shipping': requires_shipping,
             'allows_addressless_pickup': any(quote.is_pickup for quote in shipping_quotes),
+            'whatsapp_eligible': whatsapp_shop is not None,
+            'whatsapp_shop': whatsapp_shop,
+        },
+    )
+
+
+@login_required
+def whatsapp_checkout(request, public_number):
+    """Post-checkout landing page: open WhatsApp to arrange payment with the shop."""
+    try:
+        order = Order.objects.prefetch_related('items', 'seller_orders__shop').get(
+            public_number=public_number, buyer=request.user
+        )
+    except Order.DoesNotExist as exc:
+        raise Http404 from exc
+    if order.payment_method != 'whatsapp':
+        return redirect('payments:initiate', public_number=order.public_number)
+    seller_order = order.seller_orders.first()
+    shop = seller_order.shop if seller_order else None
+    whatsapp_url = build_whatsapp_checkout_url(order=order, shop=shop) if shop and shop.whatsapp_number else ''
+    awaiting_confirmation = order.payment_status in ('pending', 'processing') and not order.reservation_released_at
+    return render(
+        request,
+        'orders/whatsapp_checkout.html',
+        {
+            'order': order,
+            'shop': shop,
+            'whatsapp_url': whatsapp_url,
+            'awaiting_confirmation': awaiting_confirmation,
+            'page_title': f'Order {order.public_number}',
         },
     )
 
@@ -146,7 +207,16 @@ def buyer_order_detail(request, public_number):
                 if grant and item.listing_id
                 else []
             )
-    return render(request, 'orders/buyer_detail.html', {'order': order, 'page_title': order.public_number})
+    whatsapp_url = ''
+    if order.payment_method == 'whatsapp' and order.payment_status in ('pending', 'processing'):
+        seller_order = order.seller_orders.select_related('shop').first()
+        if seller_order and seller_order.shop.whatsapp_number:
+            whatsapp_url = build_whatsapp_checkout_url(order=order, shop=seller_order.shop)
+    return render(
+        request,
+        'orders/buyer_detail.html',
+        {'order': order, 'whatsapp_url': whatsapp_url, 'page_title': order.public_number},
+    )
 
 
 @login_required

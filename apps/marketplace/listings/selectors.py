@@ -37,6 +37,7 @@ def public_listing_detail(*, slug: str) -> Listing:
             slug=slug,
             status=ListingStatus.ACTIVE,
             shop__is_active=True,
+            shop__vacation_mode=False,
         )
         .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
         .select_related('shop', 'category')
@@ -50,6 +51,7 @@ def public_listings_for_category(*, category):
         Listing.objects.filter(
             status=ListingStatus.ACTIVE,
             shop__is_active=True,
+            shop__vacation_mode=False,
         )
         .filter(Q(category=category) | Q(category__parent=category))
         .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
@@ -64,6 +66,8 @@ def public_listings_for_shop(*, shop, section=None, query='', sort='newest', lim
         Listing.objects.filter(
             shop=shop,
             status=ListingStatus.ACTIVE,
+            shop__is_active=True,
+            shop__vacation_mode=False,
         )
         .select_related('category')
         .prefetch_related('images')
@@ -121,7 +125,12 @@ def listing_reviews(*, listing):
 def related_listings(*, listing):
     """Same-category picks from other shops plus more from this shop."""
     related_base = (
-        Listing.objects.filter(status=ListingStatus.ACTIVE, shop__is_active=True)
+        Listing.objects.filter(
+            status=ListingStatus.ACTIVE,
+            shop__is_active=True,
+            shop__vacation_mode=False,
+        )
+        .exclude(shop__verification_status=ShopVerificationStatus.SUSPENDED)
         .exclude(id=listing.id)
         .select_related('shop')
         .prefetch_related('images')

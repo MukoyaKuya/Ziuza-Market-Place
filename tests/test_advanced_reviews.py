@@ -2,6 +2,7 @@ import uuid
 from datetime import timedelta
 from decimal import Decimal
 from io import BytesIO
+from unittest.mock import Mock, patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -113,6 +114,20 @@ def test_review_records_breakdown_photo_verification_and_shop_rating(review_setu
 
 
 @pytest.mark.django_db
+def test_deleting_review_removes_media_from_storage(review_setup):
+    _, buyer, _, _, _, _, _, _, item = review_setup
+    review = make_review(buyer, item, photos=[png_upload()])
+    media = review.media.get()
+    storage = media.image.storage
+    name = media.image.name
+    assert storage.exists(name)
+
+    review.delete()
+
+    assert not storage.exists(name)
+
+
+@pytest.mark.django_db
 def test_photo_content_spoofing_and_limit_are_rejected(review_setup):
     _, buyer, _, _, _, _, _, _, item = review_setup
     spoofed = SimpleUploadedFile('fake.png', b'not an image', content_type='image/png')
@@ -120,6 +135,19 @@ def test_photo_content_spoofing_and_limit_are_rejected(review_setup):
         make_review(buyer, item, photos=[spoofed])
     with pytest.raises(ValidationError, match='up to 4'):
         make_review(buyer, item, photos=[png_upload(f'{i}.png') for i in range(5)])
+
+
+@pytest.mark.django_db
+def test_review_photo_rejects_excessive_decoded_dimensions(review_setup):
+    _, buyer, _, _, _, _, _, _, item = review_setup
+    upload = SimpleUploadedFile('large.png', b'\x89PNG\r\n\x1a\nplaceholder', content_type='image/png')
+    image = Mock(width=5000, height=5000)
+
+    with patch('PIL.Image.open', return_value=image):
+        with pytest.raises(ValidationError, match='too many pixels'):
+            make_review(buyer, item, photos=[upload])
+
+    assert not Review.objects.exists()
 
 
 @pytest.mark.django_db

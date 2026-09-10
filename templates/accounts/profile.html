@@ -17,7 +17,14 @@
         <div>
             <label class="field-label">Email</label>
             <input type="email" class="field-input" value="{{ request.user.email }}" disabled>
-            <p class="field-hint">Email is used to sign in and cannot be changed here.</p>
+            <p class="field-hint">
+                Email is used to sign in and cannot be changed here.
+                {% if request.user.email_verified %}
+                <span class="text-kenya-green font-semibold">Verified ✓</span>
+                {% else %}
+                <a href="{% url 'accounts:account_home' %}" class="text-kenya-red font-semibold hover:underline">Verify your email →</a>
+                {% endif %}
+            </p>
         </div>
         {% for field in form %}
         <div>

@@ -1,0 +1,63 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Order {{ order.public_number }} | Ziuza{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-10 space-y-6">
+    <div class="text-center space-y-2">
+        <h1 class="text-3xl font-display font-bold">Order placed — asante!</h1>
+        <p class="text-sm text-gray-600">
+            Order <strong>{{ order.public_number }}</strong> from {{ shop.name }} is reserved for you.
+        </p>
+    </div>
+
+    {% if awaiting_confirmation %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-6 space-y-4 text-center">
+        <h2 class="font-display font-bold text-lg">Finish payment on WhatsApp</h2>
+        <p class="text-sm text-gray-600">
+            Tap below to open WhatsApp with your order details pre-filled. Agree on how to pay with
+            {{ shop.name }} — M-Pesa, cash on delivery, whatever suits you both. The shop confirms on Ziuza
+            once they receive the money, and your order ships as normal.
+        </p>
+        {% if whatsapp_url %}
+        <a href="{{ whatsapp_url }}" target="_blank" rel="noopener"
+           class="inline-flex items-center justify-center gap-2 rounded-ziuza px-6 py-3 font-semibold text-white"
+           style="background-color:#25D366">
+            <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2Zm5.83 14.12c-.25.7-1.45 1.34-2 1.38-.55.05-1.06.25-3.57-.74-3.02-1.19-4.9-4.38-5.05-4.58-.15-.2-1.19-1.62-1.19-3.09 0-1.47.77-2.19 1.04-2.49.27-.3.59-.37.79-.37h.57c.18 0 .43-.07.66.51.25.6.84 2.06.91 2.21.07.15.12.33.02.53-.1.2-.15.32-.29.5-.15.17-.31.39-.44.52-.15.15-.3.31-.13.61.17.3.75 1.24 1.61 2.01 1.11.99 2.04 1.3 2.34 1.45.3.15.47.12.65-.07.17-.2.74-.86.94-1.16.2-.3.4-.25.67-.15.27.1 1.72.81 2.02.96.3.15.5.22.57.35.07.12.07.72-.18 1.42Z"/></svg>
+            Open WhatsApp
+        </a>
+        {% else %}
+        <p class="alert-warning">This shop's WhatsApp number is no longer available. Contact them from their shop page.</p>
+        {% endif %}
+        <p class="text-xs text-gray-500">Your items stay reserved while you arrange payment (up to 24 hours).</p>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-6 text-center space-y-3">
+        <p class="font-semibold">Payment status: {{ order.get_payment_status_display }}</p>
+        <a href="{% url 'orders:buyer_detail' order.public_number %}" class="btn-red btn-sm inline-flex">View order</a>
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl border border-brand-surface-border p-5 space-y-3">
+        <h2 class="font-display font-bold">Order summary</h2>
+        <ul class="text-sm space-y-2">
+            {% for item in order.items.all %}
+            <li class="flex justify-between gap-2">
+                <span>{{ item.title_snapshot }} × {{ item.quantity }}</span>
+                <span>KES {{ item.line_total }}</span>
+            </li>
+            {% endfor %}
+        </ul>
+        <dl class="text-sm space-y-1 border-t border-brand-surface-border pt-3">
+            <div class="flex justify-between"><dt>Subtotal</dt><dd>KES {{ order.subtotal }}</dd></div>
+            <div class="flex justify-between"><dt>Shipping</dt><dd>KES {{ order.shipping_total }}</dd></div>
+            {% if order.discount_total %}<div class="flex justify-between text-kenya-green"><dt>Discount{% if order.promotion_code %} ({{ order.promotion_code }}){% endif %}</dt><dd>− KES {{ order.discount_total }}</dd></div>{% endif %}
+            <div class="flex justify-between font-bold text-base"><dt>Total</dt><dd>KES {{ order.grand_total }}</dd></div>
+        </dl>
+    </div>
+
+    <div class="text-center">
+        <a href="{% url 'orders:buyer_detail' order.public_number %}" class="text-sm font-semibold text-kenya-red hover:underline">View your order →</a>
+    </div>
+</div>
+{% endblock %}

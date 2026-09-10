@@ -18,10 +18,11 @@ def get_shop_for_user(*, user: User) -> Shop | None:
 
 
 def get_public_shop_by_slug(*, slug: str) -> Shop:
-    """Public shop page — excludes suspended shops."""
-    return Shop.objects.select_related('owner').get(
-        slug=slug,
-        is_active=True,
+    """Return a shop currently available on the public marketplace."""
+    return (
+        Shop.objects.select_related('owner')
+        .exclude(verification_status=ShopVerificationStatus.SUSPENDED)
+        .get(slug=slug, is_active=True, vacation_mode=False)
     )
 
 

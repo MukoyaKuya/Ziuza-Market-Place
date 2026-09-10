@@ -23,6 +23,7 @@ from apps.marketplace.shops.permissions import MANAGE_SUPPORT, ensure_shop_permi
 EDIT_WINDOW_DAYS = 30
 MAX_REVIEW_MEDIA = 4
 MAX_IMAGE_SIZE = 8 * 1024 * 1024
+MAX_IMAGE_PIXELS = 20_000_000
 IMAGE_TYPES = {'image/jpeg', 'image/png', 'image/webp'}
 
 
@@ -58,6 +59,9 @@ def _optimize_and_validate_image(upload):
         from PIL import Image, ImageOps
 
         image = Image.open(upload)
+        if image.width * image.height > MAX_IMAGE_PIXELS:
+            raise ValidationError('Review photos have too many pixels.')
+        image.load()
         image = ImageOps.exif_transpose(image)
         format_name = 'JPEG' if content_type == 'image/jpeg' else ('PNG' if content_type == 'image/png' else 'WEBP')
 

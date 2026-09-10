@@ -19,16 +19,14 @@ class ReadinessHealthView(View):
 
     def get(self, request, *args, **kwargs):
         db_healthy = False
-        error_msg = None
         try:
             with connection.cursor() as cursor:
                 cursor.execute('SELECT 1;')
                 row = cursor.fetchone()
                 if row and row[0] == 1:
                     db_healthy = True
-        except Exception as e:
-            logger.error("Readiness check failed database ping: %s", e)
-            error_msg = str(e)
+        except Exception:
+            logger.exception('Readiness check failed database ping')
 
         celery_status = 'not_checked'
         if request.GET.get('check_celery') == '1':
@@ -41,7 +39,8 @@ class ReadinessHealthView(View):
                 logger.warning("Celery health check error: %s", exc)
                 celery_status = 'unreachable'
 
-        if db_healthy:
+        ready = db_healthy and celery_status in {'not_checked', 'ok'}
+        if ready:
             payload = {
                 'status': 'ready',
                 'database': 'ok',
@@ -51,10 +50,11 @@ class ReadinessHealthView(View):
                 payload['celery'] = celery_status
             return JsonResponse(payload, status=200)
 
-        return JsonResponse({
+        payload = {
             'status': 'unready',
-            'database': 'failed',
-            'error': error_msg,
+            'database': 'ok' if db_healthy else 'failed',
             'service': 'ziuza-marketplace',
-        }, status=503)
-
+        }
+        if celery_status != 'not_checked':
+            payload['celery'] = celery_status
+        return JsonResponse(payload, status=503)

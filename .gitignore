@@ -42,6 +42,7 @@ yarn-error.log*
 
 # Static & Tailwind output (if generated)
 static/css/styles.css
+staticfiles/
 
 # IDE & Editor
 .vscode/

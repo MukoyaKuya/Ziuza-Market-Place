@@ -1,8 +1,9 @@
+from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_http_methods, require_POST
@@ -13,21 +14,68 @@ from apps.accounts.selectors import get_address_for_user, list_addresses_for_use
 from apps.accounts.services import (
     create_address,
     delete_address,
+    issue_email_otp,
     register_user,
     update_address,
     update_user_profile,
+    verify_email_otp,
 )
-from apps.accounts.utils import safe_next_url
+from apps.accounts.utils import email_verification_required, safe_next_url
+
+User = get_user_model()
+
+PENDING_VERIFICATION_SESSION_KEY = 'pending_verification_user_id'
+DEBUG_OTP_PREVIEW_SESSION_KEY = 'debug_otp_preview'
+POST_AUTH_REDIRECT_SESSION_KEY = 'post_auth_redirect'
+
+
+def _requested_next_url(request) -> str:
+    return safe_next_url(
+        request,
+        request.POST.get('next') or request.GET.get('next'),
+        '',
+    )
+
+
+def _remember_post_auth_redirect(request, next_url: str) -> None:
+    if next_url:
+        request.session[POST_AUTH_REDIRECT_SESSION_KEY] = next_url
+    else:
+        request.session.pop(POST_AUTH_REDIRECT_SESSION_KEY, None)
+
+
+def _redirect_response(request, url: str):
+    if request.headers.get('HX-Request'):
+        response = HttpResponse()
+        response['HX-Redirect'] = url
+        return response
+    return redirect(url)
+
+
+def _issue_otp(request, user) -> None:
+    """Issue a verification code; keep a DEBUG-only copy so the verify page can show it."""
+    code = issue_email_otp(user=user)
+    if code is not None and settings.DEBUG:
+        request.session[DEBUG_OTP_PREVIEW_SESSION_KEY] = code
+
+
+def _pending_verification_user(request):
+    """User awaiting the OTP gate: session-tracked (signup) or the logged-in unverified user."""
+    user_id = request.session.get(PENDING_VERIFICATION_SESSION_KEY)
+    if user_id:
+        try:
+            return User.objects.get(pk=user_id, is_active=True)
+        except User.DoesNotExist:
+            request.session.pop(PENDING_VERIFICATION_SESSION_KEY, None)
+    if request.user.is_authenticated and not request.user.email_verified:
+        return request.user
+    return None
 
 
 def register_view(request):
+    next_url = _requested_next_url(request)
     if request.user.is_authenticated:
-        if request.headers.get('HX-Request'):
-            from django.http import HttpResponse
-            response = HttpResponse()
-            response['HX-Redirect'] = reverse('accounts:account_home')
-            return response
-        return redirect('accounts:account_home')
+        return _redirect_response(request, next_url or reverse('accounts:account_home'))
 
     form = RegistrationForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -46,27 +94,26 @@ def register_view(request):
             else:
                 form.add_error(None, exc)
         else:
-            login(request, user)
-            messages.success(request, 'Welcome to Ziuza — your account is ready.')
-            if request.headers.get('HX-Request'):
-                from django.http import HttpResponse
-                response = HttpResponse()
-                response['HX-Redirect'] = reverse('accounts:account_home')
-                return response
-            return redirect('accounts:account_home')
+            if not email_verification_required(user):
+                login(request, user)
+                messages.success(request, 'Welcome to Ziuza. Your account is ready.')
+                return _redirect_response(request, next_url or reverse('accounts:account_home'))
+            # Account is created but stays locked behind the email OTP gate:
+            # the user is only signed in after entering the code we email them.
+            request.session[PENDING_VERIFICATION_SESSION_KEY] = str(user.id)
+            _remember_post_auth_redirect(request, next_url)
+            _issue_otp(request, user)
+            messages.success(request, f'Welcome to Ziuza — enter the 6-digit code we sent to {user.email}.')
+            return _redirect_response(request, reverse('accounts:verify_email_otp'))
 
     template_name = 'accounts/partials/register_modal.html' if request.headers.get('HX-Request') else 'accounts/register.html'
-    return render(request, template_name, {'form': form, 'page_title': 'Create account'})
+    return render(request, template_name, {'form': form, 'next_url': next_url, 'page_title': 'Create account'})
 
 
 def login_view(request):
+    next_url = _requested_next_url(request)
     if request.user.is_authenticated:
-        if request.headers.get('HX-Request'):
-            from django.http import HttpResponse
-            response = HttpResponse()
-            response['HX-Redirect'] = reverse('accounts:account_home')
-            return response
-        return redirect('accounts:account_home')
+        return _redirect_response(request, next_url or reverse('accounts:account_home'))
 
     form = LoginForm(request.POST or None)
     if request.method == 'POST' and form.is_valid():
@@ -78,21 +125,17 @@ def login_view(request):
         if user is None:
             form.add_error(None, 'Invalid email or password.')
         else:
+            if email_verification_required(user):
+                request.session[PENDING_VERIFICATION_SESSION_KEY] = str(user.id)
+                _remember_post_auth_redirect(request, next_url)
+                _issue_otp(request, user)
+                messages.info(request, f'Verify your email — we sent a 6-digit code to {user.email}.')
+                return _redirect_response(request, reverse('accounts:verify_email_otp'))
             login(request, user)
-            next_url = safe_next_url(
-                request,
-                request.POST.get('next') or request.GET.get('next'),
-                reverse('accounts:account_home'),
-            )
-            if request.headers.get('HX-Request'):
-                from django.http import HttpResponse
-                response = HttpResponse()
-                response['HX-Redirect'] = next_url
-                return response
-            return redirect(next_url)
+            return _redirect_response(request, next_url or reverse('accounts:account_home'))
 
     template_name = 'accounts/partials/login_modal.html' if request.headers.get('HX-Request') else 'accounts/login.html'
-    return render(request, template_name, {'form': form, 'page_title': 'Sign in'})
+    return render(request, template_name, {'form': form, 'next_url': next_url, 'page_title': 'Sign in'})
 
 
 @require_POST
@@ -100,6 +143,54 @@ def logout_view(request):
     logout(request)
     messages.info(request, 'You have been signed out.')
     return redirect('core:home')
+
+
+def verify_email_otp_view(request):
+    """Enter the emailed 6-digit code. Signs the user in on success (signup flow)."""
+    user = _pending_verification_user(request)
+    if user is None or user.email_verified:
+        if request.user.is_authenticated:
+            return redirect('accounts:account_home')
+        return redirect('accounts:login')
+
+    if request.method == 'POST' and verify_email_otp(user=user, code=request.POST.get('code') or ''):
+        request.session.pop(PENDING_VERIFICATION_SESSION_KEY, None)
+        request.session.pop(DEBUG_OTP_PREVIEW_SESSION_KEY, None)
+        redirect_url = safe_next_url(
+            request,
+            request.session.pop(POST_AUTH_REDIRECT_SESSION_KEY, None),
+            reverse('accounts:account_home'),
+        )
+        if not request.user.is_authenticated:
+            login(request, user)
+        messages.success(request, 'Email verified — karibu! Your account is ready.')
+        return redirect(redirect_url)
+    if request.method == 'POST':
+        messages.error(request, 'That code is invalid, expired, or out of attempts. Request a new one.')
+
+    return render(
+        request,
+        'accounts/verify_otp.html',
+        {
+            'email': user.email,
+            'debug_code': request.session.get(DEBUG_OTP_PREVIEW_SESSION_KEY) if settings.DEBUG else None,
+            'page_title': 'Verify your email',
+        },
+    )
+
+
+@require_POST
+def resend_verification(request):
+    """Issue a fresh code for the pending (session) or logged-in unverified user."""
+    user = _pending_verification_user(request)
+    if user is not None and not user.email_verified:
+        _issue_otp(request, user)
+        messages.info(request, f'A new 6-digit code is on its way to {user.email}.')
+    if request.user.is_authenticated:
+        return redirect('accounts:verify_email_otp')
+    if user is not None:
+        return redirect('accounts:verify_email_otp')
+    return redirect('accounts:login')
 
 
 @login_required

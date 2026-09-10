@@ -2,6 +2,7 @@ import uuid
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.test import override_settings
 from django.urls import reverse
 
 from apps.accounts.models import Address
@@ -18,6 +19,7 @@ def user(db):
         email='buyer@ziuza.co.ke',
         password=PASSWORD,
         display_name='Buyer One',
+        email_verified=True,
     )
 
 
@@ -31,7 +33,8 @@ def other_user(db):
 
 
 @pytest.mark.django_db
-def test_register_creates_user_and_logs_in(client):
+@override_settings(REQUIRE_EMAIL_VERIFICATION=True)
+def test_register_creates_user_and_gates_on_otp(client):
     url = reverse('accounts:register')
     response = client.post(
         url,
@@ -44,11 +47,11 @@ def test_register_creates_user_and_logs_in(client):
         },
     )
     assert response.status_code == 302
-    assert response.url == reverse('accounts:account_home')
+    assert response.url == reverse('accounts:verify_email_otp')
     assert User.objects.filter(email='newmaker@ziuza.co.ke').exists()
     follow = client.get(response.url)
     assert follow.status_code == 200
-    assert b'Habari' in follow.content or b'Your account' in follow.content
+    assert b'Verify your email' in follow.content
 
 
 @pytest.mark.django_db
@@ -135,6 +138,7 @@ def test_register_htmx_returns_modal_partial(client):
 
 
 @pytest.mark.django_db
+@override_settings(REQUIRE_EMAIL_VERIFICATION=True)
 def test_register_htmx_successful_post_returns_hx_redirect(client):
     reg_url = reverse('accounts:register')
     response = client.post(
@@ -148,7 +152,7 @@ def test_register_htmx_successful_post_returns_hx_redirect(client):
         HTTP_HX_REQUEST='true',
     )
     assert response.status_code == 200
-    assert response.headers.get('HX-Redirect') == reverse('accounts:account_home')
+    assert response.headers.get('HX-Redirect') == reverse('accounts:verify_email_otp')
     assert User.objects.filter(email='htmxnew@ziuza.co.ke').exists()
 
 

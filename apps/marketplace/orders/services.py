@@ -9,6 +9,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import ensure_authenticated
+from apps.core.commerce_events import emit_commerce_event
 from apps.marketplace.cart.models import Cart
 from apps.marketplace.cart.services import annotate_cart_totals, cart_line_unit_price
 from apps.marketplace.listings.models import Inventory, ListingStatus
@@ -16,9 +17,11 @@ from apps.marketplace.orders.models import (
     FulfillmentStatus,
     Order,
     OrderItem,
+    PaymentMethod,
     PaymentStatus,
     SellerOrder,
 )
+from apps.marketplace.shops.models import Shop
 
 
 def _public_number() -> str:
@@ -42,7 +45,8 @@ def _address_snapshot(address) -> dict:
 
 @transaction.atomic
 def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_method_code: str = 'standard',
-                           shipping_fee: Decimal = Decimal('300.00'), shipping_breakdown=None, coupon_code: str = '') -> Order:
+                           shipping_fee: Decimal = Decimal('300.00'), shipping_breakdown=None, coupon_code: str = '',
+                           payment_method: str = PaymentMethod.ONLINE) -> Order:
     ensure_authenticated(actor=actor)
     if shipping_address is not None and shipping_address.user_id != actor.id:
         raise ValidationError(_('Invalid shipping address.'))
@@ -51,6 +55,30 @@ def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_metho
     totals = annotate_cart_totals(cart)
     if not totals['lines']:
         raise ValidationError(_('Your cart is empty.'))
+
+    shop_ids = {line['item'].listing.shop_id for line in totals['lines']}
+    shops = {
+        shop.id: shop
+        for shop in Shop.objects.select_for_update().filter(id__in=shop_ids)
+    }
+    if len(shops) != len(shop_ids) or any(not shop.is_publicly_visible for shop in shops.values()):
+        raise ValidationError(_('Cart contains items from an unavailable shop.'))
+
+    if payment_method == PaymentMethod.WHATSAPP:
+        if len(shop_ids) != 1:
+            raise ValidationError(_('WhatsApp payment is only available for orders from a single shop.'))
+        whatsapp_shop = shops[next(iter(shop_ids))]
+        if not whatsapp_shop.whatsapp_number:
+            raise ValidationError(_('This shop does not accept WhatsApp payments.'))
+        reservation_expires_at = timezone.now() + timedelta(
+            hours=getattr(settings, 'WHATSAPP_ORDER_RESERVATION_HOURS', 24)
+        )
+    elif payment_method != PaymentMethod.ONLINE:
+        raise ValidationError(_('Choose a valid payment method.'))
+    else:
+        reservation_expires_at = timezone.now() + timedelta(
+            minutes=getattr(settings, 'ORDER_RESERVATION_MINUTES', 30)
+        )
 
     for line in totals['lines']:
         if not line['is_available']:
@@ -84,14 +112,13 @@ def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_metho
         promotion_code=promotion.code if promotion else '',
         grand_total=totals['subtotal'] + shipping_fee - discount,
         payment_status=PaymentStatus.PENDING,
+        payment_method=payment_method,
         fulfillment_status=FulfillmentStatus.UNFULFILLED,
         shipping_address_snapshot=_address_snapshot(shipping_address),
         billing_address_snapshot=_address_snapshot(shipping_address),
         shipping_method_code=shipping_method_code,
         shipping_breakdown=shipping_breakdown or [],
-        reservation_expires_at=timezone.now() + timedelta(
-            minutes=getattr(settings, 'ORDER_RESERVATION_MINUTES', 30)
-        ),
+        reservation_expires_at=reservation_expires_at,
     )
 
     seller_orders: dict = {}
@@ -136,6 +163,15 @@ def create_checkout_order(*, actor, cart: Cart, shipping_address, shipping_metho
     if promotion:
         from apps.marketplace.promotions.services import reserve_redemption
         reserve_redemption(promotion=promotion, order=order, user=actor, discount_amount=discount)
+    transaction.on_commit(lambda: emit_commerce_event(
+        'order.created',
+        order_id=order.id,
+        public_number=order.public_number,
+        amount=order.grand_total,
+        currency=order.currency,
+        payment_method=order.payment_method,
+        shop_count=len(seller_orders),
+    ))
     return order
 
 

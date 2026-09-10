@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_http_methods
 
 from apps.marketplace.listings.selectors import public_listings_for_shop
-from apps.marketplace.shops.models import ReportReason, Shop, ShopVerificationStatus
+from apps.marketplace.shops.models import ReportReason, Shop
 from apps.marketplace.shops.selectors import (
     get_public_shop_by_slug,
     public_shop_banner_url,
@@ -42,9 +42,6 @@ def public_shop(request, slug: str):
         shop = get_public_shop_by_slug(slug=slug)
     except Shop.DoesNotExist as exc:
         raise Http404('Shop not found.') from exc
-
-    if shop.verification_status == ShopVerificationStatus.SUSPENDED:
-        raise Http404('Shop not found.')
 
     sections = public_shop_sections(shop=shop)
     selected_section = None

@@ -87,6 +87,7 @@ class Command(BaseCommand):
             defaults={"display_name": "Demo Maker", "phone": "0711000001"},
         )
         seller.set_password(DEMO_PASSWORD)
+        seller.email_verified = True
         seller.save()
 
         shop = Shop.objects.filter(owner=seller).first()
@@ -134,6 +135,7 @@ class Command(BaseCommand):
             defaults={"display_name": "Demo Buyer", "phone": "0711000002"},
         )
         buyer.set_password(DEMO_PASSWORD)
+        buyer.email_verified = True
         buyer.save()
 
         address, _ = Address.objects.get_or_create(

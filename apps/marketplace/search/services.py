@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from difflib import SequenceMatcher
 
-from django.db import connection
+from django.db import DatabaseError, connection, transaction
 from django.db.models import Case, F, IntegerField, Prefetch, Q, Value, When
 
 from apps.marketplace.categories.models import Category
@@ -255,8 +255,11 @@ def search_with_fallback(**filters) -> SearchResult:
     # Use native PostgreSQL trigram similarity if running against Postgres
     if connection.vendor == 'postgresql':
         try:
-            return _postgres_trigram_fallback(**filters)
-        except Exception:
+            with transaction.atomic():
+                trigram = _postgres_trigram_fallback(**filters)
+                if trigram.listings.exists():
+                    return trigram
+        except DatabaseError:
             # Fall back to the Python path below (e.g. missing pg_trgm extension).
             logging.getLogger(__name__).debug('Trigram search fallback engaged', exc_info=True)
 

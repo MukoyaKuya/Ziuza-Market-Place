@@ -116,6 +116,19 @@ def test_public_shop_renders_rich_seller_storefront(client, storefront_market):
 
 
 @pytest.mark.django_db
+def test_vacation_shop_and_its_listings_are_not_public(client, storefront_market):
+    _seller, _other, _category, shop, _other_shop, first, _second, _foreign = storefront_market
+    shop.vacation_mode = True
+    shop.save(update_fields=['vacation_mode', 'updated_at'])
+
+    shop_response = client.get(reverse('shops:public_shop', kwargs={'slug': shop.slug}))
+    listing_response = client.get(reverse('listings:detail', kwargs={'slug': first.slug}))
+
+    assert shop_response.status_code == 404
+    assert listing_response.status_code == 404
+
+
+@pytest.mark.django_db
 def test_public_shop_catalogue_supports_search_and_sort(client, storefront_market):
     _seller, _other, _category, shop, _other_shop, first, second, _foreign = storefront_market
     url = reverse('shops:public_shop', kwargs={'slug': shop.slug})

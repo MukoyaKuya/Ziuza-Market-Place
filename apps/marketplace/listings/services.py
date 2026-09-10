@@ -4,6 +4,7 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import ensure_authenticated
+from apps.core.commerce_events import emit_commerce_event
 from apps.marketplace.listings.models import (
     DigitalAsset,
     Inventory,
@@ -84,6 +85,7 @@ def create_listing(
     shipping_profile=None,
 ) -> Listing:
     ensure_shop_permission(actor=actor, shop=shop, permission=MANAGE_LISTINGS)
+    is_first_listing = not Listing.objects.filter(shop=shop).exists()
     title = (title or '').strip()
     if not title:
         raise ValidationError({'title': _('Title is required.')})
@@ -99,7 +101,7 @@ def create_listing(
         short_description=(short_description or '').strip(),
         description=(description or '').strip(),
         base_price=base_price,
-        currency=(currency or 'KES').upper()[:3],
+        currency='KES',
         sku=(sku or '').strip(),
         status=ListingStatus.DRAFT,
         product_type=product_type,
@@ -112,6 +114,13 @@ def create_listing(
     inventory.quantity_available = max(0, int(quantity_available))
     inventory.save(update_fields=['quantity_available', 'updated_at'])
     _audit_listing(actor=actor, listing=listing, action='listing.created', description=f'Created listing “{listing.title}”.')
+    transaction.on_commit(lambda: emit_commerce_event(
+        'onboarding.listing_draft_created',
+        user_id=actor.id,
+        shop_id=shop.id,
+        listing_id=listing.id,
+        is_first_listing=is_first_listing,
+    ))
     return listing
 
 
@@ -127,7 +136,6 @@ def update_listing(*, actor, listing: Listing, **fields) -> Listing:
         'short_description',
         'description',
         'base_price',
-        'currency',
         'sku',
         'product_type',
         'is_featured',
@@ -141,6 +149,7 @@ def update_listing(*, actor, listing: Listing, **fields) -> Listing:
     for key, value in fields.items():
         if key in allowed:
             setattr(listing, key, value)
+    listing.currency = 'KES'
     listing.save()
     _audit_listing(actor=actor, listing=listing, action='listing.updated', description=f'Updated listing “{listing.title}”.')
     return listing
@@ -166,20 +175,26 @@ def ensure_listing_is_publishable(listing: Listing) -> None:
 def publish_listing(*, actor, listing: Listing) -> Listing:
     ensure_actor_can_manage_listing(actor=actor, listing=listing)
     ensure_listing_is_publishable(listing)
+    is_first_published_listing = listing.published_at is None and not Listing.objects.filter(
+        shop=listing.shop,
+        published_at__isnull=False,
+    ).exclude(pk=listing.pk).exists()
     if listing.product_type == ProductType.DIGITAL:
         listing.status = ListingStatus.ACTIVE
-        listing.published_at = timezone.now()
-        listing.save(update_fields=['status', 'published_at', 'updated_at'])
-        _audit_listing(actor=actor, listing=listing, action='listing.published', description=f'Published listing “{listing.title}”.')
-        return listing
-    inventory_rows = list(listing.inventory_rows.select_for_update().select_related('variant'))
-    has_stock = any(row.available_to_sell > 0 and (row.variant_id is None or row.variant.is_active) for row in inventory_rows)
-    listing.status = (
-        ListingStatus.ACTIVE if has_stock else ListingStatus.SOLD_OUT
-    )
+    else:
+        inventory_rows = list(listing.inventory_rows.select_for_update().select_related('variant'))
+        has_stock = any(row.available_to_sell > 0 and (row.variant_id is None or row.variant.is_active) for row in inventory_rows)
+        listing.status = ListingStatus.ACTIVE if has_stock else ListingStatus.SOLD_OUT
     listing.published_at = timezone.now()
     listing.save(update_fields=['status', 'published_at', 'updated_at'])
     _audit_listing(actor=actor, listing=listing, action='listing.published', description=f'Published listing “{listing.title}”.')
+    transaction.on_commit(lambda: emit_commerce_event(
+        'onboarding.listing_published',
+        user_id=actor.id,
+        shop_id=listing.shop_id,
+        listing_id=listing.id,
+        is_first_listing=is_first_published_listing,
+    ))
     return listing
 
 
@@ -213,6 +228,7 @@ def set_inventory_quantity(
     low_stock_threshold: int | None = None,
 ) -> Inventory:
     ensure_actor_can_manage_listing(actor=actor, listing=listing)
+    quantity_available = int(quantity_available)
     if quantity_available < 0:
         raise ValidationError({'quantity_available': _('Quantity cannot be negative.')})
 
@@ -227,7 +243,14 @@ def set_inventory_quantity(
     else:
         inventory = Inventory.objects.select_for_update().get(listing=listing, variant__isnull=True)
 
-    inventory.quantity_available = int(quantity_available)
+    if quantity_available < inventory.quantity_reserved:
+        raise ValidationError({
+            'quantity_available': _(
+                'Quantity cannot be lower than the %(reserved)s units reserved by pending orders.'
+            ) % {'reserved': inventory.quantity_reserved},
+        })
+
+    inventory.quantity_available = quantity_available
     if low_stock_threshold is not None:
         inventory.low_stock_threshold = max(0, int(low_stock_threshold))
     if inventory.available_to_sell > inventory.low_stock_threshold:

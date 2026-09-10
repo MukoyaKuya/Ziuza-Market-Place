@@ -4,6 +4,7 @@ from django.db import transaction
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import ensure_authenticated
+from apps.core.commerce_events import emit_commerce_event
 from apps.marketplace.shops.models import LocalDeliveryScope, Shop, ShopVerificationStatus
 from apps.marketplace.shops.permissions import ensure_shop_owner
 from apps.marketplace.shops.selectors import get_shop_for_user
@@ -52,6 +53,9 @@ def create_shop(
         verification_status=ShopVerificationStatus.UNVERIFIED,
     )
     shop.save()
+    transaction.on_commit(lambda: emit_commerce_event(
+        'onboarding.shop_created', user_id=actor.id, shop_id=shop.id,
+    ))
     return shop
 
 
@@ -68,6 +72,7 @@ def update_shop_settings(*, actor: User, shop: Shop, **fields) -> Shop:
         'ward',
         'village',
         'location_text',
+        'whatsapp_number',
         'is_local_seller',
         'local_delivery_scope',
         'local_pickup_available',

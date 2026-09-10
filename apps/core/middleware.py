@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import ipaddress
 import logging
 import time
 import uuid
+from contextlib import suppress
 from contextvars import ContextVar
 
 from django.conf import settings
@@ -47,6 +49,10 @@ class SimpleRateLimitMiddleware:
     LIMITS = (
         ('/account/login/', 20, 60),
         ('/account/register/', 10, 60),
+        ('/account/verify/resend/', 3, 60),
+        # Covers the whole reset flow (form → done → confirm → complete),
+        # so the limit is sized for navigation, not just email POSTs.
+        ('/account/password-reset/', 20, 60),
         ('/search/', 60, 60),
         ('/htmx/search/', 90, 60),
         ('/payments/callback/', 30, 60),
@@ -65,11 +71,18 @@ class SimpleRateLimitMiddleware:
         return self.get_response(request)
 
     def _allow(self, request, prefix: str, limit: int, window: int) -> bool:
-        ip = request.META.get('REMOTE_ADDR', 'unknown')
-        if getattr(settings, 'TRUST_X_FORWARDED_FOR', False):
-            forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
-            if forwarded:
-                ip = forwarded.split(',')[0].strip()
+        remote_addr = request.META.get('REMOTE_ADDR', '')
+        try:
+            ip = str(ipaddress.ip_address(remote_addr))
+        except ValueError:
+            ip = 'unknown'
+
+        trusted_proxies = getattr(settings, 'TRUSTED_PROXY_IPS', [])
+        client_ip_header = getattr(settings, 'TRUSTED_CLIENT_IP_HEADER', '')
+        if ip in trusted_proxies and client_ip_header:
+            candidate = request.META.get(client_ip_header, '').strip()
+            with suppress(ValueError):
+                ip = str(ipaddress.ip_address(candidate))
         bucket = int(time.time() // window)
         key = f'rl:{prefix}:{ip}:{bucket}'
         try:
