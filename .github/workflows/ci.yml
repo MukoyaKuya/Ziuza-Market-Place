@@ -4,15 +4,39 @@ on:
   push:
     branches: [main, master]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  workflow-lint:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download actionlint
+        id: get_actionlint
+        run: bash <(curl --fail --proto '=https' --tlsv1.2 -sSf https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ${{ steps.get_actionlint.outputs.executable }} -color
+        shell: bash
+
   lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -25,11 +49,13 @@ jobs:
 
   audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -41,11 +67,13 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: npm
       - name: Install Node dependencies & compile CSS
         run: |
           npm ci
@@ -53,6 +81,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -91,6 +120,7 @@ jobs:
 
   postgres-commerce-integration:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     services:
       postgres:
         image: postgres:16
@@ -110,6 +140,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+          cache: pip
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -122,20 +153,25 @@ jobs:
 
   powershell-syntax:
     runs-on: windows-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Validate PowerShell scripts
         shell: powershell
         run: |
+          $scripts = @(Get-ChildItem -Path scripts -Filter *.ps1 -ErrorAction SilentlyContinue)
+          if ($scripts.Count -eq 0) {
+            Write-Host 'No scripts/*.ps1 files found; skipping.'
+            exit 0
+          }
           $failed = $false
-          Get-ChildItem -Path scripts -Filter *.ps1 | ForEach-Object {
+          foreach ($script in $scripts) {
             $tokens = $null
             $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            [System.Management.Automation.Language.Parser]::ParseFile($script.FullName, [ref]$tokens, [ref]$errors) | Out-Null
             if ($errors.Count -gt 0) {
-              $errors | ForEach-Object { Write-Error "${_}" }
+              $errors | ForEach-Object { Write-Error "$_" }
               $failed = $true
             }
           }
           if ($failed) { exit 1 }
-
