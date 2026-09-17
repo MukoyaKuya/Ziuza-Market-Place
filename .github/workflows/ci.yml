@@ -20,7 +20,7 @@ jobs:
           pip install mypy django-stubs
       - name: Ruff lint
         run: ruff check apps config tests
-      - name: Mypy (money paths: orders, payments)
+      - name: "Mypy (money paths: orders, payments)"
         run: mypy
 
   audit:
@@ -138,3 +138,4 @@ jobs:
             }
           }
           if ($failed) { exit 1 }
+
