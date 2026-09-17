@@ -20,6 +20,9 @@ def test_seed_demo_creates_walkable_accounts():
     assert Listing.objects.filter(shop__owner=seller, status=ListingStatus.ACTIVE).count() >= 4
     assert Order.objects.filter(buyer=buyer, payment_status=PaymentStatus.PAID).exists()
 
+    shop = Shop.objects.get(owner=seller)
+    assert 'demo walkthrough' not in (shop.description or '').lower()
+
     # Idempotent
     call_command('seed_demo')
     assert User.objects.filter(email='seller@demo.ziuza.co.ke').count() == 1

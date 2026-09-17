@@ -67,13 +67,13 @@ LISTINGS = [
 
 
 class Command(BaseCommand):
-    help = "Seed categories, CMS, shipping, and a walkable demo seller/buyer with listings."
+    help = "Seed categories, CMS, shipping, and a sample seller/buyer with listings for local development."
 
     def add_arguments(self, parser):
         parser.add_argument(
             "--with-order",
             action="store_true",
-            help="Also create a paid sample order for the demo buyer.",
+            help="Also create a paid sample order for the sample buyer.",
         )
 
     @transaction.atomic
@@ -90,15 +90,21 @@ class Command(BaseCommand):
         seller.email_verified = True
         seller.save()
 
+        shop_description = (
+            "Handmade goods from Old Town Mombasa — sisal, beadwork, and coastal craft from Kenyan studios."
+        )
         shop = Shop.objects.filter(owner=seller).first()
         if shop is None:
             shop = create_shop(
                 actor=seller,
                 name="Coastal Craft Collective",
-                description="Handmade Kenyan goods for the demo walkthrough.",
+                description=shop_description,
                 county="Mombasa",
                 location_text="Old Town",
             )
+        elif "demo walkthrough" in (shop.description or "").lower():
+            shop.description = shop_description
+            shop.save(update_fields=["description", "updated_at"])
         shop.verification_status = ShopVerificationStatus.VERIFIED
         shop.is_active = True
         shop.vacation_mode = False

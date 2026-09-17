@@ -57,6 +57,8 @@ Alternatively, tasks can still be run manually or via cron with Django managemen
 
 Demo logins after `seed_demo`:
 
+> **Public / self-host warning:** Never run `seed_demo` against a database that serves a public site. If this seed was ever applied on a live host, rotate or remove the demo accounts and replace seeded marketing copy before taking real traffic.
+
 | Role | Email | Password |
 |------|-------|----------|
 | Seller | seller@demo.ziuza.co.ke | DemoPassword123! |
