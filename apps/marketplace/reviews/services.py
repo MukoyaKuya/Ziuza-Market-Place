@@ -262,7 +262,7 @@ def process_review_reminders(*, limit=500):
     sent = 0
     for item_id in item_ids:
         with transaction.atomic():
-            item = OrderItem.objects.select_for_update().select_related('order__buyer').get(id=item_id)
+            item = OrderItem.objects.select_for_update(of=('self',)).select_related('order__buyer').get(id=item_id)
             if Review.objects.filter(order_item=item).exists() or ReviewReminder.objects.filter(order_item=item).exists():
                 continue
             ReviewReminder.objects.create(order_item=item)
