@@ -101,7 +101,7 @@ class FakePaymentProvider(PaymentProvider):
     @transaction.atomic
     def process_callback(self, *, payload: dict) -> Payment:
         reference = payload.get('provider_reference')
-        payment = Payment.objects.select_for_update().select_related('order').get(provider_reference=reference)
+        payment = Payment.objects.select_for_update(of=('self',)).select_related('order').get(provider_reference=reference)
         if payment.provider != self.code:
             raise ValidationError('Payment provider mismatch.')
         if payment.status == PaymentStatusChoice.CONFIRMED:
@@ -260,7 +260,7 @@ class MpesaPaymentProvider(PaymentProvider):
 
         result = self._daraja_client().stk_query(checkout_request_id=checkout_id)
         with transaction.atomic():
-            payment = Payment.objects.select_for_update().select_related('order').get(pk=payment.pk)
+            payment = Payment.objects.select_for_update(of=('self',)).select_related('order').get(pk=payment.pk)
             if payment.status == PaymentStatusChoice.CONFIRMED:
                 return payment
             payment.provider_reference = checkout_id
@@ -288,7 +288,7 @@ class MpesaPaymentProvider(PaymentProvider):
         if not self._verify_callback_signature(payload=payload):
             raise ValueError('Invalid M-Pesa callback signature.')
         reference = payload.get('provider_reference') or payload.get('CheckoutRequestID')
-        payment = Payment.objects.select_for_update().select_related('order').get(provider_reference=reference)
+        payment = Payment.objects.select_for_update(of=('self',)).select_related('order').get(provider_reference=reference)
         if payment.status == PaymentStatusChoice.CONFIRMED:
             return payment
         result_code = str(payload.get('ResultCode', payload.get('result_code', '0')))

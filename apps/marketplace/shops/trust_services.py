@@ -53,7 +53,7 @@ def review_verification(*, actor, application: VerificationApplication, approved
     notes = notes.strip()
     if not approved and not notes:
         raise ValidationError('Explain what the seller needs to correct before rejecting verification.')
-    application = VerificationApplication.objects.select_for_update().select_related('shop__owner').get(pk=application.pk)
+    application = VerificationApplication.objects.select_for_update(of=('self',)).select_related('shop__owner').get(pk=application.pk)
     if application.status != VerificationApplicationStatus.PENDING:
         raise ValidationError('This verification application has already been reviewed.')
     application.status = VerificationApplicationStatus.APPROVED if approved else VerificationApplicationStatus.REJECTED
@@ -101,7 +101,7 @@ def create_report(*, actor, reason: str, details: str, shop: Shop | None = None,
 def moderate_report(*, actor, report: MarketplaceReport, action: str, notes: str = ''):
     if not actor.is_staff:
         raise PermissionDenied
-    report = MarketplaceReport.objects.select_for_update().select_related('shop', 'listing__shop').get(pk=report.pk)
+    report = MarketplaceReport.objects.select_for_update(of=('self',)).select_related('shop', 'listing__shop').get(pk=report.pk)
     if report.status not in {ReportStatus.OPEN, ReportStatus.REVIEWING}:
         raise ValidationError('This report has already been resolved.')
     target_shop = report.shop or report.listing.shop

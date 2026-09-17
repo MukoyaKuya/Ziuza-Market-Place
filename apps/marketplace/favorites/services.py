@@ -119,7 +119,7 @@ def process_discovery_alerts(*, limit=500):
     follow_ids = list(ShopFollow.objects.filter(alerts_enabled=True).values_list('id', flat=True)[:limit])
     for follow_id in follow_ids:
         with transaction.atomic():
-            follow = ShopFollow.objects.select_for_update().select_related('user', 'shop').get(id=follow_id)
+            follow = ShopFollow.objects.select_for_update(of=('self',)).select_related('user', 'shop').get(id=follow_id)
             new_listings = follow.shop.listings.filter(
                 status=ListingStatus.ACTIVE, published_at__gt=follow.last_checked_at
             ).order_by('-published_at')[:5]
@@ -137,7 +137,7 @@ def process_discovery_alerts(*, limit=500):
     alert_ids = list(ListingAlert.objects.values_list('id', flat=True)[:limit])
     for alert_id in alert_ids:
         with transaction.atomic():
-            alert = ListingAlert.objects.select_for_update().select_related('user', 'listing').get(id=alert_id)
+            alert = ListingAlert.objects.select_for_update(of=('self',)).select_related('user', 'listing').get(id=alert_id)
             listing = alert.listing
             in_stock = listing_is_in_stock(listing)
             changes = []

@@ -180,7 +180,7 @@ def process_saved_search_alerts(*, limit: int = 500) -> int:
     saved_ids = list(SavedSearch.objects.filter(alerts_enabled=True).values_list('id', flat=True)[:limit])
     for saved_id in saved_ids:
         with transaction.atomic():
-            saved = SavedSearch.objects.select_for_update().select_related('user').get(id=saved_id)
+            saved = SavedSearch.objects.select_for_update(of=('self',)).select_related('user').get(id=saved_id)
             criteria = {'query': saved.query, **saved.filters}
             if 'min_price' in criteria:
                 criteria['min_price'] = Decimal(criteria['min_price'])
