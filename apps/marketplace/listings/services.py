@@ -182,7 +182,7 @@ def publish_listing(*, actor, listing: Listing) -> Listing:
     if listing.product_type == ProductType.DIGITAL:
         listing.status = ListingStatus.ACTIVE
     else:
-        inventory_rows = list(listing.inventory_rows.select_for_update().select_related('variant'))
+        inventory_rows = list(listing.inventory_rows.select_for_update(of=('self',)).select_related('variant'))
         has_stock = any(row.available_to_sell > 0 and (row.variant_id is None or row.variant.is_active) for row in inventory_rows)
         listing.status = ListingStatus.ACTIVE if has_stock else ListingStatus.SOLD_OUT
     listing.published_at = timezone.now()
