@@ -62,6 +62,9 @@
  <p class="font-semibold">Delivery: {{ listing.shipping_profile.name }}</p>
  <p class="mt-1 text-gray-600">Usually arrives in {{ listing.shipping_profile.processing_days_min|add:listing.shipping_profile.delivery_days_min }}–{{ listing.shipping_profile.processing_days_max|add:listing.shipping_profile.delivery_days_max }} days.</p>
  {% if listing.shipping_profile.free_shipping_threshold %}<p class="mt-1 text-kenya-green-dark">Free delivery from KES {{ listing.shipping_profile.free_shipping_threshold }}.</p>{% endif %}
+ {% if listing.shipping_profile.allows_local_pickup %}<p class="mt-1 text-gray-600">Local pickup available from {{ listing.shop.county }}.</p>{% endif %}
+ </div>
+ {% endif %}
 
  <div class="rounded-xl border border-brand-surface-border bg-white p-4 text-sm text-gray-700 space-y-1">
  <p class="font-semibold text-kenya-black">Buying on Ziuza</p>
@@ -69,9 +72,6 @@
  <p>Need help with an order? Use Track Order in the header or message the shop after purchase.</p>
  </div>
 
-{% if listing.shipping_profile.allows_local_pickup %}<p class="mt-1 text-gray-600">Local pickup available from {{ listing.shop.county }}.</p>{% endif %}
- </div>
- {% endif %}
 
  <div class="flex flex-wrap gap-2 items-center">
  {% if base_inventory and base_inventory.available_to_sell <= 5 and base_inventory.available_to_sell > 0 %}
