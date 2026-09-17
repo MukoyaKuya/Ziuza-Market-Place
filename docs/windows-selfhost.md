@@ -14,6 +14,10 @@ Run these as separate supervised processes:
 For a temporary public testing host without PostgreSQL, Redis, SMTP, or live
 M-Pesa credentials, use `scripts\run_tunnel_testing.ps1` instead. It uses
 SQLite and fake payments, and must never be used to accept real orders.
+`scripts\run_selfhost.ps1` also selects this testing profile automatically
+when `.env` explicitly contains `PAYMENT_PROVIDER=fake`.
+The simpler foreground launcher is `scripts\run_local_tunnel.ps1`; use it when
+you want one terminal command without service-manager or proxy options.
 
 Celery's conservative Windows configuration is `--pool=solo --concurrency=1`. Run exactly
 one Beat process. Install each launcher with a Windows service manager such as WinSW or

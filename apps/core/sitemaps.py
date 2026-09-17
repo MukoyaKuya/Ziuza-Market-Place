@@ -56,6 +56,17 @@ class ShopSitemap(Sitemap):
 
 @require_GET
 def robots_txt(request):
+    from django.conf import settings
+
+    sitemap_path = reverse("sitemap")
+    public_base = (getattr(settings, "PUBLIC_SITE_URL", "") or "").rstrip("/")
+    if public_base:
+        sitemap_url = f"{public_base}{sitemap_path}"
+    else:
+        sitemap_url = request.build_absolute_uri(sitemap_path)
+        if sitemap_url.startswith("http://"):
+            sitemap_url = "https://" + sitemap_url[len("http://"):]
+
     lines = [
         'User-agent: *',
         'Allow: /',
@@ -63,6 +74,6 @@ def robots_txt(request):
         'Disallow: /seller/',
         'Disallow: /checkout/',
         'Disallow: /admin/',
-        f'Sitemap: {request.build_absolute_uri(reverse("sitemap"))}',
+        f'Sitemap: {sitemap_url}',
     ]
     return HttpResponse('\n'.join(lines), content_type='text/plain')
