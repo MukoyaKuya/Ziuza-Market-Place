@@ -115,6 +115,7 @@ TEMPLATES = [
                 'apps.marketplace.cart.context_processors.cart_summary',
                 'apps.marketplace.notifications.context_processors.unread_notifications',
                 'apps.marketplace.categories.context_processors.nav_categories',
+                'apps.core.context_processors.site_flags',
             ],
         },
     },
