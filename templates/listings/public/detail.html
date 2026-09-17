@@ -60,7 +60,7 @@
  {% if listing.product_type != 'digital' and listing.shipping_profile and listing.shipping_profile.is_active %}
  <div class="rounded-xl border border-brand-surface-border bg-brand-surface-muted p-4 text-sm">
  <p class="font-semibold">Delivery: {{ listing.shipping_profile.name }}</p>
- <p class="mt-1 text-gray-600">Usually arrives in {{ listing.shipping_profile.processing_days_min|add:listing.shipping_profile.delivery_days_min }}–{{ listing.shipping_profile.processing_days_max|add:listing.shipping_profile.delivery_days_max }} days.</p>
+ <p class="mt-1 text-gray-600">Usually arrives in {{ listing.shipping_profile.processing_days_min|add:listing.shipping_profile.delivery_days_min }}-{{ listing.shipping_profile.processing_days_max|add:listing.shipping_profile.delivery_days_max }} days.</p>
  {% if listing.shipping_profile.free_shipping_threshold %}<p class="mt-1 text-kenya-green-dark">Free delivery from KES {{ listing.shipping_profile.free_shipping_threshold }}.</p>{% endif %}
  {% if listing.shipping_profile.allows_local_pickup %}<p class="mt-1 text-gray-600">Local pickup available from {{ listing.shop.county }}.</p>{% endif %}
  </div>
